@@ -101,14 +101,14 @@ export function normalizeOpening(value) {
         windowStyle,
         windowOpening: source.windowOpening === "outward" ? "outward" : "sliding",
         hasLeaf: type === "door" ? source.hasLeaf !== false : false,
-        doorStyle: type === "door" && source.doorStyle === "double" ? "double" : "single",
+        doorStyle: type === "door" && (source.doorStyle === "double" || source.doorStyle === "entrance") ? source.doorStyle : "single", // ha3d-self: 新增入户门 entrance
         swing: source.swing === "outward" ? "outward" : "inward",
         hinge: source.hinge === "end" ? "end" : "start",
     };
 }
 export function normalizeFurniture(value, floorId) {
     const source = isRecord(value) ? value : {};
-    const supportedKinds = ["sofa", "bed", "dining_table", "desk", "wardrobe", "cabinet", "tv_stand", "kitchen_island", "coffee_table", "bookshelf", "sideboard", "shoe_cabinet", "nightstand", "side_table", "wash_basin", "toilet", "water_heater", "squat_toilet", "gas_stove"];
+    const supportedKinds = ["sofa", "bed", "dining_table", "desk", "wardrobe", "cabinet", "tv_stand", "kitchen_island", "coffee_table", "bookshelf", "sideboard", "shoe_cabinet", "nightstand", "side_table", "wash_basin", "toilet", "water_heater", "squat_toilet", "gas_stove", "fridge", "bathroom_cabinet", "chest_of_drawers", "dog_crate"]; // ha3d-self: 新增 4 种家具
     const kind = supportedKinds.includes(source.kind) ? source.kind : "sofa";
     const fallbackSize = {
         bed: { width: 1.8, depth: 2, height: 0.42 },
@@ -130,6 +130,11 @@ export function normalizeFurniture(value, floorId) {
         water_heater: { width: 0.58, depth: 0.32, height: 0.72 },
         squat_toilet: { width: 0.62, depth: 0.82, height: 0.16 },
         gas_stove: { width: 0.72, depth: 0.52, height: 0.12 },
+        // ha3d-self: 新增家具的默认尺寸
+        fridge: { width: 0.7, depth: 0.68, height: 1.8 },
+        bathroom_cabinet: { width: 0.8, depth: 0.48, height: 0.85 },
+        chest_of_drawers: { width: 0.9, depth: 0.45, height: 1.0 },
+        dog_crate: { width: 0.9, depth: 0.6, height: 0.7 },
     };
     const size = fallbackSize[kind];
     return {

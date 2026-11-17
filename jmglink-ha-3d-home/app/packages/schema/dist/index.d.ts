@@ -50,7 +50,7 @@ export type Room = {
 };
 export type WindowOpening = "sliding" | "outward";
 export type WindowStyle = "standard" | "floor_to_ceiling";
-export type DoorStyle = "single" | "double";
+export type DoorStyle = "single" | "double" | "entrance"; // ha3d-self: 新增 entrance
 export type DoorSwing = "inward" | "outward";
 export type DoorHinge = "start" | "end";
 export type Opening = {
@@ -97,7 +97,7 @@ export type DevicePlacement = {
     lightStrip?: LightStripPath;
     controlledLightFixtures?: SwitchLightFixture[];
 };
-export type FurnitureKind = "sofa" | "bed" | "dining_table" | "desk" | "wardrobe" | "cabinet" | "tv_stand" | "kitchen_island" | "coffee_table" | "bookshelf" | "sideboard" | "shoe_cabinet" | "nightstand" | "side_table" | "wash_basin" | "toilet" | "water_heater" | "squat_toilet" | "gas_stove";
+export type FurnitureKind = "sofa" | "bed" | "dining_table" | "desk" | "wardrobe" | "cabinet" | "tv_stand" | "kitchen_island" | "coffee_table" | "bookshelf" | "sideboard" | "shoe_cabinet" | "nightstand" | "side_table" | "wash_basin" | "toilet" | "water_heater" | "squat_toilet" | "gas_stove" | "fridge" | "bathroom_cabinet" | "chest_of_drawers" | "dog_crate"; // ha3d-self: 新增 4 种家具
 export type FurniturePlacement = {
     id: string;
     kind: FurnitureKind;

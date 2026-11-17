@@ -2,6 +2,8 @@ import { EventEmitter } from "node:events";
 import { WebSocket } from "ws";
 import { homeAssistantBaseUrlFromRestUrl } from "../config/runtime.js";
 const supportedDomains = new Set(["light", "switch", "cover", "climate", "sensor", "binary_sensor", "camera", "fan", "media_player", "alarm_control_panel"]);
+// ha3d-self: 不受绑定过滤影响、始终实时广播的域
+const ha3dAlwaysBroadcastDomains = new Set(["weather", "sun"]);
 const createHttpError = (message, statusCode) => Object.assign(new Error(message), { statusCode });
 function nonEmptyString(value) {
     return typeof value === "string" && value.trim() ? value.trim() : undefined;
@@ -155,7 +157,8 @@ export class HomeAssistantClient extends EventEmitter {
         return suggestions;
     }
     queueEntityUpdate(entity) {
-        if (this.boundEntityFilter && !this.boundEntityFilter.has(entity.entityId))
+        // ha3d-self: weather / sun 驱动首页环境动画，不受绑定过滤影响
+        if (this.boundEntityFilter && !this.boundEntityFilter.has(entity.entityId) && !ha3dAlwaysBroadcastDomains.has(entity.domain))
             return;
         this.pendingEntityUpdates.set(entity.entityId, entity);
         if (!this.entityUpdateFlushTimer) {
@@ -181,8 +184,8 @@ export class HomeAssistantClient extends EventEmitter {
     setBoundEntityFilter(entityIds) {
         this.boundEntityFilter = entityIds === null ? null : new Set(entityIds);
         if (this.boundEntityFilter) {
-            for (const entityId of [...this.pendingEntityUpdates.keys()]) {
-                if (!this.boundEntityFilter.has(entityId))
+            for (const [entityId, entity] of [...this.pendingEntityUpdates.entries()]) {
+                if (!this.boundEntityFilter.has(entityId) && !ha3dAlwaysBroadcastDomains.has(entity.domain)) // ha3d-self: 同上，保留 weather / sun
                     this.pendingEntityUpdates.delete(entityId);
             }
         }

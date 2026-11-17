@@ -1,9 +1,9 @@
-import { existsSync } from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import cors from "@fastify/cors";
 import fastifyStatic from "@fastify/static";
 import Fastify from "fastify";
+import { existsSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import { loadEnvFiles } from "./config/envFile.js";
 import { HaConfigStore } from "./config/haConfigStore.js";
@@ -23,6 +23,10 @@ if (config.mode !== "addon") {
         config.ha = haConfigStore.toRuntimeHa(storedHaConfig);
 }
 const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? "info" }, bodyLimit: 15 * 1024 * 1024 });
+// ha3d-self: HA ingress（aiohttp）转发无 body 的 POST 时会补上 Content-Type: application/octet-stream，
+// Fastify 默认对未知类型返回 415（导出、重连、重置、恢复备份都会失败）。空 body 放行，非空仍返回 415；
+// JSON 和 text/plain 走内置解析器，不受影响。
+app.addContentTypeParser("*", { parseAs: "buffer" }, (request, body, done) => body.length === 0 ? done(null, undefined) : done(Object.assign(new Error("Unsupported Media Type"), { statusCode: 415 })));
 const gateway = new ClientGateway();
 const ha = new HomeAssistantClient(config);
 const supervisorTokenRaw = process.env.SUPERVISOR_TOKEN;

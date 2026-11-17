@@ -1,0 +1,21 @@
+{
+  "name": "ha3d-tools",
+  "private": true,
+  "type": "module",
+  "description": "本地开发与验证工具（mock HA、本地启动、单元测试、模块图检查、e2e），不进镜像",
+  "scripts": {
+    "dev": "node dev/start-local.mjs",
+    "mock-ha": "node mock-ha/server.mjs",
+    "test:unit": "node --test \"unit/*.test.mjs\"",
+    "check:web": "node check-web.mjs",
+    "e2e": "node e2e/run.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "esbuild": "0.28.2",
+    "playwright": "1.64.1",
+    "playwright-core": "1.64.1",
+    "pngjs": "7.0.0",
+    "ws": "8.23.0"
+  }
+}

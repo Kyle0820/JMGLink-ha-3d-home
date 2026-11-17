@@ -12,9 +12,9 @@ const __vite__mapDeps = (
       "./HomeView.css",
     ]),
 ) => i.map((i) => d[i]);
-import { j as i, _ as ie, c as pe } from "./three.js";
-import { a as l, c as fe, R as he } from "./react.js";
 import "./hls.js";
+import { c as fe, R as he, a as l } from "./react.js";
+import { j as i, _ as ie, c as pe } from "./three.js";
 (function () {
   const e = document.createElement("link").relList;
   if (e && e.supports && e.supports("modulepreload")) return;
@@ -533,7 +533,7 @@ async function Xe(t, e) {
   return (await s.json()).project;
 }
 async function At(t) {
-  const e = await fetch(`./api/projects/${t}/export`, { method: "POST" });
+  const e = await fetch(`./api/projects/${t}/export`); // ha3d-self: 改用 GET，避免 ingress 补 octet-stream 导致 415
   if (!e.ok) throw new Error(`Export project failed: ${e.status}`);
   return e.blob();
 }
@@ -1713,16 +1713,12 @@ pe.createRoot(document.getElementById("root")).render(
 );
 bt();
 export {
-  Re as M,
-  Y as R,
-  Q as W,
-  _e as X,
-  it as a,
-  Te as b,
-  P as c,
-  At as d,
-  St as f,
-  at as h,
-  ct as p,
-  M as u,
+    it as a,
+    Te as b,
+    P as c,
+    At as d,
+    St as f,
+    at as h, Re as M, ct as p, Y as R, M as u, Q as W,
+    _e as X
 };
+

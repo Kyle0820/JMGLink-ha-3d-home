@@ -1,0 +1,149 @@
+{
+  "id": "ha3d-demo-fixture",
+  "name": "合成测试户型",
+  "version": 4,
+  "unit": "m",
+  "createdAt": "2026-01-01T00:00:00.000Z",
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "materials": [
+    { "id": "wall-white", "name": "Warm white wall", "color": "#f5f2ec", "roughness": 0.92 },
+    { "id": "oak-floor", "name": "Oak floor", "color": "#b58b5b", "roughness": 0.8 },
+    { "id": "tile-grey", "name": "Grey tile", "color": "#c9c6c0", "roughness": 0.6 }
+  ],
+  "assets": [],
+  "dashboardWidgets": [
+    { "id": "widget-living-temp", "type": "metric", "title": "客厅温度", "entityId": "sensor.living_temperature", "unit": "°C", "precision": 1, "order": 1, "visible": true }
+  ],
+  "floors": [
+    {
+      "id": "floor-1",
+      "name": "一层",
+      "level": 1,
+      "height": 2.8,
+      "rooms": [
+        {
+          "id": "room-living",
+          "name": "客厅",
+          "polygon": [[0, 0], [6, 0], [6, 4.5], [0, 4.5]],
+          "floorMaterialId": "oak-floor",
+          "haAreaId": "living_room",
+          "bindings": {
+            "lighting": { "main": { "entityIds": ["light.ceiling_panel"], "aggregation": "latest" } },
+            "environment": { "temperature": { "entityIds": ["sensor.living_temperature"], "aggregation": "latest" } },
+            "security": {
+              "lock": { "entityIds": ["lock.door"], "aggregation": "latest" },
+              "doorWindow": { "entityIds": ["binary_sensor.entry_door"], "aggregation": "latest" }
+            }
+          }
+        },
+        {
+          "id": "room-bedroom",
+          "name": "卧室",
+          "polygon": [[6, 0], [10, 0], [10, 4.5], [6, 4.5]],
+          "floorMaterialId": "oak-floor",
+          "haAreaId": "bedroom",
+          "bindings": { "shade": { "curtain": { "entityIds": ["cover.curtain"], "aggregation": "latest" } } }
+        },
+        {
+          "id": "room-kitchen",
+          "name": "厨房",
+          "polygon": [[0, 4.5], [3.5, 4.5], [3.5, 7.5], [0, 7.5]],
+          "floorMaterialId": "tile-grey",
+          "haAreaId": "kitchen"
+        }
+      ],
+      "walls": [
+        { "id": "wall-south", "start": [0, 0], "end": [10, 0], "thickness": 0.16, "height": 2.8, "materialId": "wall-white" },
+        { "id": "wall-east", "start": [10, 0], "end": [10, 4.5], "thickness": 0.16, "height": 2.8, "materialId": "wall-white" },
+        { "id": "wall-north-bedroom", "start": [10, 4.5], "end": [6, 4.5], "thickness": 0.16, "height": 2.8, "materialId": "wall-white" },
+        { "id": "wall-north-living", "start": [6, 4.5], "end": [3.5, 4.5], "thickness": 0.16, "height": 2.8, "materialId": "wall-white" },
+        { "id": "wall-living-kitchen", "start": [3.5, 4.5], "end": [0, 4.5], "thickness": 0.12, "height": 2.8, "materialId": "wall-white" },
+        { "id": "wall-west", "start": [0, 4.5], "end": [0, 0], "thickness": 0.16, "height": 2.8, "materialId": "wall-white" },
+        { "id": "wall-living-bedroom", "start": [6, 0], "end": [6, 4.5], "thickness": 0.12, "height": 2.8, "materialId": "wall-white" },
+        { "id": "wall-kitchen-east", "start": [3.5, 4.5], "end": [3.5, 7.5], "thickness": 0.16, "height": 2.8, "materialId": "wall-white" },
+        { "id": "wall-kitchen-north", "start": [3.5, 7.5], "end": [0, 7.5], "thickness": 0.16, "height": 2.8, "materialId": "wall-white" },
+        { "id": "wall-kitchen-west", "start": [0, 7.5], "end": [0, 4.5], "thickness": 0.16, "height": 2.8, "materialId": "wall-white" }
+      ],
+      "openings": [
+        {
+          "id": "opening-entry-door",
+          "type": "door",
+          "entityId": "binary_sensor.entry_door",
+          "wallId": "wall-south",
+          "offset": 1.4,
+          "width": 1.0,
+          "height": 2.1,
+          "bottom": 0,
+          "windowStyle": "standard",
+          "windowOpening": "sliding",
+          "hasLeaf": true,
+          "doorStyle": "single",
+          "swing": "inward",
+          "hinge": "start"
+        },
+        {
+          "id": "opening-bedroom-door",
+          "type": "door",
+          "wallId": "wall-living-bedroom",
+          "offset": 3.2,
+          "width": 0.9,
+          "height": 2.1,
+          "bottom": 0,
+          "windowStyle": "standard",
+          "windowOpening": "sliding",
+          "hasLeaf": true,
+          "doorStyle": "single",
+          "swing": "inward",
+          "hinge": "end"
+        },
+        {
+          "id": "opening-bedroom-window",
+          "type": "window",
+          "wallId": "wall-east",
+          "offset": 2.2,
+          "width": 1.6,
+          "height": 1.4,
+          "bottom": 0.9,
+          "windowStyle": "standard",
+          "windowOpening": "sliding",
+          "hasLeaf": false,
+          "doorStyle": "single",
+          "swing": "inward",
+          "hinge": "start"
+        }
+      ],
+      "devices": [
+        { "id": "device-living-panel", "entityId": "light.ceiling_panel", "kind": "light", "floorId": "floor-1", "roomId": "room-living", "position": [3.2, 2.8, 2.0], "rotation": [0, 0, 0], "modelId": "light.ceiling_panel" },
+        { "id": "device-living-downlight", "entityId": "light.downlight", "kind": "light", "floorId": "floor-1", "roomId": "room-living", "position": [1.0, 2.8, 3.6], "rotation": [0, 0, 0], "modelId": "light.downlight" },
+        { "id": "device-kitchen-chandelier", "entityId": "light.chandelier", "kind": "light", "floorId": "floor-1", "roomId": "room-kitchen", "position": [1.75, 2.8, 6.0], "rotation": [0, 0, 0], "modelId": "light.chandelier" },
+        {
+          "id": "device-bedroom-switch",
+          "entityId": "switch.bedroom_light",
+          "kind": "switch",
+          "floorId": "floor-1",
+          "roomId": "room-bedroom",
+          "position": [6.1, 1.3, 0.9],
+          "rotation": [0, 0, 0],
+          "modelId": "switch.wall",
+          "controlledLightFixtures": [
+            { "id": "switch-light-bedroom-1", "label": "卧室吸顶灯", "roomId": "room-bedroom", "position": [8.0, 2.8, 2.25], "rotation": [0, 0, 0], "modelId": "light.ceiling_round" }
+          ]
+        },
+        { "id": "device-bedroom-curtain", "entityId": "cover.curtain", "kind": "cover", "floorId": "floor-1", "roomId": "room-bedroom", "position": [9.86, 2.2, 2.2], "rotation": [0, -1.5707963267948966, 0], "scale": [1.8, 1, 1], "modelId": "cover.curtain" },
+        { "id": "device-living-temp", "entityId": "sensor.living_temperature", "kind": "sensor", "floorId": "floor-1", "roomId": "room-living", "position": [0.12, 1.5, 2.2], "rotation": [0, 0, 0], "modelId": "sensor.temperature" },
+        { "id": "device-living-ac", "entityId": "climate.central_ac", "kind": "climate", "floorId": "floor-1", "roomId": "room-living", "position": [4.6, 2.8, 3.4], "rotation": [0, 0, 0], "modelId": "climate.central_ac" },
+        { "id": "device-entry-lock", "entityId": "lock.door", "kind": "lock", "floorId": "floor-1", "roomId": "room-living", "position": [2.0, 1.0, 0.12], "rotation": [0, 0, 0], "modelId": "lock.door" }
+      ],
+      "furniture": [
+        { "id": "furniture-sofa", "kind": "sofa", "floorId": "floor-1", "roomId": "room-living", "position": [3.0, 3.7], "rotation": 3.141592653589793, "width": 2.2, "depth": 0.9, "height": 0.68 },
+        { "id": "furniture-coffee-table", "kind": "coffee_table", "floorId": "floor-1", "roomId": "room-living", "position": [3.0, 2.6], "rotation": 0, "width": 1.0, "depth": 0.55, "height": 0.3 },
+        { "id": "furniture-tv-stand", "kind": "tv_stand", "floorId": "floor-1", "roomId": "room-living", "position": [3.6, 0.3], "rotation": 0, "width": 1.8, "depth": 0.38, "height": 0.34 },
+        { "id": "furniture-bed", "kind": "bed", "floorId": "floor-1", "roomId": "room-bedroom", "position": [8.2, 3.3], "rotation": 3.141592653589793, "width": 1.8, "depth": 2.0, "height": 0.42 },
+        { "id": "furniture-nightstand", "kind": "nightstand", "floorId": "floor-1", "roomId": "room-bedroom", "position": [6.9, 4.1], "rotation": 3.141592653589793, "width": 0.5, "depth": 0.42, "height": 0.48 },
+        { "id": "furniture-wardrobe", "kind": "wardrobe", "floorId": "floor-1", "roomId": "room-bedroom", "position": [7.6, 0.4], "rotation": 0, "width": 1.6, "depth": 0.6, "height": 1.22 },
+        { "id": "furniture-kitchen-cabinet", "kind": "cabinet", "floorId": "floor-1", "roomId": "room-kitchen", "position": [1.75, 7.1], "rotation": 3.141592653589793, "width": 2.4, "depth": 0.6, "height": 0.72 },
+        { "id": "furniture-dining-table", "kind": "dining_table", "floorId": "floor-1", "roomId": "room-kitchen", "position": [1.75, 5.5], "rotation": 0, "width": 1.2, "depth": 0.8, "height": 0.62 }
+      ]
+    }
+  ]
+}
