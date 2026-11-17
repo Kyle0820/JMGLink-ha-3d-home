@@ -1,61 +1,61 @@
-import { j as e } from "./three.js";
-import { a as c } from "./react.js";
 import {
-  O as Rt,
-  X as ut,
-  A as fe,
-  P as Ht,
-  E as Ba,
-  w as Xa,
-  T as Ka,
-  t as ce,
-  c as et,
-  Z as qa,
-  M as Gt,
-  _ as Tt,
-  $ as ot,
-  a0 as Pt,
-  a1 as Qa,
-  a2 as Za,
-  x as Ua,
-  a3 as Yt,
-  a4 as Ga,
-  a5 as Ya,
-  a6 as Ja,
-  u as es,
-  a7 as ts,
-  a8 as Jt,
-  a9 as ht,
-  aa as mt,
-  ab as as,
-  ac as ea,
-  s as Lt,
-  z as ss,
-  ad as ta,
-  ae as ns,
-  af as is,
-  B as rs,
-  y as os,
-  v as ls,
-  H as cs,
-  ag as ds,
-  ah as aa,
-  K as pt,
-  R as us,
-  C as hs,
-  ai as ms,
+    E as Ba,
+    a4 as Ga,
+    M as Gt,
+    P as Ht,
+    a6 as Ja,
+    a8 as Jt,
+    T as Ka,
+    s as Lt,
+    a0 as Pt,
+    a1 as Qa,
+    O as Rt,
+    _ as Tt,
+    x as Ua,
+    w as Xa,
+    a5 as Ya,
+    a3 as Yt,
+    a2 as Za,
+    ah as aa,
+    ab as as,
+    t as ce,
+    H as cs,
+    ag as ds,
+    ac as ea,
+    u as es,
+    c as et,
+    A as fe,
+    C as hs,
+    a9 as ht,
+    af as is,
+    v as ls,
+    ai as ms,
+    aa as mt,
+    ae as ns,
+    y as os,
+    $ as ot,
+    K as pt,
+    Z as qa,
+    B as rs,
+    z as ss,
+    ad as ta,
+    a7 as ts,
+    R as us,
+    X as ut,
 } from "./AppSelect.js";
-import {
-  c as Z,
-  X as ve,
-  u as Ie,
-  a as ps,
-  h as fs,
-  M as xs,
-  b as bs,
-  R as ys,
-} from "./index.js";
 import "./hls.js";
+import {
+    u as Ie,
+    c as Z,
+    b as bs,
+    h as fs,
+    a as ps,
+    X as ve,
+    M as xs,
+    R as ys,
+} from "./index.js";
+import { a as c } from "./react.js";
+import { j as e } from "./three.js";
 /**
  * @license lucide-react v1.25.0 - ISC
  *
@@ -254,6 +254,18 @@ import "./hls.js";
     ["path", { d: "M21 3v5h-5", key: "1q7to0" }],
   ],
   Vs = Z("rotate-cw", Ws),
+  // ha3d-self: 3D 设置按钮图标（lucide sliders-horizontal）
+  ha3dSlidersIcon = Z("sliders-horizontal", [
+    ["path", { d: "M10 5H3", key: "ha3d-s1" }],
+    ["path", { d: "M12 19H3", key: "ha3d-s2" }],
+    ["path", { d: "M14 3v4", key: "ha3d-s3" }],
+    ["path", { d: "M16 17v4", key: "ha3d-s4" }],
+    ["path", { d: "M21 12h-9", key: "ha3d-s5" }],
+    ["path", { d: "M21 19h-5", key: "ha3d-s6" }],
+    ["path", { d: "M21 5h-7", key: "ha3d-s7" }],
+    ["path", { d: "M8 10v4", key: "ha3d-s8" }],
+    ["path", { d: "M8 12H3", key: "ha3d-s9" }],
+  ]),
   Bs = { enabled: !1, modelShowcase: "none", weatherState: "live" },
   Xs = [
     { label: "真实天气", value: "live" },
@@ -2639,6 +2651,86 @@ function Yn({
     ),
   });
 }
+// ===== ha3d-self: 3D 设置面板（结构、关闭方式同数据设置面板 Xn；FEAT-005 继续往里加选项） =====
+const ha3dClickModeOptions = [
+  { value: "detail", label: "弹出详情", hint: "点击 3D 里的设备时打开详情面板。" },
+  {
+    value: "toggle",
+    label: "直接开关",
+    hint: "灯、开关、风扇、窗帘点击即切换；门锁、空调、传感器等仍弹出详情。",
+  },
+];
+function ha3dSettingsPanel({
+  deviceClickMode: t,
+  onDeviceClickModeChange: a,
+  onClose: s,
+}) {
+  const i =
+    ha3dClickModeOptions.find((r) => r.value === t) ?? ha3dClickModeOptions[0];
+  return e.jsxs(e.Fragment, {
+    children: [
+      e.jsx("div", {
+        className: "home-dashboard-manager-backdrop",
+        "aria-hidden": "true",
+        onClick: s,
+      }),
+      e.jsxs("aside", {
+        className: "home-dashboard-manager home-settings-panel",
+        role: "dialog",
+        "aria-modal": "true",
+        "aria-label": "3D 设置",
+        children: [
+          e.jsxs("header", {
+            children: [
+              e.jsxs("div", {
+                children: [
+                  e.jsx("small", { children: "页面设置" }),
+                  e.jsx("strong", { children: "3D 设置" }),
+                ],
+              }),
+              e.jsx("button", {
+                type: "button",
+                onClick: s,
+                "aria-label": "关闭 3D 设置",
+                children: e.jsx(ve, { size: 18 }),
+              }),
+            ],
+          }),
+          e.jsxs("section", {
+            className: "dashboard-manager-section home-settings-section",
+            children: [
+              e.jsxs("div", {
+                className: "home-settings-copy",
+                children: [
+                  e.jsx("strong", { children: "点击设备" }),
+                  e.jsx("span", { children: i.hint }),
+                ],
+              }),
+              e.jsx("div", {
+                className: "home-settings-segmented",
+                role: "group",
+                "aria-label": "点击设备",
+                children: ha3dClickModeOptions.map((r) =>
+                  e.jsx(
+                    "button",
+                    {
+                      type: "button",
+                      className: r.value === i.value ? "active" : "",
+                      "aria-pressed": r.value === i.value,
+                      onClick: () => a(r.value),
+                      children: r.label,
+                    },
+                    r.value,
+                  ),
+                ),
+              }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
 function ni({
   project: t,
   entities: a,
@@ -2655,6 +2747,9 @@ function ni({
     w = Ie((n) => n.act),
     _ = Ie((n) => n.areas),
     P = Ie((n) => n.saveProject),
+    ha3dClickMode = Ie((n) => n.deviceClickMode), // ha3d-self: F4
+    ha3dSetClickMode = Ie((n) => n.setDeviceClickMode), // ha3d-self: F4
+    [ha3dSettingsOpen, ha3dSetSettingsOpen] = c.useState(!1), // ha3d-self: 3D 设置面板
     [N, W] = c.useState(""),
     [z, x] = c.useState(Se),
     [v, U] = c.useState(() => {
@@ -2784,6 +2879,12 @@ function ni({
         window.localStorage.setItem(da, String(ue));
       } catch {}
     }, [ue]));
+  // ===== ha3d-self: B5 奶油风格时给 body 加 class，portal 弹窗也能用到 --cream-* 变量 =====
+  c.useEffect(() => {
+    if (o !== "cream") return;
+    document.body.classList.add("ha3d-visual-cream");
+    return () => document.body.classList.remove("ha3d-visual-cream");
+  }, [o]);
   const R = O && y ? E[y] : void 0,
     ze = c.useMemo(
       () => [...me.floors].sort((n, l) => l.level - n.level),
@@ -3129,6 +3230,12 @@ function ni({
                 (Be(!1), yt(!0));
               },
             }),
+          ha3dSettingsOpen &&
+            e.jsx(ha3dSettingsPanel, {
+              deviceClickMode: ha3dClickMode,
+              onDeviceClickModeChange: ha3dSetClickMode,
+              onClose: () => ha3dSetSettingsOpen(!1),
+            }), // ha3d-self: 3D 设置面板
           O &&
             e.jsx(kn, {
               widgets: Na,
@@ -3249,7 +3356,7 @@ function ni({
                     e.jsxs("button", {
                       className: `corner-dock-action ${Ve ? "active" : ""}`,
                       onClick: () => {
-                        (Be(!0), u(!1));
+                        (Be(!0), ha3dSetSettingsOpen(!1), u(!1)); // ha3d-self: 同时关闭 3D 设置面板
                       },
                       title: "配置顶部概览数据",
                       "aria-label": "配置顶部概览数据",
@@ -3261,6 +3368,21 @@ function ni({
                         e.jsx("b", { children: Ia }),
                       ],
                     }),
+                  // ha3d-self: 3D 设置入口
+                  e.jsxs("button", {
+                    className: `corner-dock-action ${ha3dSettingsOpen ? "active" : ""}`,
+                    onClick: () => {
+                      (Be(!1), ha3dSetSettingsOpen(!0), u(!1));
+                    },
+                    title: "3D 设置",
+                    "aria-label": "3D 设置",
+                    "aria-expanded": ha3dSettingsOpen,
+                    role: "menuitem",
+                    children: [
+                      e.jsx(ha3dSlidersIcon, { size: 17 }),
+                      e.jsx("span", { children: "设置" }),
+                    ],
+                  }),
                   e.jsxs("button", {
                     className: `corner-dock-action ${X || ye ? "active" : ""}`,
                     onClick: () => {

@@ -80,6 +80,88 @@
   --shortcut-muted: var(--cream-muted);
   --shortcut-accent: var(--cream-accent);
 }
+/* ===== ha3d-self: 3D 设置面板（布局沿用 .home-dashboard-manager） ===== */
+.home-settings-panel {
+  bottom: auto;
+  width: min(22rem, calc(100vw - var(--home-edge-x) * 2));
+  max-height: calc(100% - var(--home-detail-panel-top) - var(--home-bottom-y));
+}
+.home-settings-section {
+  gap: 0.75rem;
+}
+.home-settings-copy {
+  min-width: 0;
+  display: grid;
+  gap: 0.25rem;
+}
+.home-settings-copy strong {
+  color: #fafcffeb;
+  font-size: 0.8125rem;
+  font-weight: 850;
+}
+.home-settings-copy span {
+  color: #dbe6ffbf;
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}
+.home-settings-segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid rgba(226, 236, 255, 0.12);
+  border-radius: 0.875rem;
+  background: #0a122238;
+}
+.home-settings-panel .home-settings-segmented button {
+  justify-self: stretch;
+  justify-content: center;
+  min-height: 2.125rem;
+  border-color: transparent;
+  border-radius: 0.625rem;
+  color: #eef5ffd1;
+  background: transparent;
+  font-size: 0.75rem;
+}
+.home-settings-panel .home-settings-segmented button.active {
+  color: #1d2436;
+  border-color: #ffd08a;
+  background: #ffd08a;
+}
+.home-settings-panel .home-settings-segmented button:focus-visible {
+  outline: 2px solid #ffd08a;
+  outline-offset: 2px;
+}
+.home-workspace.visual-style-cream .home-settings-copy strong {
+  color: var(--cream-ink);
+}
+.home-workspace.visual-style-cream .home-settings-copy span {
+  color: var(--cream-muted);
+}
+.home-workspace.visual-style-cream .home-settings-segmented {
+  border-color: var(--cream-line);
+  background: var(--cream-soft);
+}
+.home-workspace.visual-style-cream
+  .home-settings-panel
+  .home-settings-segmented
+  button {
+  color: var(--cream-copy);
+}
+.home-workspace.visual-style-cream
+  .home-settings-panel
+  .home-settings-segmented
+  button.active {
+  color: #fffaf1;
+  border-color: var(--cream-accent);
+  background: var(--cream-accent);
+}
+.home-workspace.visual-style-cream
+  .home-settings-panel
+  .home-settings-segmented
+  button:focus-visible {
+  outline-color: var(--cream-accent);
+}
 @media (prefers-reduced-motion: reduce) {
   .scene-shortcuts .spin-icon {
     animation: none;

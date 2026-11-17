@@ -1174,6 +1174,18 @@ async function ee(t) {
     areas: s,
   };
 }
+// ===== ha3d-self: 点击设备模式的本地存储 =====
+const ha3dDeviceClickModeKey = "ha3d.home.deviceClickMode";
+function ha3dReadDeviceClickMode() {
+  try {
+    return typeof window < "u" &&
+      window.localStorage.getItem(ha3dDeviceClickModeKey) === "toggle"
+      ? "toggle"
+      : "detail";
+  } catch {
+    return "detail";
+  }
+}
 const M = fe((t, e) => ({
   entities: {},
   areas: [],
@@ -1268,6 +1280,15 @@ const M = fe((t, e) => ({
   },
   selectEntity(s) {
     t({ selectedEntityId: s });
+  },
+  // ===== ha3d-self: 点击设备模式（detail 弹出详情 / toggle 直接开关） =====
+  deviceClickMode: ha3dReadDeviceClickMode(),
+  setDeviceClickMode(s) {
+    const a = s === "toggle" ? "toggle" : "detail";
+    try {
+      window.localStorage.setItem(ha3dDeviceClickModeKey, a);
+    } catch {}
+    t({ deviceClickMode: a });
   },
   async act(s) {
     const a = await ze(s);

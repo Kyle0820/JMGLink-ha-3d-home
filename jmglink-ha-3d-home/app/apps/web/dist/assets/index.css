@@ -17510,3 +17510,163 @@ input[type="range"]::-webkit-slider-thumb {
   color: var(--cream-copy);
   text-shadow: none;
 }
+/* ===== ha3d-self: B3 3D 区域禁止文本选择 ===== */
+.home-scene,
+.home-scene *,
+.editor-3d,
+.editor-3d * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.home-scene :is(input, textarea, select, [contenteditable="true"]),
+.editor-3d :is(input, textarea, select, [contenteditable="true"]) {
+  -webkit-user-select: text;
+  user-select: text;
+}
+.home-scene canvas,
+.editor-3d canvas {
+  /* OrbitControls dispose 时会在画布上留下行内 touch-action:auto，这里用 !important 覆盖 */
+  touch-action: none !important;
+}
+/* ===== ha3d-self: B5 奶油风格弹窗可读性 ===== */
+/* portal 到 body 的弹窗也能用到奶油变量（HomeView 在奶油风格下给 body 加 ha3d-visual-cream） */
+body.ha3d-visual-cream {
+  --cream-ink: #352e25;
+  --cream-copy: #574c3e;
+  --cream-muted: #685d4e;
+  --cream-accent: #835c30;
+  --cream-line: rgba(100, 78, 50, 0.2);
+  --cream-panel: rgba(250, 244, 232, 0.94);
+  --cream-soft: #eee4d4;
+}
+/* 数据设置、数据卡片管理、3D 设置面板：面板是奶油底色，文字原来还是玻璃风格的浅色 */
+.home-workspace.visual-style-cream .home-dashboard-manager > header strong,
+.home-workspace.visual-style-cream
+  .home-dashboard-manager
+  :is(
+    .overview-data-mode strong,
+    .overview-data-card-link strong,
+    .overview-data-section header span,
+    .quick-pin-section strong,
+    .dashboard-widget-list article strong,
+    .dashboard-manager-section h3
+  ) {
+  color: var(--cream-ink);
+}
+.home-workspace.visual-style-cream .home-dashboard-manager > header small,
+.home-workspace.visual-style-cream
+  .home-dashboard-manager
+  :is(
+    .dashboard-manager-section label span,
+    .overview-data-mode span,
+    .overview-data-card-link span,
+    .overview-data-section p,
+    .overview-data-empty,
+    .dashboard-manager-empty,
+    .quick-pin-section small,
+    .dashboard-widget-list article small
+  ) {
+  color: var(--cream-muted);
+}
+.home-workspace.visual-style-cream .home-dashboard-manager .overview-data-section header svg {
+  color: var(--cream-accent);
+}
+.home-workspace.visual-style-cream .home-dashboard-manager .dashboard-manager-section {
+  border-color: var(--cream-line);
+  background: #fffaf18c;
+  box-shadow: none;
+}
+.home-workspace.visual-style-cream .home-dashboard-manager > header button,
+.home-workspace.visual-style-cream
+  .home-dashboard-manager
+  :is(.dashboard-manager-section button, .dashboard-widget-list article button) {
+  color: var(--cream-copy);
+  border-color: var(--cream-line);
+  background: #fffaf1;
+}
+.home-workspace.visual-style-cream .home-dashboard-manager button:hover:not(:disabled) {
+  color: var(--cream-ink);
+  border-color: var(--cream-accent);
+  background: var(--cream-soft);
+}
+.home-workspace.visual-style-cream
+  .home-dashboard-manager
+  :is(.dashboard-manager-section input, .dashboard-manager-section select, .app-select-trigger) {
+  color: var(--cream-ink);
+  border-color: var(--cream-line);
+  background: #fffaf1;
+  color-scheme: light;
+}
+.home-workspace.visual-style-cream .home-dashboard-manager .overview-data-entity-list label {
+  color: var(--cream-copy);
+  border-color: var(--cream-line);
+  background: #fffaf1;
+}
+.home-workspace.visual-style-cream
+  .home-dashboard-manager
+  .overview-data-entity-list
+  label:is(:hover, .selected) {
+  color: var(--cream-ink);
+  border-color: var(--cream-accent);
+  background: var(--cream-soft);
+}
+.home-workspace.visual-style-cream .home-dashboard-manager .overview-data-entity-list input {
+  accent-color: var(--cream-accent);
+}
+.home-workspace.visual-style-cream .home-dashboard-manager .overview-data-empty {
+  border-color: var(--cream-line);
+}
+/* 3D 设置面板：分段按钮保持奶油配色（上面的通用按钮规则更具体，这里再覆盖回来） */
+.home-workspace.visual-style-cream .home-settings-panel .home-settings-segmented button {
+  border-color: transparent;
+  background: transparent;
+}
+.home-workspace.visual-style-cream .home-settings-panel .home-settings-segmented button.active {
+  color: #fffaf1;
+  border-color: var(--cream-accent);
+  background: var(--cream-accent);
+}
+/* 设备详情「颜色」一行、设备面板里的空场景提示 */
+.home-workspace.visual-style-cream .light-color-picker-row {
+  color: var(--cream-copy);
+}
+.home-workspace.visual-style-cream .ha-scene-empty {
+  border-color: var(--cream-line);
+  color: var(--cream-copy);
+  background: var(--cream-panel);
+}
+/* 天气预报直接压在 3D 画面上，墙面颜色深浅不一，加一层奶油底 */
+.home-workspace.visual-style-cream .home-weather-forecast {
+  padding: 0.375rem 0.5rem;
+  border-radius: 0.875rem;
+  background: var(--cream-panel);
+  box-shadow: 0 3px 10px #3c2d191a;
+}
+/* 实体绑定、连接与服务仍是深色面板：奶油风格下把弱化文字提亮、数量徽标改为不透明 */
+body.ha3d-visual-cream
+  :is(
+    .binding-heading small,
+    .binding-room-list h3,
+    .binding-room-list button small,
+    .binding-room-heading small,
+    .binding-toolbar small,
+    .binding-role-row small,
+    .connection-panel small
+  ),
+body.ha3d-visual-cream
+  .mode-home
+  :is(.connection-panel .settings-drawer-heading small, .connection-overview small) {
+  color: #c9d2e0;
+}
+body.ha3d-visual-cream :is(.binding-room-list button em, .binding-capability-tabs small) {
+  color: #121b2c;
+  background: #e2ecff;
+}
+/* ===== ha3d-self: B2 2D 编辑器家具手柄命中区 =====
+   命中区是 pointer-events: all + 透明描边，没写 stroke-width 时按默认 1 个单位（= 1 m）参与命中，
+   手柄实际可点范围向外扩出 0.5 m，选中床头柜这类小家具后，从本体中心拖动会抓到旋转/缩放手柄（原地转圈、拖不动）。 */
+.furniture-handle-hitarea {
+  stroke-width: 0;
+}

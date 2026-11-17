@@ -10038,6 +10038,17 @@ function Js(t, s, o, r, n) {
   const [a, i, d] = t;
   return s === "floor" ? [a, Rs(i), d] : [a, i, d];
 }
+// ===== ha3d-self: F4 点击设备直接开关（只在首页展示模式生效，编辑器里点击仍是选中） =====
+const ha3dToggleDomains = new Set(["light", "switch", "fan", "cover"]);
+function ha3dCanDirectToggle(t, s) {
+  return t === "toggle" && !!s && !Qe(s) && ha3dToggleDomains.has(s.domain);
+}
+/** 发送 toggle；失败时执行原来的选中逻辑 fallback。 */
+function ha3dDirectToggle(t, s, o) {
+  Promise.resolve()
+    .then(() => t({ type: "toggle", entityId: s }))
+    .catch(o);
+}
 const Ra = M.memo(function ({
     device: s,
     entity: o,
@@ -10050,6 +10061,8 @@ const Ra = M.memo(function ({
   }) {
     const c = De((je) => je.selectEntity),
       h = De((je) => je.selectedEntityId === s.entityId),
+      ha3dClickMode = De((je) => je.deviceClickMode), // ha3d-self: F4
+      ha3dAct = De((je) => je.act), // ha3d-self: F4
       [u, f] = M.useState(!1),
       j = M.useRef(null),
       v = he(o),
@@ -10117,11 +10130,17 @@ const Ra = M.memo(function ({
       rotation: se,
       scale: q,
       onClick: (je) => {
-        (je.stopPropagation(),
-          as(),
-          c(s.entityId),
-          d == null || d(s.entityId),
-          l == null || l(s.id, s.entityId));
+        const ha3dSelect = () => {
+          (c(s.entityId),
+            d == null || d(s.entityId),
+            l == null || l(s.id, s.entityId));
+        };
+        // ha3d-self: F4 直接开关模式下，开关类设备点击即 toggle，不弹详情
+        if (r && ha3dCanDirectToggle(ha3dClickMode, o)) {
+          (je.stopPropagation(), as(), ha3dDirectToggle(ha3dAct, o.entityId, ha3dSelect));
+          return;
+        }
+        (je.stopPropagation(), as(), ha3dSelect());
       },
       onPointerOver: (je) => {
         (je.stopPropagation(), f(!0), (document.body.style.cursor = "pointer"));
@@ -10233,6 +10252,8 @@ const Ra = M.memo(function ({
     var m;
     const c = De((C) => C.selectEntity),
       h = De((C) => C.selectedEntityId === o.entityId),
+      ha3dClickMode = De((C) => C.deviceClickMode), // ha3d-self: F4
+      ha3dAct = De((C) => C.act), // ha3d-self: F4
       [u, f] = M.useState(!1),
       j = M.useRef(null),
       v = Qe(r),
@@ -10267,6 +10288,17 @@ const Ra = M.memo(function ({
       rotation: s.rotation ?? [0, 0, 0],
       scale: I,
       onClick: (C) => {
+        // ha3d-self: F4 开关控制的灯具按开关实体 toggle；失败时退回选中
+        if (n && ha3dCanDirectToggle(ha3dClickMode, r)) {
+          (C.stopPropagation(),
+            as(),
+            ha3dDirectToggle(ha3dAct, o.entityId, () => {
+              (c(o.entityId),
+                d == null || d(o.entityId),
+                l == null || l(o.id, o.entityId));
+            }));
+          return;
+        }
         (C.stopPropagation(), p());
       },
       onPointerOver: (C) => {
@@ -12334,6 +12366,70 @@ function ni({
     ],
   });
 }
+// ===== ha3d-self: B2 双击（双击触摸）后拖动改为平移 =====
+// 第二次按下与上次按下间隔 ≤ 350 ms、距离 ≤ 30 px 时，本次拖动的左键/单指改为 PAN，抬起后恢复旋转。
+// 平移结束时浏览器会补发 dblclick，拦下它，避免误触发房间聚焦。
+function ha3dDoubleTapPan() {
+  const t = be((r) => r.controls),
+    s = be((r) => r.gl);
+  return (
+    M.useEffect(() => {
+      if (!t || !s || !t.mouseButtons || !t.touches) return;
+      // pointerdown 监听在 controls 自己的元素上（R3F 事件源），capture 阶段先于 OrbitControls 读 mouseButtons；
+      // R3F 的 dblclick 也挂在这个元素上，所以拦截 dblclick 要用 stopImmediatePropagation
+      const r = t.domElement ?? s.domElement.parentElement ?? s.domElement,
+        n = t.mouseButtons.LEFT,
+        a = t.touches.ONE;
+      t.screenSpacePanning = !0;
+      let i = -1 / 0,
+        d = 0,
+        l = 0,
+        c = !1,
+        h = 0,
+        u = 0,
+        f = !1;
+      const j = () => {
+          c && ((c = !1), (t.mouseButtons.LEFT = n), (t.touches.ONE = a));
+        },
+        v = (w) => {
+          if (w.button !== 0 || !w.isPrimary) return;
+          const S = w.timeStamp; // 用事件时间戳，主线程忙（低端设备渲染慢）时也按用户实际的按下间隔判断
+          S - i <= 350 && Math.hypot(w.clientX - d, w.clientY - l) <= 30
+            ? ((c = !0),
+              (f = !1),
+              (h = w.clientX),
+              (u = w.clientY),
+              (i = -1 / 0),
+              (t.mouseButtons.LEFT = 2),
+              (t.touches.ONE = 1))
+            : ((f = !1), (i = S), (d = w.clientX), (l = w.clientY));
+        },
+        y = (w) => {
+          c && !f && Math.hypot(w.clientX - h, w.clientY - u) > 6 && (f = !0);
+        },
+        x = (w) => {
+          f && ((f = !1), w.stopImmediatePropagation());
+        };
+      // OrbitControls 把 pointermove/pointerup 挂在 document 上，松手位置可能在画布外，这里同样挂在 window 上
+      return (
+        r.addEventListener("pointerdown", v, !0),
+        window.addEventListener("pointermove", y, !0),
+        window.addEventListener("pointerup", j, !0),
+        window.addEventListener("pointercancel", j, !0),
+        r.addEventListener("dblclick", x, !0),
+        () => {
+          (r.removeEventListener("pointerdown", v, !0),
+            window.removeEventListener("pointermove", y, !0),
+            window.removeEventListener("pointerup", j, !0),
+            window.removeEventListener("pointercancel", j, !0),
+            r.removeEventListener("dblclick", x, !0),
+            j());
+        }
+      );
+    }, [t, s]),
+    null
+  );
+}
 const t0 = M.memo(function ({
     project: s,
     entities: o,
@@ -12574,6 +12670,7 @@ const t0 = M.memo(function ({
             maxDistance: Math.max(26, k.distance * 3),
             maxPolarAngle: Math.PI / 2.05,
           }),
+          e.jsx(ha3dDoubleTapPan, {}), // ha3d-self: B2
         ],
       },
       p,
