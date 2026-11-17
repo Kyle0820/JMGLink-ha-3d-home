@@ -11,71 +11,71 @@ const __vite__mapDeps = (
       "./index.css",
     ]),
 ) => i.map((i) => d[i]);
-import { j as t, _ as jl } from "./three.js";
-import { a as x } from "./react.js";
 import {
-  l as ps,
-  a as Ut,
-  b as At,
-  u as yl,
-  r as Ls,
-  g as Ur,
-  i as hs,
-  c as bt,
-  d as xn,
-  L as Re,
+  y as $l,
   e as _e,
-  f as yi,
-  h as nr,
-  j as jt,
-  k as us,
-  m as vl,
-  n as bl,
-  o as ir,
-  p as Ps,
-  q as pn,
-  s as Qn,
-  t as Ft,
-  H as wl,
-  v as vi,
-  A as Pt,
+  R as _l,
   P as ar,
-  E as Nl,
+  b as At,
+  Q as bi,
+  n as bl,
+  c as bt,
+  z as Cl,
+  J as cr,
+  N as Di,
+  T as Dt,
+  U as ei,
+  M as El,
+  t as Ft,
+  G as Gr,
+  i as hs,
+  K as Il,
+  o as ir,
+  I as Jn,
+  j as jt,
+  B as kl,
+  V as Ll,
+  F as lr,
+  r as Ls,
   w as Ml,
+  E as Nl,
+  h as nr,
+  C as or,
+  D as Pi,
+  Y as Pl,
+  q as pn,
+  l as ps,
+  p as Ps,
+  A as Pt,
+  s as Qn,
+  O as qr,
+  X as Qr,
+  L as Re,
   S as rr,
   x as Sl,
-  y as $l,
-  B as kl,
-  T as Dt,
-  C as or,
-  z as Cl,
-  D as Pi,
-  F as lr,
-  G as Gr,
-  I as Jn,
-  J as cr,
-  K as Il,
-  M as El,
-  N as Di,
-  O as qr,
-  Q as bi,
-  R as _l,
-  U as ei,
-  V as Ll,
+  g as Ur,
+  k as us,
+  a as Ut,
+  v as vi,
+  m as vl,
+  H as wl,
+  d as xn,
+  f as yi,
+  u as yl,
   W as Zr,
-  X as Qr,
-  Y as Pl,
 } from "./AppSelect.js";
+import "./hls.js";
 import {
-  c as de,
+  d as Al,
   u as at,
+  c as de,
   a as Dl,
-  p as ti,
   W as gn,
   X as si,
-  d as Al,
+  p as ti,
 } from "./index.js";
-import "./hls.js";
+import { a as x } from "./react.js";
+import { _ as jl, j as t } from "./three.js";
 /**
  * @license lucide-react v1.25.0 - ISC
  *
@@ -1351,8 +1351,19 @@ const Wc = x.lazy(() =>
     water_heater: { label: "热水器", width: 0.58, depth: 0.32, height: 0.72 },
     squat_toilet: { label: "蹲便器", width: 0.62, depth: 0.82, height: 0.16 },
     gas_stove: { label: "燃气灶", width: 0.72, depth: 0.52, height: 0.12 },
+    // ha3d-self: F5 新家具（尺寸与 schema 的 fallbackSize 一致）
+    fridge: { label: "冰箱", width: 0.7, depth: 0.68, height: 1.8 },
+    bathroom_cabinet: {
+      label: "浴室柜",
+      width: 0.8,
+      depth: 0.48,
+      height: 0.85,
+    },
+    chest_of_drawers: { label: "斗柜", width: 0.9, depth: 0.45, height: 1 },
+    dog_crate: { label: "狗笼子", width: 0.9, depth: 0.6, height: 0.7 },
   },
-  ad = new Set(["wash_basin", "toilet", "water_heater", "squat_toilet"]),
+  // ha3d-self: F5 马桶从隐藏列表里放出来
+  ad = new Set(["wash_basin", "water_heater", "squat_toilet"]),
   Ar = Object.keys(vt).filter((s) => !ad.has(s)),
   Fr = qr
     .filter((s) => s.kind === "light")
@@ -2104,6 +2115,23 @@ function ji({ device: s, entity: a }) {
                                 ),
                               ),
                             })
+                          : o.id === "switch.computer" // ha3d-self: F7 显示器图标
+                            ? t.jsxs("g", {
+                                children: [
+                                  t.jsx("rect", {
+                                    x: "-0.16",
+                                    y: "-0.14",
+                                    width: "0.32",
+                                    height: "0.2",
+                                    rx: "0.025",
+                                    className: "device-glyph-core",
+                                  }),
+                                  t.jsx("path", {
+                                    d: "M 0 0.06 V 0.12 M -0.08 0.13 H 0.08",
+                                    className: "device-glyph-stroke",
+                                  }),
+                                ],
+                              })
                           : o.id.startsWith("switch.")
                             ? t.jsx("rect", {
                                 x: "-0.11",
@@ -2113,6 +2141,11 @@ function ji({ device: s, entity: a }) {
                                 rx: "0.04",
                                 className: "device-glyph-core",
                               })
+                            : o.id === "cover.clothes_rack" // ha3d-self: F8 平行横杆图标
+                              ? t.jsx("path", {
+                                  d: "M -0.18 -0.05 H 0.18 M -0.18 0.05 H 0.18 M -0.1 0.05 V 0.14 M 0 0.05 V 0.14 M 0.1 0.05 V 0.14",
+                                  className: "device-glyph-stroke",
+                                })
                             : o.id === "cover.blind"
                               ? t.jsx("path", {
                                   d: "M -0.17 -0.11 H 0.17 M -0.15 -0.04 H 0.15 M -0.13 0.03 H 0.13 M -0.15 0.1 H 0.15",
@@ -5238,7 +5271,8 @@ function Pd({
       (se == null ? void 0 : se.id) === "cover.curtain" ||
       (se == null ? void 0 : se.id) === "cover.blind",
     Ba = (se == null ? void 0 : se.id) === "climate.central_ac",
-    Ka = !!(N && se && di(se.id)) && N ? hi(N) : void 0,
+    // ha3d-self: B4 所有非灯带设备都显示「水平旋转」（灯带用自己的角度/路径控件）
+    Ka = N && !ft ? hi(N) : void 0,
     Un = Oa && N ? Qc(N) : void 0,
     Gn = Va && N ? Jc(N) : void 0,
     on = Ba && N ? ed(N) : void 0,
@@ -6326,8 +6360,23 @@ function Pd({
                                         ? [-1, 1]
                                         : [e.hinge === "start" ? -1 : 1],
                                     w = e.width / p.length,
-                                    u = (e.swing === "inward" ? 1 : -1) * w;
-                                  return p.map((g) => {
+                                    u = (e.swing === "inward" ? 1 : -1) * w,
+                                    ha3dEntrance = e.doorStyle === "entrance";
+                                  return [
+                                    // ha3d-self: F1 入户门在门洞外侧（-y，内开方向的反面）画门槛短线
+                                    ha3dEntrance &&
+                                      t.jsx(
+                                        "line",
+                                        {
+                                          x1: -e.width / 2,
+                                          y1: -0.075,
+                                          x2: e.width / 2,
+                                          y2: -0.075,
+                                          className: "door-threshold",
+                                        },
+                                        "ha3d-threshold",
+                                      ),
+                                    ...p.map((g) => {
                                     const C = (g * e.width) / 2,
                                       R = C - g * w;
                                     return t.jsxs(
@@ -6339,7 +6388,9 @@ function Pd({
                                             y1: "0",
                                             x2: c ? C : R,
                                             y2: c ? u : 0,
-                                            className: "door-leaf",
+                                            className: ha3dEntrance
+                                              ? "door-leaf door-leaf-entrance"
+                                              : "door-leaf",
                                           }),
                                           c &&
                                             t.jsx("path", {
@@ -6350,7 +6401,8 @@ function Pd({
                                       },
                                       g,
                                     );
-                                  });
+                                    }),
+                                  ];
                                 })(),
                             ],
                           },
@@ -6454,6 +6506,27 @@ function Pd({
                                   d: "M-0.2 0a0.1 0.1 0 1 0 0.2 0a0.1 0.1 0 1 0-0.2 0M0 0a0.1 0.1 0 1 0 0.2 0a0.1 0.1 0 1 0-0.2 0",
                                   className: "furniture-detail",
                                 }),
+                              // ===== ha3d-self: F5 新家具的平面细节线（正面朝 -y） =====
+                              e.kind === "fridge" &&
+                                t.jsx("path", {
+                                  d: `M ${-e.width * 0.46} ${-e.depth * 0.36} H ${e.width * 0.46} M ${e.width * 0.3} ${-e.depth * 0.44} H ${e.width * 0.4} M ${-e.width * 0.46} ${e.depth * 0.38} H ${e.width * 0.46}`,
+                                  className: "furniture-detail",
+                                }),
+                              e.kind === "bathroom_cabinet" &&
+                                t.jsx("path", {
+                                  d: `M ${-e.width * 0.26} ${-e.depth * 0.05} A ${e.width * 0.26} ${e.depth * 0.3} 0 1 0 ${e.width * 0.26} ${-e.depth * 0.05} A ${e.width * 0.26} ${e.depth * 0.3} 0 1 0 ${-e.width * 0.26} ${-e.depth * 0.05} M ${-e.width * 0.42} ${e.depth * 0.42} H ${e.width * 0.42}`,
+                                  className: "furniture-detail",
+                                }),
+                              e.kind === "chest_of_drawers" &&
+                                t.jsx("path", {
+                                  d: `M ${-e.width * 0.46} ${-e.depth * 0.34} H ${e.width * 0.46} M ${-e.width * 0.14} ${-e.depth * 0.42} H ${e.width * 0.14} M ${-e.width * 0.46} ${e.depth * 0.3} H ${e.width * 0.46}`,
+                                  className: "furniture-detail",
+                                }),
+                              e.kind === "dog_crate" &&
+                                t.jsx("path", {
+                                  d: `M ${-e.width * 0.25} ${-e.depth / 2} V ${e.depth / 2} M 0 ${-e.depth / 2} V ${e.depth / 2} M ${e.width * 0.25} ${-e.depth / 2} V ${e.depth / 2} M ${-e.width / 2} 0 H ${e.width / 2} M ${-e.width * 0.18} ${-e.depth * 0.42} H ${e.width * 0.18}`,
+                                  className: "furniture-detail",
+                                }),
                               t.jsx("text", {
                                 y: "0.06",
                                 className: "furniture-label",
@@ -6491,9 +6564,7 @@ function Pd({
                                 ? p
                                   ? void 0
                                   : pn(e)
-                                : di(r.id)
-                                  ? hi(e)
-                                  : void 0,
+                                : hi(e), // ha3d-self: B4 非灯带设备的 2D 图标都跟随旋转
                               V = ci(k),
                               Y = 0.42;
                             return t.jsxs(
@@ -6628,7 +6699,7 @@ function Pd({
                                   g = Vr(u),
                                   C = _e(m.modelId),
                                   R = C ? Ps(m) : 0,
-                                  G = ci(C ? pn(m) : void 0);
+                                  G = ci(pn(m)); // ha3d-self: B4 开关控制的普通灯具也跟随旋转
                                 return t.jsxs(
                                   "g",
                                   {
@@ -6726,9 +6797,7 @@ function Pd({
                               ? i
                                 ? void 0
                                 : pn(ae.device)
-                              : di(e.id)
-                                ? hi(ae.device)
-                                : void 0,
+                              : hi(ae.device), // ha3d-self: B4 放置预览同样跟随旋转
                             p = ci(m);
                           return t.jsx("g", {
                             className:
@@ -7735,6 +7804,7 @@ function Pd({
                                   children: [
                                     ["single", "单开门"],
                                     ["double", "双开门"],
+                                    ["entrance", "入户门"], // ha3d-self: F1
                                   ].map(([e, n]) =>
                                     t.jsx(
                                       "button",
@@ -8379,7 +8449,7 @@ function Pd({
                                       : w.label) ?? "筒灯/射灯",
                                   c = _e(r),
                                   m = c ? rd(e) : 0,
-                                  p = c ? od(e) : 0;
+                                  p = od(e); // ha3d-self: B4 普通灯具也有旋转
                                 return t.jsxs(
                                   "div",
                                   {
@@ -8487,6 +8557,35 @@ function Pd({
                                                   ],
                                                 }),
                                               ],
+                                            }),
+                                          // ha3d-self: B4 开关控制的普通灯具补上水平旋转输入框（处理函数 Vo）
+                                          !c &&
+                                            t.jsx("div", {
+                                              className:
+                                                "switch-light-strip-controls",
+                                              children: t.jsxs("div", {
+                                                className:
+                                                  "switch-light-strip-field",
+                                                children: [
+                                                  t.jsx("span", {
+                                                    children: "转",
+                                                  }),
+                                                  t.jsx("input", {
+                                                    type: "number",
+                                                    step: "5",
+                                                    value: Math.round(p),
+                                                    onChange: (u) =>
+                                                      Vo(
+                                                        e.id,
+                                                        Number(u.target.value),
+                                                      ),
+                                                    "aria-label": `${e.label ?? `灯具 ${n + 1}`}水平旋转`,
+                                                  }),
+                                                  t.jsx("i", {
+                                                    children: "°",
+                                                  }),
+                                                ],
+                                              }),
                                             }),
                                         ],
                                       }),

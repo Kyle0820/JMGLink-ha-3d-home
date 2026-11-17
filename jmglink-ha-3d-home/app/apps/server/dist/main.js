@@ -55,6 +55,10 @@ function collectBoundEntityIds(project) {
         for (const device of floor.devices)
             if (device.entityId)
                 ids.add(device.entityId);
+        // ha3d-self: 只绑定在门窗上的门磁也要实时推送，否则 3D 门要等下次全量同步才会开/关
+        for (const opening of floor.openings ?? [])
+            if (opening.entityId)
+                ids.add(opening.entityId);
         for (const room of floor.rooms) {
             for (const groups of Object.values(room.bindings ?? {})) {
                 for (const binding of Object.values(groups))

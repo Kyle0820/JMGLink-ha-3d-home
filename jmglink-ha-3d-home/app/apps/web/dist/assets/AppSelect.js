@@ -848,6 +848,15 @@ const ms = [
       placement: "wall",
       defaultHeight: 0.28,
     },
+    // ha3d-self: F7 电脑样式开关
+    {
+      id: "switch.computer",
+      kind: "switch",
+      label: "电脑",
+      description: "台式电脑/显示器，开机时屏幕亮起",
+      placement: "surface",
+      defaultHeight: 0.75,
+    },
     {
       id: "switch.light.ceiling",
       kind: "switch",
@@ -927,6 +936,15 @@ const ms = [
       description: "水平叶片或卷帘结构",
       placement: "wall",
       defaultHeight: 1.12,
+    },
+    // ha3d-self: F8 晾衣架样式窗帘
+    {
+      id: "cover.clothes_rack",
+      kind: "cover",
+      label: "晾衣架",
+      description: "吊顶升降晾衣架，按开合度升降",
+      placement: "ceiling",
+      defaultHeight: 1.62,
     },
     {
       id: "climate.wall_ac",
@@ -3076,7 +3094,339 @@ function On(t) {
     "water_heater",
     "squat_toilet",
     "gas_stove",
+    // ha3d-self: F5 新家具
+    "fridge",
+    "bathroom_cabinet",
+    "chest_of_drawers",
+    "dog_crate",
   ].includes(t);
+}
+// ===== ha3d-self: F5 新家具模型 =====
+// 椭圆柱（马桶圈、台盆等）：半径 1 的圆柱按 rx/rz 缩放
+function ha3dEllipse({ at, rx, rz, height, color, top = 1, bottom = 1, rotation }) {
+  return e.jsxs("mesh", {
+    position: at,
+    rotation,
+    scale: [rx, 1, rz],
+    castShadow: !0,
+    receiveShadow: !0,
+    children: [
+      e.jsx("cylinderGeometry", { args: [top, bottom, height, 36] }),
+      e.jsx("meshStandardMaterial", { color, roughness: 0.3, metalness: 0 }),
+    ],
+  });
+}
+// 细杆（笼子钢丝等）：普通盒子，比 RoundedBox 便宜
+function ha3dBar({ at, size, color }) {
+  return e.jsxs("mesh", {
+    position: at,
+    castShadow: !0,
+    children: [
+      e.jsx("boxGeometry", { args: size }),
+      e.jsx("meshStandardMaterial", { color, roughness: 0.36, metalness: 0.5 }),
+    ],
+  });
+}
+function ha3dFurnitureModel(
+  t,
+  { r, n, a, wood: d, fabric: l, linen: c, metal: h, stone: u, accentA: f, screen: v },
+) {
+  if (t === "fridge") {
+    const s = T(h, "#ffffff", 0.5),
+      o = T(h, "#ffffff", 0.32),
+      g = T(h, "#1f2933", 0.35);
+    return e.jsxs("group", {
+      children: [
+        e.jsx(W, {
+          at: [0, n * 0.5, a * 0.03],
+          size: [r, n, a * 0.92],
+          color: s,
+          finish: "stone",
+          radius: 0.03,
+        }),
+        e.jsx(W, {
+          at: [0, n * 0.69, -a * 0.46],
+          size: [r * 0.97, n * 0.58, a * 0.07],
+          color: o,
+          finish: "stone",
+          radius: 0.02,
+        }),
+        e.jsx(W, {
+          at: [0, n * 0.2, -a * 0.46],
+          size: [r * 0.97, n * 0.37, a * 0.07],
+          color: o,
+          finish: "stone",
+          radius: 0.02,
+        }),
+        e.jsx(W, {
+          at: [r * 0.38, n * 0.62, -a * 0.52],
+          size: [0.024, n * 0.24, 0.032],
+          color: g,
+          finish: "metal",
+        }),
+        e.jsx(W, {
+          at: [r * 0.38, n * 0.31, -a * 0.52],
+          size: [0.024, n * 0.12, 0.032],
+          color: g,
+          finish: "metal",
+        }),
+      ],
+    });
+  }
+  if (t === "toilet") {
+    const s = T(u, "#ffffff", 0.25),
+      o = T(c, "#ffffff", 0.2),
+      g = T(u, v, 0.45);
+    return e.jsxs("group", {
+      children: [
+        e.jsx(W, {
+          at: [0, n * 0.2, a * 0.02],
+          size: [r * 0.4, n * 0.4, a * 0.46],
+          color: s,
+          finish: "stone",
+          radius: 0.05,
+        }),
+        e.jsx(ha3dEllipse, {
+          at: [0, n * 0.47, -a * 0.1],
+          rx: r * 0.3,
+          rz: a * 0.34,
+          bottom: 0.78,
+          height: n * 0.16,
+          color: s,
+        }),
+        e.jsx(ha3dEllipse, {
+          at: [0, n * 0.565, -a * 0.1],
+          rx: r * 0.31,
+          rz: a * 0.35,
+          height: 0.03,
+          color: o,
+        }),
+        e.jsx(ha3dEllipse, {
+          at: [0, n * 0.585, -a * 0.12],
+          rx: r * 0.19,
+          rz: a * 0.22,
+          height: 0.012,
+          color: g,
+        }),
+        e.jsx(ha3dEllipse, {
+          at: [0, n * 0.86, a * 0.2],
+          rotation: [-Math.PI / 2 + 0.14, 0, 0],
+          rx: r * 0.29,
+          rz: n * 0.25,
+          height: 0.024,
+          color: o,
+        }),
+        e.jsx(W, {
+          at: [0, n * 0.73, a * 0.36],
+          size: [r * 0.62, n * 0.54, a * 0.24],
+          color: o,
+          finish: "stone",
+          radius: 0.04,
+        }),
+        e.jsx(W, {
+          at: [0, n * 1.005, a * 0.36],
+          size: [0.06, 0.014, 0.05],
+          color: h,
+          finish: "metal",
+        }),
+      ],
+    });
+  }
+  if (t === "bathroom_cabinet") {
+    const s = T(c, "#ffffff", 0.25),
+      o = T(v, "#e3eef5", 0.58);
+    return e.jsxs("group", {
+      children: [
+        e.jsx(W, {
+          at: [0, n * 0.42, a * 0.02],
+          size: [r, n * 0.78, a * 0.94],
+          color: d,
+        }),
+        [-1, 1].map((g) =>
+          e.jsxs(
+            "group",
+            {
+              children: [
+                e.jsx(W, {
+                  at: [g * r * 0.245, n * 0.42, -a * 0.47],
+                  size: [r * 0.47, n * 0.7, a * 0.05],
+                  color: c,
+                }),
+                e.jsx(W, {
+                  at: [g * r * 0.05, n * 0.56, -a * 0.505],
+                  size: [0.016, n * 0.16, 0.022],
+                  color: h,
+                  finish: "metal",
+                }),
+              ],
+            },
+            g,
+          ),
+        ),
+        e.jsx(W, {
+          at: [0, n * 0.84, 0],
+          size: [r * 1.02, n * 0.06, a],
+          color: u,
+          finish: "stone",
+        }),
+        e.jsx(ha3dEllipse, {
+          at: [0, n * 0.9, -a * 0.05],
+          rx: r * 0.26,
+          rz: a * 0.3,
+          bottom: 0.7,
+          height: n * 0.08,
+          color: s,
+        }),
+        e.jsx(ha3dEllipse, {
+          at: [0, n * 0.942, -a * 0.06],
+          rx: r * 0.2,
+          rz: a * 0.23,
+          height: 0.006,
+          color: T(u, v, 0.35),
+        }),
+        e.jsx(W, {
+          at: [0, n * 0.96, a * 0.3],
+          size: [0.026, n * 0.16, 0.026],
+          color: h,
+          finish: "metal",
+        }),
+        e.jsx(W, {
+          at: [0, n * 1.03, a * 0.21],
+          size: [0.026, 0.022, a * 0.2],
+          color: h,
+          finish: "metal",
+        }),
+        e.jsx(W, {
+          at: [0, n * 1.56, a * 0.47],
+          size: [r * 0.9, n * 0.74, 0.018],
+          color: h,
+          finish: "metal",
+        }),
+        e.jsx(W, {
+          at: [0, n * 1.56, a * 0.455],
+          size: [r * 0.84, n * 0.68, 0.012],
+          color: o,
+          finish: "stone",
+        }),
+      ],
+    });
+  }
+  if (t === "chest_of_drawers") {
+    const s = T(d, "#000000", 0.18);
+    return e.jsxs("group", {
+      children: [
+        e.jsx(W, {
+          at: [0, n * 0.03, 0],
+          size: [r * 0.94, n * 0.06, a * 0.9],
+          color: s,
+        }),
+        e.jsx(W, {
+          at: [0, n * 0.52, a * 0.02],
+          size: [r, n * 0.92, a * 0.94],
+          color: d,
+        }),
+        [0, 1, 2, 3].map((g) => {
+          const o = n * (0.17 + g * 0.225);
+          return e.jsxs(
+            "group",
+            {
+              children: [
+                e.jsx(W, {
+                  at: [0, o, -a * 0.475],
+                  size: [r * 0.92, n * 0.2, a * 0.05],
+                  color: g % 2 ? u : c,
+                }),
+                e.jsx(W, {
+                  at: [0, o, -a * 0.515],
+                  size: [r * 0.24, 0.02, 0.024],
+                  color: h,
+                  finish: "metal",
+                }),
+              ],
+            },
+            g,
+          );
+        }),
+        e.jsx(W, {
+          at: [0, n * 0.99, 0],
+          size: [r * 1.02, n * 0.03, a],
+          color: d,
+        }),
+      ],
+    });
+  }
+  if (t === "dog_crate") {
+    const s = T(h, "#1f2933", 0.42),
+      o = T(h, "#2a3138", 0.2),
+      g = n * 0.52,
+      _ = n * 0.88,
+      k = [];
+    // 立柱、顶框、腰线
+    for (const E of [-1, 1])
+      for (const P of [-1, 1])
+        k.push({ at: [E * r * 0.48, g, P * a * 0.48], size: [0.02, _, 0.02] });
+    for (const E of [-1, 1]) {
+      k.push({ at: [0, n * 0.96, E * a * 0.48], size: [r, 0.02, 0.02] });
+      k.push({ at: [E * r * 0.48, n * 0.96, 0], size: [0.02, 0.02, a] });
+      k.push({ at: [E * r * 0.48, g, 0], size: [0.012, 0.012, a] });
+    }
+    k.push({ at: [0, g, a * 0.48], size: [r, 0.012, 0.012] });
+    // 顶面、背面、两侧的钢丝
+    for (const E of [-0.27, 0, 0.27])
+      k.push({ at: [0, n * 0.96, E * a], size: [r * 0.96, 0.01, 0.01] });
+    for (const E of [-0.32, -0.16, 0, 0.16, 0.32])
+      k.push({ at: [E * r, g, a * 0.48], size: [0.01, _, 0.01] });
+    for (const E of [-1, 1])
+      for (const P of [-0.24, 0, 0.24])
+        k.push({ at: [E * r * 0.48, g, P * a], size: [0.01, _, 0.01] });
+    // 正面：门两侧的固定钢丝
+    for (const E of [-0.4, -0.32, 0.32, 0.4])
+      k.push({ at: [E * r, g, -a * 0.48], size: [0.01, _, 0.01] });
+    k.push({ at: [0, g, -a * 0.48], size: [r, 0.012, 0.012] });
+    // 前门：门框 + 竖向钢丝
+    const N = [
+      { at: [-r * 0.24, n * 0.5, 0], size: [0.018, n * 0.78, 0.018] },
+      { at: [r * 0.24, n * 0.5, 0], size: [0.018, n * 0.78, 0.018] },
+      { at: [0, n * 0.89, 0], size: [r * 0.48, 0.018, 0.018] },
+      { at: [0, n * 0.11, 0], size: [r * 0.48, 0.018, 0.018] },
+      ...[-0.12, 0, 0.12].map((E) => ({
+        at: [E * r, n * 0.5, 0],
+        size: [0.01, n * 0.78, 0.01],
+      })),
+    ];
+    return e.jsxs("group", {
+      children: [
+        e.jsx(W, {
+          at: [0, n * 0.04, 0],
+          size: [r, n * 0.08, a],
+          color: o,
+          finish: "stone",
+          radius: 0.012,
+        }),
+        e.jsx(W, {
+          at: [0, n * 0.1, a * 0.04],
+          size: [r * 0.8, n * 0.05, a * 0.78],
+          color: l,
+          finish: "fabric",
+          radius: 0.02,
+        }),
+        k.map((E, P) => e.jsx(ha3dBar, { ...E, color: s }, P)),
+        e.jsxs("group", {
+          position: [0, 0, -a * 0.5],
+          children: [
+            N.map((E, P) => e.jsx(ha3dBar, { ...E, color: s }, P)),
+            e.jsx(W, {
+              at: [r * 0.2, n * 0.5, -0.012],
+              size: [0.05, 0.035, 0.022],
+              color: f,
+              finish: "stone",
+            }),
+          ],
+        }),
+      ],
+    });
+  }
+  return null;
 }
 function Rn({ item: t, night: s, visualStyle: o = "glass" }) {
   const { width: r, height: n, depth: a, kind: i } = t,
@@ -3376,6 +3726,20 @@ function Rn({ item: t, night: s, visualStyle: o = "glass" }) {
         ),
       ],
     });
+  // ===== ha3d-self: F5 新家具模型（冰箱、马桶、浴室柜、斗柜、狗笼子；正面朝 -z） =====
+  const ha3dModel = ha3dFurnitureModel(i, {
+    r,
+    n,
+    a,
+    wood: d,
+    fabric: l,
+    linen: c,
+    metal: h,
+    stone: u,
+    accentA: f,
+    screen: v,
+  });
+  if (ha3dModel) return ha3dModel;
   if (
     [
       "wash_basin",
@@ -5107,7 +5471,15 @@ function pa({
       ? T(u.wallEdgeColor, u.wallColor, c ? 0.82 : h ? 0.42 : 0.68)
       : "#ffffff",
     y = c ? 0.055 : h ? 0.105 : r ? 0.08 : 0,
-    x = ({ x: g, y: _, width: k, height: E, depth: P = o + 0.035 }) =>
+    x = ({
+      x: g,
+      y: _,
+      width: k,
+      height: E,
+      depth: P = o + 0.035,
+      solid: ha3dSolid = !1, // ha3d-self: B1/B8 门框在首页也不透明
+      color: ha3dColor = f,
+    }) =>
       e.jsxs("mesh", {
         position: [g, _, 0],
         castShadow: !r,
@@ -5116,16 +5488,16 @@ function pa({
         children: [
           e.jsx("boxGeometry", { args: [k, E, P] }),
           e.jsx("meshPhysicalMaterial", {
-            color: f,
+            color: ha3dColor,
             roughness: r ? 0.52 : 0.56,
             metalness: 0.01,
             clearcoat: r ? 0.08 : 0.12,
             clearcoatRoughness: 0.72,
             emissive: r ? v : "#000000",
             emissiveIntensity: r ? 0.006 : 0,
-            transparent: r,
-            opacity: j,
-            depthWrite: !r,
+            transparent: r && !ha3dSolid,
+            opacity: ha3dSolid ? 1 : j,
+            depthWrite: !r || ha3dSolid,
           }),
           r &&
             e.jsx(ee, { color: v, threshold: 18, opacity: y, transparent: !0 }),
@@ -5213,9 +5585,16 @@ function pa({
       ],
     });
   }
-  const b = r ? 0.048 : 0.062,
-    w = o + (r ? 0.014 : 0.006),
+  // ===== ha3d-self: 门（B1 门框不透明、只有一层描边；B8 门扇不透明；F1 入户门） =====
+  const ha3dEntrance = t.doorStyle === "entrance",
+    ha3dWarm = l === "cream" || l === "cartoon",
+    ha3dUserData = { openingId: t.id, doorStyle: t.doorStyle ?? "single" },
+    b = ha3dEntrance ? 0.08 : r ? 0.048 : 0.062,
+    w = o + (r ? 0.014 : 0.006) + (ha3dEntrance ? 0.02 : 0),
+    ha3dFrameColor = ha3dEntrance ? (ha3dWarm ? "#5b4738" : "#374151") : f,
     S = e.jsxs("group", {
+      name: "ha3d-door-frame",
+      userData: ha3dUserData,
       position: [d, t.height / 2, 0],
       children: [
         e.jsx(x, {
@@ -5224,6 +5603,8 @@ function pa({
           width: b,
           height: t.height,
           depth: w,
+          solid: !0,
+          color: ha3dFrameColor,
         }),
         e.jsx(x, {
           x: t.width / 2 - b / 2,
@@ -5231,6 +5612,8 @@ function pa({
           width: b,
           height: t.height,
           depth: w,
+          solid: !0,
+          color: ha3dFrameColor,
         }),
         e.jsx(x, {
           x: 0,
@@ -5238,7 +5621,23 @@ function pa({
           width: t.width,
           height: b,
           depth: w,
+          solid: !0,
+          color: ha3dFrameColor,
         }),
+        // 入户门门槛条
+        ha3dEntrance &&
+          e.jsxs("mesh", {
+            position: [0, -t.height / 2 + 0.0125, 0],
+            receiveShadow: !0,
+            children: [
+              e.jsx("boxGeometry", { args: [t.width + 0.04, 0.025, w + 0.05] }),
+              e.jsx("meshStandardMaterial", {
+                color: ha3dWarm ? "#a08a6c" : "#9ca3af",
+                metalness: 0.45,
+                roughness: 0.35,
+              }),
+            ],
+          }),
       ],
     });
   if (!t.hasLeaf) return e.jsx(e.Fragment, { children: S });
@@ -5248,15 +5647,20 @@ function pa({
     $ = (t.width * 0.96) / I.length,
     p = t.entityId ? Yt(i) : !0,
     m = p ? L * (r ? 0.68 : 0.58) : 0,
-    C =
-      r && t.entityId
-        ? p
-          ? T(u.wallColor, "#d8f6ff", 0.22)
-          : T(u.wallColor, u.foundation, 0.04)
-        : r
-          ? T(u.wallColor, u.foundation, 0.06)
-          : "#b78b61",
-    O = r && t.entityId && p ? T("#9cf0ca", v, 0.22) : v;
+    // 门扇实色：玻璃风格偏冷灰蓝、奶油风格暖木色；入户门为深色金属
+    C = ha3dEntrance
+      ? ha3dWarm
+        ? "#6f5847"
+        : "#4b5563"
+      : r
+        ? ha3dWarm
+          ? "#a87c52"
+          : "#64788f"
+        : "#b78b61",
+    O = r && t.entityId && p ? T("#9cf0ca", v, 0.22) : v,
+    ha3dLeafDepth = ha3dEntrance ? 0.07 : 0.045,
+    ha3dLeafZ = L * (ha3dEntrance ? 0.04 : 0.03),
+    ha3dTrim = ha3dWarm ? "#d8c3a0" : "#d1d5db";
   return e.jsxs(e.Fragment, {
     children: [
       S,
@@ -5264,50 +5668,133 @@ function pa({
         e.jsxs(
           "group",
           {
+            name: "ha3d-door-leaf",
+            userData: ha3dUserData,
             position: [d + (g * t.width) / 2, 0, 0],
             rotation: [0, m * g, 0],
             children: [
               e.jsxs(B, {
-                position: [(-g * $) / 2, t.height / 2, L * 0.03],
-                args: [$, t.height * 0.97, 0.045],
-                radius: r ? 0.028 : 0.012,
+                position: [(-g * $) / 2, t.height / 2, ha3dLeafZ],
+                args: [$, t.height * 0.97, ha3dLeafDepth],
+                radius: ha3dEntrance ? 0.01 : r ? 0.02 : 0.012,
                 smoothness: 4,
                 castShadow: !0,
                 children: [
                   e.jsx("meshPhysicalMaterial", {
                     color: C,
-                    roughness: r ? 0.42 : 0.72,
-                    metalness: 0.012,
+                    roughness: ha3dEntrance ? 0.38 : r ? 0.5 : 0.72,
+                    metalness: ha3dEntrance ? 0.32 : 0.012,
                     clearcoat: r ? 0.2 : 0,
                     clearcoatRoughness: 0.56,
-                    transparent: r,
-                    opacity: r ? Math.min(0.58, u.wallOpacity + 0.16) : 1,
+                    transparent: !1,
+                    opacity: 1,
+                    depthWrite: !0,
                     emissive: r ? O : "#000000",
-                    emissiveIntensity: r ? (p && t.entityId ? 0.07 : 0.035) : 0,
+                    emissiveIntensity: r ? (p && t.entityId ? 0.14 : 0.03) : 0,
                   }),
                   r &&
-                    t.entityId &&
                     e.jsx(ee, {
-                      color: p ? "#d9fff2" : v,
+                      color: p && t.entityId ? "#d9fff2" : v,
                       threshold: 18,
-                      opacity: p ? 0.18 : 0.08,
+                      opacity: p && t.entityId ? 0.2 : 0.12,
                       transparent: !0,
                     }),
                 ],
               }),
-              e.jsxs("mesh", {
-                position: [-g * $ * 0.82, t.height * 0.54, L * 0.065],
-                children: [
-                  e.jsx("sphereGeometry", { args: [0.035, 16, 8] }),
-                  e.jsx("meshStandardMaterial", {
-                    color: r ? T(u.wallColor, "#ffffff", 0.48) : "#71604d",
-                    metalness: 0.55,
-                    roughness: 0.28,
-                    emissive: r ? v : "#000000",
-                    emissiveIntensity: r ? 0.08 : 0,
+              ha3dEntrance
+                ? e.jsxs(e.Fragment, {
+                    children: [
+                      // 3 道横向压纹（两面都凸出一点）
+                      [0.2, 0.34, 0.64].map((k) =>
+                        e.jsxs(
+                          "mesh",
+                          {
+                            position: [(-g * $) / 2, t.height * k, ha3dLeafZ],
+                            children: [
+                              e.jsx("boxGeometry", {
+                                args: [$ * 0.78, 0.022, ha3dLeafDepth + 0.008],
+                              }),
+                              e.jsx("meshStandardMaterial", {
+                                color: T(C, "#ffffff", 0.2),
+                                metalness: 0.35,
+                                roughness: 0.4,
+                              }),
+                            ],
+                          },
+                          k,
+                        ),
+                      ),
+                      // 横把手（内外两侧）+ 锁面板
+                      [-1, 1].map((k) =>
+                        e.jsxs(
+                          "group",
+                          {
+                            position: [
+                              -g * $ * 0.84,
+                              t.height * 0.48,
+                              ha3dLeafZ + k * (ha3dLeafDepth / 2 + 0.006),
+                            ],
+                            children: [
+                              e.jsxs("mesh", {
+                                children: [
+                                  e.jsx("boxGeometry", {
+                                    args: [0.06, 0.2, 0.012],
+                                  }),
+                                  e.jsx("meshStandardMaterial", {
+                                    color: ha3dTrim,
+                                    metalness: 0.55,
+                                    roughness: 0.3,
+                                  }),
+                                ],
+                              }),
+                              e.jsxs("mesh", {
+                                position: [g * 0.07, 0.03, k * 0.03],
+                                children: [
+                                  e.jsx("boxGeometry", {
+                                    args: [0.2, 0.026, 0.026],
+                                  }),
+                                  e.jsx("meshStandardMaterial", {
+                                    color: ha3dTrim,
+                                    metalness: 0.6,
+                                    roughness: 0.26,
+                                  }),
+                                ],
+                              }),
+                            ],
+                          },
+                          k,
+                        ),
+                      ),
+                      // 猫眼
+                      e.jsxs("mesh", {
+                        position: [(-g * $) / 2, t.height * 0.8, ha3dLeafZ],
+                        rotation: [Math.PI / 2, 0, 0],
+                        children: [
+                          e.jsx("cylinderGeometry", {
+                            args: [0.02, 0.02, ha3dLeafDepth + 0.016, 16],
+                          }),
+                          e.jsx("meshStandardMaterial", {
+                            color: "#111827",
+                            metalness: 0.5,
+                            roughness: 0.2,
+                          }),
+                        ],
+                      }),
+                    ],
+                  })
+                : e.jsxs("mesh", {
+                    position: [-g * $ * 0.82, t.height * 0.54, L * 0.065],
+                    children: [
+                      e.jsx("sphereGeometry", { args: [0.035, 16, 8] }),
+                      e.jsx("meshStandardMaterial", {
+                        color: r ? T(u.wallColor, "#ffffff", 0.48) : "#71604d",
+                        metalness: 0.55,
+                        roughness: 0.28,
+                        emissive: r ? v : "#000000",
+                        emissiveIntensity: r ? 0.08 : 0,
+                      }),
+                    ],
                   }),
-                ],
-              }),
             ],
           },
           g,
@@ -6366,6 +6853,60 @@ function Ea({ color: t, brightness: s, variant: o }) {
     ],
   });
 }
+// ===== ha3d-self: F2 灯具开灯时的光晕 =====
+// 首页相机多为俯视，吸顶类灯具的光晕放在灯体上方一点，避免被灯体自身挡住
+const ha3dHaloLayouts = {
+  "light.ceiling": { size: 0.9, position: [0, 0.07, 0] },
+  "light.ceiling_panel": { size: 0.9, position: [0, 0.06, 0] },
+  "light.ceiling_round": { size: 0.9, position: [0, 0.07, 0] },
+  "light.downlight": { size: 0.35, position: [0, 0.04, 0] },
+  "light.chandelier": { size: 1, position: [0, -0.34, 0] },
+  "light.wall_sconce": { size: 0.6, position: [0, -0.02, 0.14] },
+  "light.floor_lamp": { size: 0.7, position: [0, 1.2, 0] },
+};
+let ha3dHaloTexture;
+function ha3dGetHaloTexture() {
+  if (ha3dHaloTexture !== void 0) return ha3dHaloTexture;
+  const t = document.createElement("canvas");
+  ((t.width = 128), (t.height = 128));
+  const s = t.getContext("2d");
+  if (!s) return (ha3dHaloTexture = null);
+  const o = s.createRadialGradient(64, 64, 0, 64, 64, 64);
+  (o.addColorStop(0, "rgba(255,255,255,1)"),
+    o.addColorStop(0.3, "rgba(255,255,255,0.85)"),
+    o.addColorStop(0.65, "rgba(255,255,255,0.4)"),
+    o.addColorStop(1, "rgba(255,255,255,0)"),
+    (s.fillStyle = o),
+    s.fillRect(0, 0, 128, 128));
+  const r = new wr(t);
+  return (
+    (r.colorSpace = ds),
+    (r.minFilter = _t),
+    (r.magFilter = _t),
+    (ha3dHaloTexture = r)
+  );
+}
+const ha3dNoRaycast = () => {};
+function ha3dLightHalo({ modelId: t, color: s, brightness: o }) {
+  if (t === "light.strip") return null;
+  const r = ha3dHaloLayouts[t] ?? ha3dHaloLayouts["light.ceiling"];
+  return e.jsx("sprite", {
+    name: "ha3d-light-halo",
+    position: r.position,
+    scale: [r.size, r.size, 1],
+    renderOrder: 10,
+    raycast: ha3dNoRaycast,
+    children: e.jsx("spriteMaterial", {
+      map: ha3dGetHaloTexture() ?? void 0,
+      color: s,
+      transparent: !0,
+      opacity: Math.min(1, 0.35 + 0.65 * (o ?? 0)),
+      blending: Q,
+      depthWrite: !1,
+      toneMapped: !1,
+    }),
+  });
+}
 function qs(t) {
   const s = oe();
   return e.jsxs("group", {
@@ -6376,6 +6917,16 @@ function qs(t) {
         unavailable: t.unavailable,
         visualStyle: s,
       }),
+      // ha3d-self: F2 首页里开灯且可用时追加光晕（开关控制的灯具 Fa 也走这里）；
+      // 编辑器 3D 视图不加，避免近距离俯视时光晕盖住灯具的形状和朝向
+      t.presentation &&
+        t.appearance.isOn &&
+        !t.unavailable &&
+        e.jsx(ha3dLightHalo, {
+          modelId: t.modelId,
+          color: t.appearance.color,
+          brightness: t.appearance.brightness,
+        }),
     ],
   });
 }
@@ -7028,7 +7579,11 @@ function $a(t) {
   return e.jsxs("group", {
     children: [
       e.jsx(Ta, { ...t }),
-      !["binary_sensor.presence", "binary_sensor.motion"].includes(t.modelId) &&
+      ![
+        "binary_sensor.presence",
+        "binary_sensor.motion",
+        "switch.computer", // ha3d-self: 电脑模型自带细节，不叠加开关面板的指示条
+      ].includes(t.modelId) &&
         e.jsx(Bn, {
           modelId: t.modelId,
           unavailable: t.unavailable,
@@ -7290,7 +7845,240 @@ function Ta({
     });
   if (s === "switch.double") return O(2);
   if (s === "switch.triple") return O(3);
+  // ===== ha3d-self: F7 电脑样式开关（显示器 + 底座支架、键盘、主机箱、电源灯；正面朝 +z） =====
+  if (s === "switch.computer") {
+    const g = d === "on" && !a,
+      _ = y ? "#5a4f45" : "#2f3742",
+      k = y ? "#8a7d6e" : "#5b6573",
+      E = (q, N = 0.42, R = 0.1) =>
+        v
+          ? e.jsx("meshToonMaterial", { color: q, transparent: a, opacity: x })
+          : e.jsx("meshPhysicalMaterial", {
+              color: q,
+              roughness: N,
+              metalness: R,
+              clearcoat: 0.2,
+              clearcoatRoughness: 0.6,
+              transparent: a,
+              opacity: x,
+            }),
+      P = (N) =>
+        h &&
+        e.jsx(ee, {
+          color: $.color,
+          threshold: $.threshold,
+          opacity: N ?? $.opacity,
+          transparent: !0,
+        });
+    return e.jsxs("group", {
+      children: [
+        e.jsxs("mesh", {
+          position: [0, 0.008, -0.1],
+          castShadow: !0,
+          children: [e.jsx("boxGeometry", { args: [0.22, 0.016, 0.16] }), E(k)],
+        }),
+        e.jsxs("mesh", {
+          position: [0, 0.1, -0.135],
+          castShadow: !0,
+          children: [e.jsx("boxGeometry", { args: [0.04, 0.17, 0.03] }), E(k)],
+        }),
+        e.jsxs(B, {
+          position: [0, 0.3, -0.115],
+          args: [0.56, 0.34, 0.03],
+          radius: 0.01,
+          smoothness: 3,
+          castShadow: !0,
+          children: [E(_, 0.36, 0.08), P()],
+        }),
+        e.jsxs("mesh", {
+          name: "ha3d-computer-screen",
+          position: [0, 0.305, -0.099],
+          children: [
+            e.jsx("planeGeometry", { args: [0.52, 0.3] }),
+            e.jsx("meshStandardMaterial", {
+              color: g ? "#dbeafe" : "#0b0f14",
+              emissive: g ? "#9cc8ff" : "#000000",
+              emissiveIntensity: g ? 0.9 : 0,
+              roughness: 0.18,
+              metalness: 0,
+              transparent: a,
+              opacity: x,
+            }),
+          ],
+        }),
+        e.jsxs("mesh", {
+          position: [0, 0.009, 0.1],
+          castShadow: !0,
+          children: [e.jsx("boxGeometry", { args: [0.42, 0.018, 0.13] }), E(k)],
+        }),
+        e.jsxs("mesh", {
+          position: [0, 0.0195, 0.1],
+          children: [
+            e.jsx("boxGeometry", { args: [0.38, 0.004, 0.1] }),
+            E(T(k, "#ffffff", 0.35), 0.6, 0),
+          ],
+        }),
+        e.jsxs(B, {
+          position: [0.42, 0.2, -0.04],
+          args: [0.18, 0.4, 0.38],
+          radius: 0.012,
+          smoothness: 3,
+          castShadow: !0,
+          children: [E(_, 0.4, 0.12), P()],
+        }),
+        e.jsxs("mesh", {
+          position: [0.42, 0.33, 0.152],
+          children: [
+            e.jsx("sphereGeometry", { args: [0.011, 12, 8] }),
+            e.jsx("meshBasicMaterial", {
+              color: g ? "#5ee08a" : "#4b5563",
+              toneMapped: !1,
+            }),
+          ],
+        }),
+      ],
+    });
+  }
   if (t === "switch") return O(1);
+  // ===== ha3d-self: F8 晾衣架（吊顶底座、两组吊绳、横杆按开合度升降：100 收到顶，0 降到最低） =====
+  if (s === "cover.clothes_rack") {
+    const g = X.clamp(I / 100, 0, 1),
+      _ = X.lerp(0.15, 1, 1 - g),
+      k = v
+        ? e.jsx("meshToonMaterial", {
+            color: T(b, "#ffffff", 0.3),
+            transparent: a,
+            opacity: a ? 0.4 : 1,
+          })
+        : e.jsx("meshPhysicalMaterial", {
+            color: T(b, "#ffffff", 0.36),
+            roughness: 0.34,
+            metalness: 0.24,
+            clearcoat: 0.3,
+            clearcoatRoughness: 0.56,
+            transparent: a,
+            opacity: a ? 0.4 : 1,
+          }),
+      E = e.jsx("meshBasicMaterial", {
+        color: T(w, "#ffffff", h ? 0.4 : 0.2),
+        transparent: !0,
+        opacity: a ? 0.2 : 0.7,
+        toneMapped: !1,
+      }),
+      P = y
+        ? ["#c79a7a", "#9fb59a", "#d8c7a6"]
+        : ["#8fb8de", "#f0b48a", "#b9d7a1"];
+    return e.jsxs("group", {
+      children: [
+        e.jsxs("mesh", {
+          position: [0, -0.02, 0],
+          castShadow: !0,
+          children: [e.jsx("boxGeometry", { args: [1.02, 0.05, 0.16] }), k],
+        }),
+        e.jsxs("mesh", {
+          position: [0, -0.046, 0.082],
+          children: [
+            e.jsx("boxGeometry", { args: [0.3, 0.012, 0.006] }),
+            m(n ? 0.5 : 0.2),
+          ],
+        }),
+        [-0.38, 0.38].flatMap((N) =>
+          [-0.05, 0.05].map((R) =>
+            e.jsxs(
+              "mesh",
+              {
+                position: [N, -0.045 - (_ - 0.045) / 2, R],
+                children: [
+                  e.jsx("cylinderGeometry", {
+                    args: [0.004, 0.004, Math.max(0.01, _ - 0.045), 6],
+                  }),
+                  E,
+                ],
+              },
+              `${N}-${R}`,
+            ),
+          ),
+        ),
+        e.jsxs("group", {
+          name: "ha3d-clothes-rack-bars",
+          position: [0, -_, 0],
+          children: [
+            [-0.06, 0.06].map((N) =>
+              e.jsxs(
+                "mesh",
+                {
+                  position: [0, 0, N],
+                  rotation: [0, 0, Math.PI / 2],
+                  castShadow: !0,
+                  children: [
+                    e.jsx("cylinderGeometry", { args: [0.012, 0.012, 1.06, 12] }),
+                    k,
+                  ],
+                },
+                N,
+              ),
+            ),
+            [-0.38, 0.38].map((N) =>
+              e.jsxs(
+                "mesh",
+                {
+                  position: [N, 0.012, 0],
+                  children: [
+                    e.jsx("boxGeometry", { args: [0.04, 0.03, 0.17] }),
+                    k,
+                  ],
+                },
+                N,
+              ),
+            ),
+            _ > 0.4 &&
+              [-0.3, 0, 0.3].map((N, R) =>
+                e.jsxs(
+                  "group",
+                  {
+                    position: [N, -0.03, 0.06],
+                    children: [
+                      e.jsxs("mesh", {
+                        position: [0, -0.04, 0],
+                        children: [
+                          e.jsx("boxGeometry", { args: [0.2, 0.012, 0.006] }),
+                          E,
+                        ],
+                      }),
+                      e.jsxs("mesh", {
+                        position: [0, -0.1, 0],
+                        castShadow: !0,
+                        children: [
+                          e.jsx("boxGeometry", { args: [0.34, 0.09, 0.012] }),
+                          e.jsx("meshStandardMaterial", {
+                            color: P[R],
+                            roughness: 0.92,
+                            side: Y,
+                          }),
+                        ],
+                      }),
+                      e.jsxs("mesh", {
+                        position: [0, -0.27, 0],
+                        castShadow: !0,
+                        children: [
+                          e.jsx("boxGeometry", { args: [0.22, 0.32, 0.012] }),
+                          e.jsx("meshStandardMaterial", {
+                            color: P[R],
+                            roughness: 0.92,
+                            side: Y,
+                          }),
+                        ],
+                      }),
+                    ],
+                  },
+                  N,
+                ),
+              ),
+          ],
+        }),
+      ],
+    });
+  }
   if (s === "cover.blind") {
     const g = X.clamp(I / 100, 0, 1),
       _ = 0.92,
@@ -9552,6 +10340,8 @@ const Ra = M.memo(function ({
       v = mt(i, d);
     if (On(s.kind))
       return e.jsx("group", {
+        name: `ha3d-furniture-${s.kind}`, // ha3d-self: 供 e2e 定位家具
+        userData: { furnitureId: s.id },
         position: [s.position[0], 0, s.position[1]],
         rotation: [0, -s.rotation, 0],
         scale: [1, r ? Xt(s.height) : 1, 1],

@@ -64,6 +64,25 @@ const strip = (project) => {
   const { createdAt, updatedAt, ...rest } = project;
   return rest;
 };
+const newFurnitureKinds = new Set(["fridge", "bathroom_cabinet", "chest_of_drawers", "dog_crate"]);
+/** 去掉上游不认识的新取值（入户门 → 单开门，删掉新家具），得到一个「旧项目」用于新旧版本对比。 */
+const toLegacy = (project) => {
+  const legacy = structuredClone(project);
+  for (const floor of legacy.floors ?? []) {
+    for (const opening of floor.openings ?? []) if (opening.doorStyle === "entrance") opening.doorStyle = "single";
+    if (Array.isArray(floor.furniture)) floor.furniture = floor.furniture.filter((item) => !newFurnitureKinds.has(item?.kind));
+  }
+  return legacy;
+};
+
+test("fixture 里的入户门和新家具经过 normalizeFloorplanProject 后保留", async () => {
+  const raw = JSON.parse(await readFile(fixturePath, "utf8"));
+  const normalized = normalizeFloorplanProject(structuredClone(raw));
+  const rawOpenings = raw.floors.flatMap((floor) => floor.openings);
+  const rawKinds = raw.floors.flatMap((floor) => floor.furniture.map((item) => item.kind));
+  assert.deepEqual(normalized.floors.flatMap((floor) => floor.openings.map((item) => item.doorStyle)), rawOpenings.map((item) => item.doorStyle));
+  assert.deepEqual(normalized.floors.flatMap((floor) => floor.furniture.map((item) => item.kind)), rawKinds);
+});
 
 test("向后兼容：fixture 和自定义项目经过新旧 normalizeFloorplanProject 结果相同", { skip: upstreamApp ? false : "未设置 HA3D_UPSTREAM_APP" }, async (t) => {
   const upstream = await import(pathToFileURL(path.join(path.resolve(upstreamApp), "packages/schema/dist/index.js")).href);
@@ -71,7 +90,8 @@ test("向后兼容：fixture 和自定义项目经过新旧 normalizeFloorplanPr
   if (process.env.HA3D_PROJECT_JSON) sources.push(["HA3D_PROJECT_JSON", path.resolve(process.env.HA3D_PROJECT_JSON)]);
   for (const [label, file] of sources) {
     await t.test(label, async () => {
-      const raw = JSON.parse(await readFile(file, "utf8"));
+      // fixture 从 FEAT-003 起带有入户门和新家具，先还原成旧项目再比较；个人项目没有这些取值时 toLegacy 不改变内容
+      const raw = toLegacy(JSON.parse(await readFile(file, "utf8")));
       const current = strip(normalizeFloorplanProject(structuredClone(raw)));
       const previous = strip(upstream.normalizeFloorplanProject(structuredClone(raw)));
       assert.deepStrictEqual(current, previous);

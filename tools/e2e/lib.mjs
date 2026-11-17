@@ -40,7 +40,7 @@ export async function closeContexts() {
  * reducedMotion：prefers-reduced-motion: reduce；video：录像目录（true 时用 <证据>/videos）。
  * 页面上挂 ha3dErrors（pageerror）和 ha3dResponses（同源响应）。
  */
-export async function newPage({ lowEnd = false, touch = false, reducedMotion = false, video, viewport = { width: 1440, height: 900 } } = {}) {
+export async function newPage({ lowEnd = false, touch = false, reducedMotion = false, video, viewport = { width: 1440, height: 900 }, startTime } = {}) {
   if (!state.browser) throw new Error("browser 未初始化");
   const videoDir = video === true ? path.join(state.evidenceRoot, "videos") : video;
   const context = await state.browser.newContext({
@@ -60,6 +60,24 @@ export async function newPage({ lowEnd = false, touch = false, reducedMotion = f
       Object.defineProperty(Navigator.prototype, "hardwareConcurrency", { get: () => 2, configurable: true });
       Object.defineProperty(Navigator.prototype, "deviceMemory", { get: () => 2, configurable: true });
     });
+  }
+  // startTime：页面里的 Date 从这个本地时间开始正常走（昼夜主题按本机时钟切换）。
+  // 不用 page.clock：它会冻结时间，让依赖时间差的过渡动画一直重绘，swiftshader 下截图超时。
+  if (startTime) {
+    await context.addInitScript((target) => {
+      const RealDate = Date;
+      const offset = RealDate.parse(target) - RealDate.now();
+      class Ha3dDate extends RealDate {
+        constructor(...args) {
+          if (args.length) super(...args);
+          else super(RealDate.now() + offset);
+        }
+        static now() {
+          return RealDate.now() + offset;
+        }
+      }
+      window.Date = Ha3dDate;
+    }, startTime);
   }
   const page = await context.newPage();
   page.ha3dErrors = [];
@@ -232,16 +250,61 @@ export async function focusCamera(page, worldPos, distance = 4, { direction: fix
         ? camera.position.clone().set(fixedDirection[0], fixedDirection[1], fixedDirection[2]).normalize()
         : camera.position.clone().sub(controls?.target ?? target).normalize();
       if (direction.lengthSq() === 0) direction.set(0, 1, 1).normalize();
+      // 和用户拖动一样先发 start 事件：场景的相机过渡监听它来停止自动取景，否则会把机位拉回去
+      controls?.dispatchEvent?.({ type: "start" });
       camera.position.copy(target).add(direction.multiplyScalar(distance));
       if (controls) {
         controls.target.copy(target);
         controls.update();
+        controls.dispatchEvent?.({ type: "end" });
       } else camera.lookAt(target);
       s.invalidate();
     },
     { worldPos, distance, fixedDirection },
   );
   await sleep(600);
+}
+
+/**
+ * 带重试的 focusCamera：状态变化（例如门磁打开）可能触发场景自带的相机过渡并覆盖设置，
+ * 先等相机停稳，再设置机位，并确认 target 和相机位置都到位（最多 5 次）。返回是否到位。
+ */
+export async function focusOn(page, worldPos, distance = 4, direction) {
+  const settle = async () => {
+    let previous = await readCamera(page);
+    for (let index = 0; index < 10; index += 1) {
+      await sleep(250);
+      const current = await readCamera(page);
+      if (Math.hypot(...current.position.map((value, axis) => value - previous.position[axis])) < 0.001) return;
+      previous = current;
+    }
+  };
+  let ok = false;
+  for (let attempt = 0; attempt < 5 && !ok; attempt += 1) {
+    await settle();
+    await focusCamera(page, worldPos, distance, { direction });
+    await sleep(500);
+    const camera = await readCamera(page);
+    const targetError = Math.hypot(camera.target[0] - worldPos[0], camera.target[1] - worldPos[1], camera.target[2] - worldPos[2]);
+    const distanceError = Math.abs(Math.hypot(...camera.position.map((value, axis) => value - camera.target[axis])) - distance);
+    ok = targetError < 0.2 && distanceError < 0.3;
+  }
+  await sleep(400);
+  return ok;
+}
+
+/** 世界坐标投影成页面坐标；onCanvas 表示该点最上层元素就是画布（没有被 HUD 挡住）。 */
+export async function projectToScreen(page, world) {
+  return page.evaluate((world) => {
+    const s = window.__ha3dDebug?.get();
+    if (!s) return null;
+    const projected = s.camera.position.clone().set(world[0], world[1], world[2]).project(s.camera);
+    const rect = s.gl.domElement.getBoundingClientRect();
+    const x = rect.left + ((projected.x + 1) / 2) * rect.width;
+    const y = rect.top + ((1 - projected.y) / 2) * rect.height;
+    const inView = projected.z > -1 && projected.z < 1 && Math.abs(projected.x) <= 1 && Math.abs(projected.y) <= 1;
+    return { x, y, inView, onCanvas: inView && document.elementFromPoint(x, y) === s.gl.domElement };
+  }, world);
 }
 
 /** ms 毫秒内渲染的帧数（gl.info.render.frame 的增量）。 */

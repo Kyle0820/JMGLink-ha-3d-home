@@ -1791,6 +1791,113 @@ input[type="range"]::-webkit-slider-thumb {
   right: 10px;
   left: auto;
 }
+/* ===== ha3d-self: F5 新家具图标 ===== */
+.furniture-pictogram.fridge {
+  color: #6f8590;
+}
+.furniture-pictogram.fridge i {
+  top: 1px;
+  right: 14px;
+  bottom: 1px;
+  left: 14px;
+  border-radius: 4px;
+}
+.furniture-pictogram.fridge b {
+  top: 11px;
+  right: 15px;
+  left: 15px;
+  height: 2px;
+  border: 0;
+  border-radius: 0;
+  background: currentColor;
+}
+.furniture-pictogram.fridge em {
+  top: 15px;
+  right: 17px;
+  bottom: auto;
+  left: auto;
+  width: 2px;
+  height: 7px;
+  border: 0;
+  background: currentColor;
+}
+.furniture-pictogram.bathroom_cabinet {
+  color: #66818a;
+}
+.furniture-pictogram.bathroom_cabinet i {
+  top: 15px;
+  right: 8px;
+  bottom: 2px;
+  left: 8px;
+}
+.furniture-pictogram.bathroom_cabinet b {
+  top: 10px;
+  right: 13px;
+  left: 13px;
+  height: 6px;
+  border-radius: 0 0 50% 50%;
+}
+.furniture-pictogram.bathroom_cabinet em {
+  top: 1px;
+  right: 14px;
+  bottom: auto;
+  left: 14px;
+  height: 7px;
+  border-width: 1px;
+  border-radius: 2px;
+}
+.furniture-pictogram.chest_of_drawers {
+  color: #758078;
+}
+.furniture-pictogram.chest_of_drawers i {
+  top: 2px;
+  right: 10px;
+  bottom: 2px;
+  left: 10px;
+}
+.furniture-pictogram.chest_of_drawers b {
+  top: 9px;
+  right: 11px;
+  left: 11px;
+  height: 2px;
+  border: 0;
+  border-radius: 0;
+  background: currentColor;
+  box-shadow:
+    0 6px 0 currentColor,
+    0 12px 0 currentColor;
+  opacity: 0.6;
+}
+.furniture-pictogram.chest_of_drawers em {
+  display: none;
+}
+.furniture-pictogram.dog_crate {
+  color: #7a6f5d;
+}
+.furniture-pictogram.dog_crate i {
+  top: 5px;
+  right: 5px;
+  bottom: 4px;
+  left: 5px;
+  background: transparent;
+}
+.furniture-pictogram.dog_crate b {
+  top: 6px;
+  bottom: 5px;
+  left: 13px;
+  width: 2px;
+  height: auto;
+  border: 0;
+  border-radius: 0;
+  background: currentColor;
+  box-shadow:
+    8px 0 0 currentColor,
+    16px 0 0 currentColor;
+  opacity: 0.7;
+}
+.furniture-pictogram.dog_crate em {
+  display: none;
+}
 .library-list {
   display: grid;
   gap: 7px;
@@ -3364,6 +3471,17 @@ input[type="range"]::-webkit-slider-thumb {
   stroke: #68737c;
   stroke-width: 0.055;
   stroke-linecap: round;
+  pointer-events: none;
+}
+/* ha3d-self: F1 入户门：加粗门扇 + 外侧门槛线 */
+.door-leaf.door-leaf-entrance {
+  stroke: #3f4651;
+  stroke-width: 0.1;
+}
+.door-threshold {
+  stroke: #3f4651;
+  stroke-width: 0.045;
+  stroke-linecap: square;
   pointer-events: none;
 }
 .plan-opening,

@@ -9,7 +9,7 @@ export const apartmentSubdir = true;
 const QUALITIES = ["eco", "smooth", "balanced", "high"];
 
 /** 门洞中心（世界坐标，y 取门高一半）。 */
-function openingCenter(floor, opening) {
+export function openingCenter(floor, opening) {
   const wall = floor.walls.find((item) => item.id === opening.wallId);
   if (!wall) return null;
   const dx = wall.end[0] - wall.start[0];
@@ -31,7 +31,7 @@ function pointInPolygon([x, y], polygon) {
 }
 
 /** 特写相机方向：沿墙法线朝向房间内部，略微俯视。 */
-function inwardDirection(floor, opening) {
+export function inwardDirection(floor, opening) {
   const wall = floor.walls.find((item) => item.id === opening.wallId);
   const center = openingCenter(floor, opening);
   const dx = wall.end[0] - wall.start[0];
