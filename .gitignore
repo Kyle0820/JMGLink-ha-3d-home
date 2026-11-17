@@ -1,2 +1,5 @@
 upstream/
 .DS_Store
+node_modules/
+/ha3d-*.json
+tools/test-results/

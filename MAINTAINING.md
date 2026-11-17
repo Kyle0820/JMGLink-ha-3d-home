@@ -1,28 +1,101 @@
 # 自维护说明
 
-上游作者只发布编译好的镜像 `docker.jmglink.cn/jmglink-ha-3d`，不公开源码。本仓库改为在 HA 本地构建：以上游镜像为基础，用 `patches/app/` 覆盖改过的文件。
+上游作者只发布编译好的镜像 `docker.jmglink.cn/jmglink-ha-3d`，不公开源码。本仓库从 0.1.6 起把镜像里的 `/app` 完整放进 `jmglink-ha-3d-home/app/` 自己维护，HA Supervisor 在设备上用本仓库的 Dockerfile 本地构建，不再依赖作者的镜像。
 
-## 结构
+## 目录结构
 
-- `jmglink-ha-3d-home/Dockerfile`：`FROM` 上游镜像，`COPY patches/app/ /app/`
-- `jmglink-ha-3d-home/patches/app/`：目录结构与镜像内 `/app` 一一对应，只放改动过的文件
-- `scripts/extract-upstream.sh`：把上游镜像的 `/app` 提取到 `upstream/<版本>/`（不入库），前端格式化到 `upstream/<版本>/web-pretty/`
+- `repository.yaml`：HA 加载项仓库描述
+- `jmglink-ha-3d-home/`：加载项
+  - `config.yaml`：加载项配置（`slug`、`ingress_port 8099`、`map` 不能改，`version` 发版时递增）
+  - `build.yaml`：按架构指定基础镜像 `ghcr.io/home-assistant/<arch>-base:3.22`
+  - `Dockerfile`：`apk add nodejs npm` → 用 `app/package-lock.json` 执行 `npm ci --omit=dev` → `COPY app/`
+  - `.dockerignore`：排除 `node_modules`、`.DS_Store`
+  - `CHANGELOG.md`（中文）、`DOCS.md`、`translations/`
+  - `app/`：就是镜像里的 `/app`，也就是源码
+    - `apps/server/dist/`：后端，Node.js + Fastify + ws，可读的 ESM JS，直接修改
+    - `packages/schema/dist/`：前后端共用的数据结构和规范化逻辑
+    - `apps/web/dist/`：前端，React + react-three-fiber + drei 的 Vite 产物
+- `scripts/`：`normalize-web-dist.mjs`、`extract-upstream.sh`、`build-image.sh`、`smoke-image.sh`
+- `tools/`：只用于开发和测试，不进镜像（mock HA、本地启动、单元测试、e2e）
+- `upstream/`：上游提取结果，已 gitignore
 
-镜像内 `/app` 的布局：
+## 修改代码
 
-- `apps/server/dist/`：后端，Node.js + Fastify，tsc 编译产物，可直接阅读修改
-- `apps/web/dist/`：前端，React + Three.js，Vite 压缩打包，没有 sourcemap
-- `packages/schema/dist/`：前后端共用的数据结构
+`app/` 下的文件就是源码，没有前端构建步骤，改完直接生效。
 
-## 修 bug
+- 后端：直接改 `app/apps/server/dist/**/*.js`。
+- 前端：`app/apps/web/dist/assets/` 里的 `index.js`、`AppSelect.js`、`HomeView.js`、`FloorplanEditor.js`、`AuthorSupportDialog.js`、`index.css`、`HomeView.css` 是用 prettier 格式化过的业务代码，直接改。`three.js`、`react.js`、`hls.js` 是第三方库，保持压缩内容，不要改。
+- 变量名是压缩后的短名字。新代码写在对应的大文件里，可以直接用文件内部的别名（例如 AppSelect 里 `J` 是 Vector3、`te` 是 useFrame）。
 
-1. `scripts/extract-upstream.sh` 提取当前版本（依赖 `brew install crane`）
-2. 后端：把 `upstream/<版本>/app/apps/server/dist/xxx.js` 复制到 `patches/app/apps/server/dist/xxx.js` 再修改
-3. 前端：把 `upstream/<版本>/web-pretty/xxx-HASH.js` 复制到 `patches/app/apps/web/dist/assets/xxx-HASH.js`（文件名保持不变）再修改，格式化后的 JS 可以直接运行
-4. `config.yaml` 的 `version` 递增（如 `0.1.6-fix2`），更新 `CHANGELOG.md`，推送后在 HA 里更新加载项即可重新构建
+### 固定文件名与缓存
 
-## 跟进上游新版本
+所有 JS/CSS 都是固定文件名（不带 hash），以后改任何文件都不用改名。`app/apps/server/dist/config/staticAssets.js` 对 JS/CSS/HTML 返回 `Cache-Control: no-cache`（浏览器每次用 ETag 验证，没改动时返回 304），只有带 hash 的图片是 `immutable`。原因：用户浏览器里已经永久缓存了 0.1.6 带 hash 的文件名，换成新文件名才能让改动生效。新增图片时请保留 `<名>-<8位以上hash>.<扩展名>` 的命名，或者接受 no-cache。
 
-1. 改 `Dockerfile` 里的 `UPSTREAM_VERSION`，重新跑提取脚本
-2. 逐个对比补丁文件与新版本对应文件，重新应用改动。前端文件名里的 hash 每次构建都会变，需要按新文件名重新放置
-3. `config.yaml` 的 `version` 改为 `<新版本>-fix1`
+### 注释约定
+
+- 原地修改上游代码时，在行尾或代码块前加 `// ha3d-self: <说明>`（CSS 用 `/* ha3d-self: ... */`）。
+- 新代码块用 `// ===== ha3d-self: <功能> =====` 标出。
+- 新标识符一律加 `ha3d` 前缀，避免和压缩后的短变量名冲突。
+
+这样 `grep -rn ha3d-self jmglink-ha-3d-home/app` 就能列出所有自维护改动。
+
+## 本地运行和测试
+
+依赖：Node 22 以上。
+
+```bash
+npm ci --prefix jmglink-ha-3d-home/app --omit=dev
+npm ci --prefix tools
+```
+
+- 本地启动：`node tools/dev/start-local.mjs --project <项目.json>` 先启动 mock HA（`:18123`），再以 standalone 模式启动应用（`:18099`），数据目录默认 `/tmp/ha3d-dev`（在仓库之外）。
+- 单元测试：`npm --prefix tools run test:unit`
+- 前端模块图静态检查（esbuild，抓语法错误和不存在的导入名）：`npm --prefix tools run check:web`
+- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。
+
+只想快速看后端是否正常：
+
+```bash
+cd jmglink-ha-3d-home/app
+HA3D_MODE=standalone PORT=18099 HA3D_DATA_DIR=/tmp/ha3d-dev/data HA3D_ASSET_DIR=/tmp/ha3d-dev/assets node apps/server/dist/main.js
+curl -s 127.0.0.1:18099/api/health
+```
+
+## 构建镜像和冒烟测试
+
+本机需要 docker（macOS 可用 colima：`brew install colima docker`，`colima start --vm-type vz --vz-rosetta --cpu 4 --memory 6`，rosetta 用来跑 amd64）。
+
+```bash
+scripts/build-image.sh aarch64 ha3d:arm64     # 或 amd64 ha3d:amd64
+scripts/smoke-image.sh ha3d:arm64 [项目.json]  # 启动容器，检查 /api/health 和当前项目 id，结束后删除容器
+```
+
+注意：
+
+- Dockerfile 里不要写 `# syntax=` 指令，不要 `FROM` Docker Hub 上的镜像，也不要建 `docker-container` 类型的 buildx builder，它们都要访问 Docker Hub。
+- 改了依赖后，在 `jmglink-ha-3d-home/app` 下执行 `npm install --package-lock-only --registry=https://registry.npmjs.org/` 重新生成 `package-lock.json`（`resolved` 必须是 registry.npmjs.org，构建时 npm 会替换成 `NPM_REGISTRY` 指定的源）。改了 Dockerfile、package.json 或 lock 时，两个架构都要构建并冒烟。
+
+### 构建网络
+
+HA 设备构建时需要能访问 `ghcr.io`（基础镜像）、Alpine 包仓库（`dl-cdn.alpinelinux.org`）和 npm 源。npm 源默认 `https://registry.npmmirror.com`，可以在 `build.yaml` 里加 `args: { NPM_REGISTRY: https://registry.npmjs.org }` 改掉。网络不稳时 `apk add` 解包 nodejs 偶尔会报 `I/O error`，Dockerfile 会自动重试 3 次；还是失败就在 HA 里重新安装或重建加载项。
+
+## 发版
+
+1. `jmglink-ha-3d-home/config.yaml` 的 `version` 递增（HA 只在版本号变化时提示更新并重新构建）。
+2. 在 `jmglink-ha-3d-home/CHANGELOG.md` 用中文写本次改动。
+3. 推送到 master，在 HA 的加载项商店里刷新并更新加载项。
+
+## 对比上游新版本
+
+```bash
+scripts/extract-upstream.sh <版本>      # 依赖 brew install crane
+diff -r upstream/<版本>/web-stable jmglink-ha-3d-home/app/apps/web/dist
+diff -r upstream/<版本>/app/apps/server/dist jmglink-ha-3d-home/app/apps/server/dist
+```
+
+`extract-upstream.sh` 只用于对比：它从作者的镜像仓库提取 `/app` 到 `upstream/<版本>/`，并用和导入时相同的 `normalize-web-dist.mjs` 生成固定文件名的 `web-stable/`，所以可以直接 `diff -r`。按 diff 把需要的上游改动手工合入本仓库，`ha3d-self` 注释标出的地方要保留。
+
+## 隐私
+
+- 不要把自己家的项目 JSON（例如 `ha3d-*.json`，已 gitignore）或其中的实体名、房间、坐标、截图提交进仓库。入库的测试数据只用合成的 fixture。
+- e2e 证据（截图、视频、日志）写到仓库之外的目录（`HA3D_EVIDENCE_DIR`）。

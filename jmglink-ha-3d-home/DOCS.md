@@ -71,6 +71,16 @@ Docker 独立版本适用于 NAS、Linux 小主机、Windows Docker Desktop 等�
 2. 确认 Docker 主机可以访问 Home Assistant 地址，例如 `http://homeassistant.local:8123` 或 `http://HA主机IP:8123`
 3. 在 Home Assistant 中进入 **用户头像 → 安全 → 长期访问令牌**，创建一个长期访问令牌备用
 
+### 构建镜像
+
+本仓库自行维护源码，不再使用作者发布的镜像。先克隆本仓库，在仓库根目录构建本地镜像（`<arch>` 按主机填 `aarch64` 或 `amd64`）：
+
+```bash
+docker build --build-arg BUILD_FROM=ghcr.io/home-assistant/<arch>-base:3.22 -t jmglink-ha-3d-home:local jmglink-ha-3d-home
+```
+
+下面示例里的 `jmglink-ha-3d-home:local` 就是这一步得到的镜像。
+
 ### 使用 Docker Compose 启动（推荐）
 
 创建 `docker-compose.yml`：
@@ -78,7 +88,7 @@ Docker 独立版本适用于 NAS、Linux 小主机、Windows Docker Desktop 等�
 ```yaml
 services:
   jmglink-ha-3d-home:
-    image: docker.jmglink.cn/jmglink-ha-3d:latest
+    image: jmglink-ha-3d-home:local
     container_name: jmglink-ha-3d-home
     restart: unless-stopped
     ports:
@@ -116,7 +126,7 @@ docker run -d \
   -e HA3D_ASSET_DIR=/assets \
   -v "$PWD/data:/data" \
   -v "$PWD/assets:/assets" \
-  docker.jmglink.cn/jmglink-ha-3d:latest
+  jmglink-ha-3d-home:local
 ```
 
 Windows PowerShell 示例：
@@ -134,7 +144,7 @@ docker run -d `
   -e HA3D_ASSET_DIR=/assets `
   -v ${PWD}/data:/data `
   -v ${PWD}/assets:/assets `
-  docker.jmglink.cn/jmglink-ha-3d:latest
+  jmglink-ha-3d-home:local
 ```
 
 启动后访问：
@@ -154,8 +164,9 @@ docker logs -f jmglink-ha-3d-home
 # 重启服务
 docker restart jmglink-ha-3d-home
 
-# 更新镜像并重建容器
-docker compose pull
+# 更新：拉取本仓库最新代码，重新构建镜像后重建容器
+git pull
+docker build --build-arg BUILD_FROM=ghcr.io/home-assistant/<arch>-base:3.22 -t jmglink-ha-3d-home:local jmglink-ha-3d-home
 docker compose up -d
 ```
 

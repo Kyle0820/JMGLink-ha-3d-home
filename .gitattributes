@@ -1,0 +1,3 @@
+# 前端产物按原样入库（上游部分 html 是 CRLF），不做换行符转换，
+# 保证 diff -r upstream/<版本>/web-stable jmglink-ha-3d-home/app/apps/web/dist 可以逐字节对比
+jmglink-ha-3d-home/app/apps/web/dist/** -text

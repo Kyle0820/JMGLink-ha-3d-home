@@ -1,0 +1,8 @@
+{
+  "name": "ha-3d",
+  "private": true,
+  "workspaces": [
+    "apps/server",
+    "packages/schema"
+  ]
+}
