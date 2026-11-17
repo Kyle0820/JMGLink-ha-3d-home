@@ -31,6 +31,19 @@ test("没有绑定过滤时所有实体都进入 pendingEntityUpdates", () => {
   }
 });
 
+test("weather 的 state_changed 不带预报时沿用上一次的预报，带预报或不是 weather 时原样返回", () => {
+  const client = createClient();
+  client.entities.set("weather.home", { ...entity("weather.home"), attributes: { forecast: [{ condition: "rainy" }] } });
+  const kept = client.ha3dKeepForecast({ ...entity("weather.home"), state: "cloudy", attributes: { temperature: 20 } });
+  assert.deepEqual(kept.attributes, { temperature: 20, forecast: [{ condition: "rainy" }] });
+  assert.equal(kept.state, "cloudy");
+  const fresh = client.ha3dKeepForecast({ ...entity("weather.home"), attributes: { forecast: [] } });
+  assert.deepEqual(fresh.attributes.forecast, []);
+  const other = entity("sensor.x");
+  assert.equal(client.ha3dKeepForecast(other), other);
+  assert.deepEqual(client.ha3dKeepForecast(entity("weather.backup")).attributes, {});
+});
+
 test("刷新绑定过滤时不丢弃已排队的 sun / weather 更新", () => {
   const client = createClient();
   for (const id of ["sun.sun", "weather.home", "sensor.x"]) client.queueEntityUpdate(entity(id));

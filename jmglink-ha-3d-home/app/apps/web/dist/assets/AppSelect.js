@@ -8,7 +8,6 @@ import {
     i as Ne,
     A as Q,
     C as Te,
-    a as Ut,
     l as X,
     h as Y,
     e as Ze,
@@ -18,13 +17,12 @@ import {
     u as be,
     p as br,
     B as cs,
-    U as dr,
     q as ds,
-    j as e,
-    E as ee,
+    j as e, // ha3d-self: B6 改名，ee 改为下面按画质决定是否描边的包装
     b as fr,
     H as ge,
     k as gr,
+    E as ha3dDreiEdges,
     D as hr,
     S as is,
     o as jr,
@@ -40,13 +38,23 @@ import {
     n as xr,
     O as yr,
     s as yt,
-    t as zt,
+    t as zt
 } from "./three.js";
+// ===== ha3d-self: B6 eco 画质不画 drei Edges 描边（每个描边都是一次额外的 draw call） =====
+// t0 在 Canvas 里用 ha3dQualityContext.Provider 传入当前画质；不在场景里时默认照常描边。
+const ha3dQualityContext = M.createContext("high");
+function ee(t) {
+  return M.useContext(ha3dQualityContext) === "eco"
+    ? null
+    : e.jsx(ha3dDreiEdges, t);
+}
 /**
  * @license lucide-react v1.25.0 - ISC
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
+ *
+ * ha3d-self: B6 本文件里每个 lucide 图标前都有这同一份许可声明，合并为这一处
  */ const kr = [
     [
       "path",
@@ -57,12 +65,7 @@ import {
     ],
   ],
   Kt = H("activity", kr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Sr = [
+const Sr = [
     ["path", { d: "M12 8V4H8", key: "hb8ula" }],
     [
       "rect",
@@ -74,12 +77,7 @@ import {
     ["path", { d: "M9 13v2", key: "rq6x2g" }],
   ],
   Cr = H("bot", Sr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Pr = [
+const Pr = [
     [
       "path",
       {
@@ -91,12 +89,7 @@ import {
     ["path", { d: "M12 22V12", key: "d0xqtd" }],
   ],
   Li = H("box", Pr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const zr = [
+const zr = [
     [
       "path",
       {
@@ -107,37 +100,17 @@ import {
     ["circle", { cx: "12", cy: "13", r: "3", key: "1vg3eu" }],
   ],
   Er = H("camera", zr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Gr = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]],
+const Gr = [["path", { d: "M20 6 9 17l-5-5", key: "1gmf2c" }]],
   Lr = H("check", Gr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const $r = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]],
+const $r = [["path", { d: "m6 9 6 6 6-6", key: "qrunsl" }]],
   Tr = H("chevron-down", $r);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ir = [
+const Ir = [
     ["circle", { cx: "12", cy: "12", r: "10", key: "1mglay" }],
     ["path", { d: "M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3", key: "1u773s" }],
     ["path", { d: "M12 17h.01", key: "p32p05" }],
   ],
   Nr = H("circle-question-mark", Ir);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Or = [
+const Or = [
     [
       "path",
       {
@@ -154,12 +127,7 @@ import {
     ],
   ],
   hs = H("droplets", Or);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Rr = [
+const Rr = [
     [
       "path",
       {
@@ -178,12 +146,7 @@ import {
     ["path", { d: "m2 2 20 20", key: "1ooewy" }],
   ],
   $i = H("eye-off", Rr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Fr = [
+const Fr = [
     [
       "path",
       {
@@ -194,22 +157,12 @@ import {
     ["circle", { cx: "12", cy: "12", r: "3", key: "1v7zrd" }],
   ],
   Ti = H("eye", Fr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ar = [
+const Ar = [
     ["path", { d: "m12 14 4-4", key: "9kzdfg" }],
     ["path", { d: "M3.34 19a10 10 0 1 1 17.32 0", key: "19p75a" }],
   ],
   Br = H("gauge", Ar);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Hr = [
+const Hr = [
     [
       "path",
       { d: "M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8", key: "5wwlr5" },
@@ -223,12 +176,7 @@ import {
     ],
   ],
   Ii = H("house", Hr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Dr = [
+const Dr = [
     [
       "path",
       {
@@ -252,12 +200,7 @@ import {
     ],
   ],
   Ni = H("layers", Dr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Wr = [
+const Wr = [
     [
       "path",
       {
@@ -271,12 +214,7 @@ import {
     ],
   ],
   us = H("leaf", Wr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Vr = [
+const Vr = [
     [
       "path",
       { d: "M16.8 11.2c.8-.9 1.2-2 1.2-3.2a6 6 0 0 0-9.3-5", key: "1fkcox" },
@@ -293,12 +231,7 @@ import {
     ["path", { d: "M10 22h4", key: "ceow96" }],
   ],
   Ur = H("lightbulb-off", Vr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Kr = [
+const Kr = [
     [
       "path",
       {
@@ -310,23 +243,13 @@ import {
     ["path", { d: "M10 22h4", key: "ceow96" }],
   ],
   fs = H("lightbulb", Kr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const qr = [
+const qr = [
     ["path", { d: "M9 17H7A5 5 0 0 1 7 7h2", key: "8i5ue5" }],
     ["path", { d: "M15 7h2a5 5 0 1 1 0 10h-2", key: "1b9ql8" }],
     ["line", { x1: "8", x2: "16", y1: "12", y2: "12", key: "1jonct" }],
   ],
   Oi = H("link-2", qr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Xr = [
+const Xr = [
     [
       "rect",
       {
@@ -342,12 +265,7 @@ import {
     ["path", { d: "M7 11V7a5 5 0 0 1 10 0v4", key: "fwvmzm" }],
   ],
   Zr = H("lock", Xr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Yr = [
+const Yr = [
     [
       "path",
       {
@@ -373,12 +291,7 @@ import {
     ],
   ],
   Qr = H("palette", Yr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Jr = [
+const Jr = [
     [
       "rect",
       { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" },
@@ -387,12 +300,7 @@ import {
     ["path", { d: "m9 16 3-3 3 3", key: "1idcnm" }],
   ],
   eo = H("panel-top-close", Jr);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const to = [
+const to = [
     [
       "rect",
       { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" },
@@ -401,12 +309,7 @@ import {
     ["path", { d: "m15 14-3 3-3-3", key: "g215vf" }],
   ],
   so = H("panel-top-open", to);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const ro = [
+const ro = [
     [
       "rect",
       { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" },
@@ -414,12 +317,7 @@ import {
     ["path", { d: "M3 9h18", key: "1pudct" }],
   ],
   oo = H("panel-top", ro);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const no = [
+const no = [
     [
       "rect",
       { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" },
@@ -428,12 +326,7 @@ import {
     ["path", { d: "M9 21V9", key: "1oto5p" }],
   ],
   ao = H("panels-top-left", no);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const io = [
+const io = [
     [
       "rect",
       { x: "14", y: "3", width: "5", height: "18", rx: "1", key: "kaeet6" },
@@ -444,12 +337,7 @@ import {
     ],
   ],
   co = H("pause", io);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const lo = [
+const lo = [
     [
       "path",
       {
@@ -459,44 +347,24 @@ import {
     ],
   ],
   ho = H("play", lo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const uo = [
+const uo = [
     ["path", { d: "M5 12h14", key: "1ays0h" }],
     ["path", { d: "M12 5v14", key: "s699le" }],
   ],
   Ri = H("plus", uo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const fo = [
+const fo = [
     ["path", { d: "M18.36 6.64A9 9 0 0 1 20.77 15", key: "dxknvb" }],
     ["path", { d: "M6.16 6.16a9 9 0 1 0 12.68 12.68", key: "1x7qb5" }],
     ["path", { d: "M12 2v4", key: "3427ic" }],
     ["path", { d: "m2 2 20 20", key: "1ooewy" }],
   ],
   po = H("power-off", fo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const go = [
+const go = [
     ["path", { d: "M12 2v10", key: "mnfbl" }],
     ["path", { d: "M18.4 6.6a9 9 0 1 1-12.77.04", key: "obofu9" }],
   ],
   mo = H("power", go);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const xo = [
+const xo = [
     ["path", { d: "M16.247 7.761a6 6 0 0 1 0 8.478", key: "1fwjs5" }],
     ["path", { d: "M19.075 4.933a10 10 0 0 1 0 14.134", key: "ehdyv1" }],
     ["path", { d: "M4.925 19.067a10 10 0 0 1 0-14.134", key: "1q22gi" }],
@@ -504,12 +372,7 @@ import {
     ["circle", { cx: "12", cy: "12", r: "2", key: "1c9p78" }],
   ],
   jo = H("radio", xo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const yo = [
+const yo = [
     [
       "path",
       {
@@ -521,34 +384,19 @@ import {
     ["path", { d: "M7 3v4a1 1 0 0 0 1 1h7", key: "t51u73" }],
   ],
   Fi = H("save", yo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const bo = [
+const bo = [
     ["path", { d: "m21 21-4.34-4.34", key: "14j7rj" }],
     ["circle", { cx: "11", cy: "11", r: "8", key: "4ej97u" }],
   ],
   Ai = H("search", bo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const wo = [
+const wo = [
     ["path", { d: "M14 17H5", key: "gfn3mx" }],
     ["path", { d: "M19 7h-9", key: "6i9tg" }],
     ["circle", { cx: "17", cy: "17", r: "3", key: "18b49y" }],
     ["circle", { cx: "7", cy: "7", r: "3", key: "dfmy0x" }],
   ],
   Bi = H("settings-2", wo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const vo = [
+const vo = [
     [
       "path",
       {
@@ -558,12 +406,7 @@ import {
     ],
   ],
   ps = H("shield", vo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Mo = [
+const Mo = [
     ["path", { d: "M10 5H3", key: "1qgfaw" }],
     ["path", { d: "M12 19H3", key: "yhmn1j" }],
     ["path", { d: "M14 3v4", key: "1sua03" }],
@@ -575,12 +418,7 @@ import {
     ["path", { d: "M8 12H3", key: "a7s4jb" }],
   ],
   gs = H("sliders-horizontal", Mo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const _o = [
+const _o = [
     ["path", { d: "m10 20-1.25-2.5L6 18", key: "18frcb" }],
     ["path", { d: "M10 4 8.75 6.5 6 6", key: "7mghy3" }],
     ["path", { d: "m14 20 1.25-2.5L18 18", key: "1chtki" }],
@@ -595,12 +433,7 @@ import {
     ["path", { d: "m7 3 3 6h4", key: "1otusx" }],
   ],
   ko = H("snowflake", _o);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const So = [
+const So = [
     [
       "path",
       {
@@ -613,12 +446,7 @@ import {
     ["circle", { cx: "4", cy: "20", r: "2", key: "6kqj1y" }],
   ],
   Co = H("sparkles", So);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Po = [
+const Po = [
     ["circle", { cx: "12", cy: "12", r: "4", key: "4exip2" }],
     ["path", { d: "M12 2v2", key: "tus03m" }],
     ["path", { d: "M12 20v2", key: "1lh1kg" }],
@@ -630,24 +458,14 @@ import {
     ["path", { d: "m19.07 4.93-1.41 1.41", key: "1shlcs" }],
   ],
   Et = H("sun", Po);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const zo = [
+const zo = [
     [
       "path",
       { d: "M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z", key: "17jzev" },
     ],
   ],
   We = H("thermometer", zo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Eo = [
+const Eo = [
     ["circle", { cx: "9", cy: "12", r: "3", key: "u3jwor" }],
     [
       "rect",
@@ -655,12 +473,7 @@ import {
     ],
   ],
   Go = H("toggle-left", Eo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Lo = [
+const Lo = [
     ["path", { d: "M10 11v6", key: "nco0om" }],
     ["path", { d: "M14 11v6", key: "outv1u" }],
     ["path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6", key: "miytrc" }],
@@ -668,22 +481,12 @@ import {
     ["path", { d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2", key: "e791ji" }],
   ],
   Hi = H("trash-2", Lo);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const $o = [
+const $o = [
     ["circle", { cx: "12", cy: "8", r: "5", key: "1hypcn" }],
     ["path", { d: "M20 21a8 8 0 0 0-16 0", key: "rfgkzh" }],
   ],
   To = H("user-round", $o);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Io = [
+const Io = [
     [
       "path",
       {
@@ -697,12 +500,7 @@ import {
     ],
   ],
   No = H("video", Io);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Oo = [
+const Oo = [
     ["path", { d: "M12.8 19.6A2 2 0 1 0 14 16H2", key: "148xed" }],
     ["path", { d: "M17.5 8a2.5 2.5 0 1 1 2 4H2", key: "1u4tom" }],
     ["path", { d: "M9.8 4.4A2 2 0 1 1 11 8H2", key: "75valh" }],
@@ -1530,241 +1328,6 @@ function $t(t) {
   ].filter(Boolean);
   return s.length ? s.join(" · ") : "开启";
 }
-class Ko {
-  constructor(s, o = {}) {
-    this.enabled = !0;
-    const r = o.defaultThickness !== void 0 ? o.defaultThickness : 0.003,
-      n = new Te().fromArray(
-        o.defaultColor !== void 0 ? o.defaultColor : [0, 0, 0],
-      ),
-      a = o.defaultAlpha !== void 0 ? o.defaultAlpha : 1,
-      i = o.defaultKeepAlive !== void 0 ? o.defaultKeepAlive : !1,
-      d = {},
-      l = 60,
-      c = {},
-      h = {},
-      u = {
-        outlineThickness: { value: r },
-        outlineColor: { value: n },
-        outlineAlpha: { value: a },
-      },
-      f = [
-        "#include <common>",
-        "#include <uv_pars_vertex>",
-        "#include <displacementmap_pars_vertex>",
-        "#include <fog_pars_vertex>",
-        "#include <morphtarget_pars_vertex>",
-        "#include <skinning_pars_vertex>",
-        "#include <logdepthbuf_pars_vertex>",
-        "#include <clipping_planes_pars_vertex>",
-        "uniform float outlineThickness;",
-        "vec4 calculateOutline( vec4 pos, vec3 normal, vec4 skinned ) {",
-        "	float thickness = outlineThickness;",
-        "	const float ratio = 1.0;",
-        "	vec4 pos2 = projectionMatrix * modelViewMatrix * vec4( skinned.xyz + normal, 1.0 );",
-        "	vec4 norm = normalize( pos - pos2 );",
-        "	return pos + norm * thickness * pos.w * ratio;",
-        "}",
-        "void main() {",
-        "	#include <uv_vertex>",
-        "	#include <beginnormal_vertex>",
-        "	#include <morphnormal_vertex>",
-        "	#include <skinbase_vertex>",
-        "	#include <skinnormal_vertex>",
-        "	#include <begin_vertex>",
-        "	#include <morphtarget_vertex>",
-        "	#include <skinning_vertex>",
-        "	#include <displacementmap_vertex>",
-        "	#include <project_vertex>",
-        "	vec3 outlineNormal = - objectNormal;",
-        "	gl_Position = calculateOutline( gl_Position, outlineNormal, vec4( transformed, 1.0 ) );",
-        "	#include <logdepthbuf_vertex>",
-        "	#include <clipping_planes_vertex>",
-        "	#include <fog_vertex>",
-        "}",
-      ].join(`
-`),
-      j = [
-        "#include <common>",
-        "#include <fog_pars_fragment>",
-        "#include <logdepthbuf_pars_fragment>",
-        "#include <clipping_planes_pars_fragment>",
-        "uniform vec3 outlineColor;",
-        "uniform float outlineAlpha;",
-        "void main() {",
-        "	#include <clipping_planes_fragment>",
-        "	#include <logdepthbuf_fragment>",
-        "	gl_FragColor = vec4( outlineColor, outlineAlpha );",
-        "	#include <tonemapping_fragment>",
-        "	#include <colorspace_fragment>",
-        "	#include <fog_fragment>",
-        "	#include <premultiplied_alpha_fragment>",
-        "}",
-      ].join(`
-`);
-    function v() {
-      return new is({
-        type: "OutlineEffect",
-        uniforms: dr.merge([Ut.fog, Ut.displacementmap, u]),
-        vertexShader: f,
-        fragmentShader: j,
-        side: cs,
-      });
-    }
-    function y(p) {
-      let m = d[p.uuid];
-      return (
-        m === void 0 &&
-          ((m = { material: v(), used: !0, keepAlive: i, count: 0 }),
-          (d[p.uuid] = m)),
-        (m.used = !0),
-        m.material
-      );
-    }
-    function x(p) {
-      const m = y(p);
-      return ((c[m.uuid] = p), I(m, p), m);
-    }
-    function b(p) {
-      const m = p.geometry,
-        C = m !== void 0 && m.attributes.normal !== void 0;
-      return p.isMesh === !0 && p.material !== void 0 && C === !0;
-    }
-    function w(p) {
-      if (b(p) !== !1) {
-        if (Array.isArray(p.material))
-          for (let m = 0, C = p.material.length; m < C; m++)
-            p.material[m] = x(p.material[m]);
-        else p.material = x(p.material);
-        ((h[p.uuid] = p.onBeforeRender), (p.onBeforeRender = G));
-      }
-    }
-    function S(p) {
-      if (b(p) !== !1) {
-        if (Array.isArray(p.material))
-          for (let m = 0, C = p.material.length; m < C; m++)
-            p.material[m] = c[p.material[m].uuid];
-        else p.material = c[p.material.uuid];
-        p.onBeforeRender = h[p.uuid];
-      }
-    }
-    function G(p, m, C, O, g) {
-      const _ = c[g.uuid];
-      _ !== void 0 && L(g, _);
-    }
-    function L(p, m) {
-      const C = m.userData.outlineParameters;
-      ((p.uniforms.outlineAlpha.value = m.opacity),
-        C !== void 0 &&
-          (C.thickness !== void 0 &&
-            (p.uniforms.outlineThickness.value = C.thickness),
-          C.color !== void 0 &&
-            p.uniforms.outlineColor.value.fromArray(C.color),
-          C.alpha !== void 0 && (p.uniforms.outlineAlpha.value = C.alpha)),
-        m.displacementMap &&
-          ((p.uniforms.displacementMap.value = m.displacementMap),
-          (p.uniforms.displacementScale.value = m.displacementScale),
-          (p.uniforms.displacementBias.value = m.displacementBias)));
-    }
-    function I(p, m) {
-      if (p.name === "invisible") return;
-      const C = m.userData.outlineParameters;
-      ((p.fog = m.fog),
-        (p.toneMapped = m.toneMapped),
-        (p.premultipliedAlpha = m.premultipliedAlpha),
-        (p.displacementMap = m.displacementMap),
-        C !== void 0
-          ? (m.visible === !1
-              ? (p.visible = !1)
-              : (p.visible = C.visible !== void 0 ? C.visible : !0),
-            (p.transparent =
-              C.alpha !== void 0 && C.alpha < 1 ? !0 : m.transparent),
-            C.keepAlive !== void 0 && (d[m.uuid].keepAlive = C.keepAlive))
-          : ((p.transparent = m.transparent), (p.visible = m.visible)),
-        (m.wireframe === !0 || m.depthTest === !1) && (p.visible = !1),
-        m.clippingPlanes &&
-          ((p.clipping = !0),
-          (p.clippingPlanes = m.clippingPlanes),
-          (p.clipIntersection = m.clipIntersection),
-          (p.clipShadows = m.clipShadows)),
-        (p.version = m.version));
-    }
-    function $() {
-      let p;
-      p = Object.keys(c);
-      for (let m = 0, C = p.length; m < C; m++) c[p[m]] = void 0;
-      p = Object.keys(h);
-      for (let m = 0, C = p.length; m < C; m++) h[p[m]] = void 0;
-      p = Object.keys(d);
-      for (let m = 0, C = p.length; m < C; m++) {
-        const O = p[m];
-        d[O].used === !1
-          ? (d[O].count++,
-            d[O].keepAlive === !1 && d[O].count > l && delete d[O])
-          : ((d[O].used = !1), (d[O].count = 0));
-      }
-    }
-    ((this.render = function (p, m) {
-      if (this.enabled === !1) {
-        s.render(p, m);
-        return;
-      }
-      const C = s.autoClear;
-      ((s.autoClear = this.autoClear),
-        s.render(p, m),
-        (s.autoClear = C),
-        this.renderOutline(p, m));
-    }),
-      (this.renderOutline = function (p, m) {
-        const C = s.autoClear,
-          O = p.matrixWorldAutoUpdate,
-          g = p.background,
-          _ = s.shadowMap.enabled;
-        ((p.matrixWorldAutoUpdate = !1),
-          (p.background = null),
-          (s.autoClear = !1),
-          (s.shadowMap.enabled = !1),
-          p.traverse(w),
-          s.render(p, m),
-          p.traverse(S),
-          $(),
-          (p.matrixWorldAutoUpdate = O),
-          (p.background = g),
-          (s.autoClear = C),
-          (s.shadowMap.enabled = _));
-      }),
-      (this.autoClear = s.autoClear),
-      (this.domElement = s.domElement),
-      (this.shadowMap = s.shadowMap),
-      (this.clear = function (p, m, C) {
-        s.clear(p, m, C);
-      }),
-      (this.getPixelRatio = function () {
-        return s.getPixelRatio();
-      }),
-      (this.setPixelRatio = function (p) {
-        s.setPixelRatio(p);
-      }),
-      (this.getSize = function (p) {
-        return s.getSize(p);
-      }),
-      (this.setSize = function (p, m, C) {
-        s.setSize(p, m, C);
-      }),
-      (this.setViewport = function (p, m, C, O) {
-        s.setViewport(p, m, C, O);
-      }),
-      (this.setScissor = function (p, m, C, O) {
-        s.setScissor(p, m, C, O);
-      }),
-      (this.setScissorTest = function (p) {
-        s.setScissorTest(p);
-      }),
-      (this.setRenderTarget = function (p) {
-        s.setRenderTarget(p);
-      }));
-  }
-}
 const Vi = {
     environment: "环境",
     lighting: "照明",
@@ -2312,93 +1875,8 @@ const dn = {
     furnitureDetail: "#75869d",
     deviceBody: "#fbfdff",
     glow: "#f4fbff",
-  },
-  Fe = {
-    background: "#cfe9ff",
-    fog: "#cbe8fb",
-    ground: "#b8dcf2",
-    wallColor: "#fff3df",
-    wallOpacity: 0.94,
-    wallEdgeColor: "#31445e",
-    wallEdgeOpacity: 0.56,
-    floorPalette: ["#f7dca5", "#bfe3cf", "#ffc7bc", "#bed8ff", "#dfcdf8"],
-    roomHighlight: "#ffe09d",
-    roomAccent: "#ffd3a7",
-    roomEdgeColor: "#3f5068",
-    foundation: "#9ab8d3",
-    furnitureMain: "#f4b07f",
-    furnitureDetail: "#6f8fbc",
-    deviceBody: "#fff8ee",
-    glow: "#ffbd66",
   };
-function un(t) {
-  return t === "lighting"
-    ? {
-        ...Fe,
-        background: "#ffd994",
-        fog: "#f6d9a4",
-        ground: "#edc47f",
-        wallColor: "#ffe8bd",
-        floorPalette: ["#f2bd64", "#f7cc82", "#efb981", "#eec26e", "#f9d99a"],
-        roomAccent: "#f2b657",
-        roomHighlight: "#ffd477",
-        roomEdgeColor: "#2f415c",
-        wallEdgeColor: "#2f415c",
-        wallEdgeOpacity: 0.62,
-        furnitureMain: "#f1a166",
-        furnitureDetail: "#916b5f",
-        glow: "#ffb12f",
-      }
-    : t === "shade"
-      ? {
-          ...Fe,
-          background: "#b9dfff",
-          fog: "#d8efff",
-          ground: "#a7cce8",
-          floorPalette: ["#afd0f0", "#b7d9ef", "#a9d6e8", "#c5d5f5", "#b7e0f2"],
-          roomAccent: "#94c6e8",
-          furnitureMain: "#77b7d8",
-          furnitureDetail: "#416f99",
-          glow: "#50b8ff",
-        }
-      : t === "environment"
-        ? {
-            ...Fe,
-            background: "#cdeedc",
-            fog: "#e4f8ec",
-            ground: "#b8dec8",
-            floorPalette: [
-              "#c7eac6",
-              "#b9e1cf",
-              "#d8edb8",
-              "#bce5df",
-              "#d0e6ba",
-            ],
-            roomAccent: "#aee1bb",
-            furnitureMain: "#8fd0a2",
-            furnitureDetail: "#5a9071",
-            glow: "#61d49a",
-          }
-        : t === "security"
-          ? {
-              ...Fe,
-              background: "#bfc6ea",
-              fog: "#dce1fb",
-              ground: "#aeb9df",
-              floorPalette: [
-                "#c8c1ea",
-                "#d3bddf",
-                "#c3c9ef",
-                "#dac1df",
-                "#bfcdea",
-              ],
-              roomAccent: "#d9aac2",
-              furnitureMain: "#9fa8d4",
-              furnitureDetail: "#665d94",
-              glow: "#ff7890",
-            }
-          : Fe;
-}
+// ha3d-self: B6 删除卡通风格调色板 Fe、un()（visualStyle 不会是 "cartoon"，见 Ja 处说明）
 const Ae = {
   background: "#c8bcaa",
   fog: "#d9cdbc",
@@ -2474,7 +1952,6 @@ function fn(t) {
           : Ae;
 }
 function Nt(t, s = "overview", o = "glass") {
-  if (o === "cartoon") return un(s);
   if (o === "cream") return fn(s);
   const r = t === "night" ? dn : hn;
   return s === "lighting"
@@ -11389,6 +10866,10 @@ const Wa = {
       ),
     });
   });
+// ===== ha3d-self: F6 宠物组件在 ha3dPet.js 里，选了宠物才加载（B6：首页默认不下载） =====
+const ha3dPet = M.lazy(() =>
+  import("./ha3dPet.js").then((t) => ({ default: t.Ha3dPet })),
+);
 function Ka({
   floor: t,
   project: s,
@@ -11411,6 +10892,7 @@ function Ka({
   onDeviceSelect: w,
   hoveredRoomKey: S,
   setHoveredRoomKey: G,
+  pet: ha3dPetKind = "none", // ha3d-self: F6
 }) {
   const L = M.useRef(null),
     I = Oe();
@@ -11613,6 +11095,12 @@ function Ka({
             ),
           ),
         ),
+      l &&
+        ha3dPetKind !== "none" &&
+        e.jsx(M.Suspense, {
+          fallback: null,
+          children: e.jsx(ha3dPet, { floor: t, kind: ha3dPetKind }),
+        }), // ha3d-self: F6
     ],
   });
 }
@@ -11639,6 +11127,7 @@ function qa({
   onEntitySelect: S,
   onDeviceSelect: G,
   autoRotate: L = !1,
+  pet: ha3dPetKind = "none", // ha3d-self: F6
 }) {
   const I = M.useMemo(
       () => [...t.floors].sort((D, K) => D.level - K.level),
@@ -11715,6 +11204,8 @@ function qa({
                       onDeviceSelect: G,
                       hoveredRoomKey: O,
                       setHoveredRoomKey: g,
+                      // ha3d-self: F6 宠物只在当前楼层（全楼层视图时是 level 最低的楼层）
+                      pet: D === m ? ha3dPetKind : "none",
                     },
                     D.id,
                   ),
@@ -12015,31 +11506,7 @@ function Qa({
     null
   );
 }
-function Ja({ enabled: t }) {
-  const { gl: s, scene: o, camera: r, size: n } = be(),
-    a = M.useMemo(
-      () =>
-        new Ko(s, {
-          defaultAlpha: 0.68,
-          defaultColor: [0.08, 0.13, 0.2],
-          defaultKeepAlive: !0,
-          defaultThickness: 0.0052,
-        }),
-      [s],
-    );
-  return (
-    M.useEffect(() => {
-      a.setSize(n.width, n.height);
-    }, [a, n.height, n.width]),
-    te(
-      () => {
-        t && a.render(o, r);
-      },
-      t ? 1 : 0,
-    ),
-    null
-  );
-}
+// ha3d-self: B6 删除卡通风格描边（Ja + OutlineEffect 类 Ko）：卡通风格已在首页迁移为奶油风格，visualStyle 不会是 "cartoon"
 const Wt = {
   eco: { rain: 56, snow: 42, wind: 5 },
   smooth: { rain: 86, snow: 64, wind: 7 },
@@ -12094,6 +11561,7 @@ function ei({ frame: t, intensity: s, storm: o, quality: r }) {
       h.needsUpdate = !0;
     }),
     e.jsx("lineSegments", {
+      name: "ha3d-weather-rain", // ha3d-self: F3 标注已有粒子
       geometry: d,
       renderOrder: 2,
       children: e.jsx("lineBasicMaterial", {
@@ -12148,6 +11616,7 @@ function ti({ frame: t, intensity: s, quality: o }) {
       c.needsUpdate = !0;
     }),
     e.jsx("points", {
+      name: "ha3d-weather-snow", // ha3d-self: F3 标注已有粒子
       geometry: i,
       renderOrder: 2,
       children: e.jsx("pointsMaterial", {
@@ -12205,6 +11674,7 @@ function si({ frame: t, intensity: s, quality: o }) {
       l.needsUpdate = !0;
     }),
     e.jsx("lineSegments", {
+      name: "ha3d-weather-wind", // ha3d-self: F3 标注已有粒子
       geometry: a,
       renderOrder: 2,
       children: e.jsx("lineBasicMaterial", {
@@ -12231,6 +11701,7 @@ function ri({ enabled: t, frame: s }) {
     }),
     e.jsx("pointLight", {
       ref: o,
+      name: "ha3d-weather-lightning", // ha3d-self: F3 标注已有粒子
       position: [
         s.target[0] - s.distance * 0.28,
         s.target[1] + s.distance * 0.5,
@@ -12310,6 +11781,7 @@ function oi({ frame: t, intensity: s, quality: o, storm: r = !1 }) {
     }),
     e.jsx("group", {
       ref: n,
+      name: "ha3d-weather-fog", // ha3d-self: F3 标注已有粒子
       renderOrder: 0,
       children: c.map((h, u) =>
         e.jsx(
@@ -12365,6 +11837,268 @@ function ni({
       i && e.jsx(ri, { enabled: !0, frame: t }),
     ],
   });
+}
+// ===== ha3d-self: F3 时间与天气同步的环境层（太阳、月亮与星空、云层） =====
+// 天空是 .home-scene 的 CSS 渐变（展示模式画布透明），固定在屏幕上，所以这一层也跟随相机：
+// 放在相机前方远处（比户型远，被户型遮挡），只在渲染时更新位置，本身不触发重绘；
+// 星星闪烁、云飘动靠 t0 的持续动画判断（夜晚有星空、天气不是 clear）驱动。
+const ha3dEnvCounts = {
+    eco: { stars: 60, clouds: 6 },
+    smooth: { stars: 90, clouds: 9 },
+    balanced: { stars: 140, clouds: 12 },
+    high: { stars: 200, clouds: 16 },
+  },
+  ha3dEnvTextures = {};
+function ha3dEnvTexture(t) {
+  if (ha3dEnvTextures[t]) return ha3dEnvTextures[t];
+  const s = document.createElement("canvas");
+  s.width = s.height = 128;
+  const o = s.getContext("2d");
+  if (!o) return null;
+  const r = o.createRadialGradient(64, 64, 0, 64, 64, 64),
+    n = (a, i) => r.addColorStop(a, i);
+  t === "sun"
+    ? (n(0, "rgba(255,253,240,1)"),
+      n(0.2, "rgba(255,240,190,1)"),
+      n(0.27, "rgba(255,214,130,0.5)"),
+      n(1, "rgba(255,196,110,0)"))
+    : t === "moon"
+      ? (n(0.25, "rgba(214,226,255,0.34)"), n(1, "rgba(214,226,255,0)"))
+      : (n(0, "rgba(255,255,255,0.85)"),
+        n(0.45, "rgba(255,255,255,0.4)"),
+        n(1, "rgba(255,255,255,0)"));
+  ((o.fillStyle = r), o.fillRect(0, 0, 128, 128));
+  if (t === "moon") {
+    // 月牙：在另一张画布上画圆再挖掉一块，叠到光晕上
+    const a = document.createElement("canvas");
+    a.width = a.height = 128;
+    const i = a.getContext("2d");
+    i &&
+      ((i.fillStyle = "#f4f1e3"),
+      i.beginPath(),
+      i.arc(64, 64, 30, 0, Math.PI * 2),
+      i.fill(),
+      (i.globalCompositeOperation = "destination-out"),
+      i.beginPath(),
+      i.arc(80, 54, 27, 0, Math.PI * 2),
+      i.fill(),
+      o.drawImage(a, 0, 0));
+  }
+  const a = new wr(s);
+  return ((a.colorSpace = ds), (ha3dEnvTextures[t] = a));
+}
+function ha3dSkySprite({ key: t, ...s }, o, r) {
+  return e.jsx(
+    "sprite",
+    {
+      ...s,
+      raycast: ha3dNoRaycast,
+      children: e.jsx("spriteMaterial", { map: ha3dEnvTexture(o) ?? void 0, transparent: !0, depthWrite: !1, fog: !1, toneMapped: !1, ...r }),
+    },
+    t,
+  );
+}
+// 方位角 90°（东）→ 屏幕右上偏中，270°（西）→ 最右；高度越高越靠上。单位是半个屏幕高度。
+const ha3dSkyX = (t) => 0.35 + X.clamp((((t % 360) + 360) % 360 - 90) / 180, 0, 1);
+function ha3dEnvironmentLayer({ environment: t, frame: s, quality: o }) {
+  const r = M.useRef(null),
+    n = M.useRef(null),
+    a = M.useRef(null),
+    i = M.useRef(null),
+    d = M.useRef(null),
+    l = xt(),
+    c = t.weatherKind,
+    h = c === "clear" || c === "cloudy",
+    u = t.phase === "day" && h,
+    f = t.phase === "night" && h,
+    j = c === "cloudy",
+    v = ha3dEnvCounts[o] ?? ha3dEnvCounts.high,
+    y = t.phase === "night",
+    x = ha3dSkyX(y ? t.azimuth + 180 : t.azimuth),
+    b = y
+      ? 0.55 + 0.3 * X.clamp(Math.abs(t.elevation) / 60, 0, 1)
+      : 0.5 + 0.35 * X.clamp(t.elevation / 60, 0, 1),
+    w = M.useMemo(
+      () =>
+        f
+          ? [0, 1, 2].map((g) => {
+              const k = Math.floor(v.stars / 3) + (g < v.stars % 3 ? 1 : 0),
+                p = new Float32Array(k * 3);
+              for (let q = 0; q < k; q += 1) {
+                const G = g * 1e3 + q;
+                ((p[q * 3] = (Z(G + 11) - 0.5) * 4.4),
+                  (p[q * 3 + 1] = X.lerp(-0.08, 1, Z(G + 71) ** 0.8)));
+              }
+              const L = new Ze();
+              return (
+                L.setAttribute("position", new zt(p, 3)),
+                { geometry: L, phase: g * 2.1, speed: 0.8 + g * 0.45, size: [2.6, 2, 1.5][g] }
+              );
+            })
+          : [],
+      [f, v.stars],
+    ),
+    S = M.useMemo(
+      () =>
+        j
+          ? Array.from({ length: v.clouds }, (g, k) => ({
+              x: Z(k + 901) * 8,
+              y: X.lerp(0.3, 0.95, Z(k + 951)),
+              w: X.lerp(0.42, 0.8, Z(k + 991)),
+              speed: X.lerp(0.012, 0.032, Z(k + 1031)),
+              opacity: X.lerp(0.55, 0.9, Z(k + 1071)),
+            }))
+          : [],
+      [j, v.clouds],
+    );
+  return (
+    M.useEffect(() => () => w.forEach((g) => g.geometry.dispose()), [w]),
+    te(({ camera: g, size: k, clock: p }) => {
+      const q = r.current,
+        G = n.current;
+      if (!q || !G) return;
+      const L = Math.tan(X.degToRad((g.fov ?? 32) / 2)),
+        I = Math.min(140, Math.max(60, s.distance * 6)),
+        $ = k.width / Math.max(1, k.height),
+        m = Math.min(x, $ * 0.92 - 0.12),
+        C = l ? 0 : p.elapsedTime;
+      (q.position.copy(g.position),
+        q.quaternion.copy(g.quaternion),
+        q.scale.setScalar(I * L),
+        G.position.set(0, 0, -1 / L),
+        a.current && a.current.position.set(m, b, 0),
+        i.current && i.current.position.set(m, b, 0),
+        d.current &&
+          d.current.children.forEach((O, _) => {
+            const E = w[_];
+            E &&
+              (O.material.opacity = l
+                ? 0.8
+                : 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(C * E.speed + E.phase)));
+          }));
+      const ha3dClouds = q.getObjectByName("ha3d-env-clouds");
+      if (ha3dClouds) {
+        const _ = 2 * ($ + 0.9);
+        ha3dClouds.children.forEach((E, P) => {
+          const N = S[P];
+          N && (E.position.x = ((((N.x + C * N.speed) % _) + _) % _) - _ / 2);
+        });
+      }
+    }),
+    e.jsx("group", {
+      ref: r,
+      name: "ha3d-env-layer",
+      children: e.jsxs("group", {
+        ref: n,
+        children: [
+          u && ha3dSkySprite({ ref: a, name: "ha3d-env-sun", renderOrder: -2, position: [x, b, 0], scale: [0.6, 0.6, 1] }, "sun"),
+          f && ha3dSkySprite({ ref: i, name: "ha3d-env-moon", renderOrder: -2, position: [x, b, 0], scale: [0.3, 0.3, 1] }, "moon"),
+          f &&
+            e.jsx("group", {
+              ref: d,
+              name: "ha3d-env-stars",
+              children: w.map((g, k) =>
+                e.jsx(
+                  "points",
+                  {
+                    geometry: g.geometry,
+                    raycast: ha3dNoRaycast,
+                    renderOrder: -3,
+                    frustumCulled: !1,
+                    children: e.jsx("pointsMaterial", {
+                      color: "#eef3ff",
+                      size: g.size,
+                      sizeAttenuation: !1,
+                      transparent: !0,
+                      opacity: 0.8,
+                      depthWrite: !1,
+                      fog: !1,
+                      toneMapped: !1,
+                    }),
+                  },
+                  k,
+                ),
+              ),
+            }),
+          j &&
+            e.jsx("group", {
+              name: "ha3d-env-clouds",
+              children: S.map((g, k) =>
+                ha3dSkySprite(
+                  { key: k, renderOrder: -1, position: [g.x - 4, g.y, 0], scale: [g.w * 1.9, g.w * 0.8, 1] },
+                  "cloud",
+                  { color: y ? "#6c7488" : "#f5f8fc", opacity: g.opacity * (0.45 + 0.45 * t.intensity) },
+                ),
+              ),
+            }),
+        ],
+      }),
+    })
+  );
+}
+// ===== ha3d-self: F3 主光源跟随太阳（夜晚取对面方位当月光）；颜色、强度按昼夜阶段和天气 =====
+function ha3dEnvironmentLight(t) {
+  if (!t) return null;
+  const s = t.phase === "night",
+    o = X.degToRad(s ? t.azimuth + 180 : t.azimuth),
+    r = X.degToRad(Math.abs(t.elevation)),
+    n = t.phase === "day" ? 1 : s ? 0.35 : 0.75,
+    a =
+      t.weatherKind === "cloudy"
+        ? 0.8
+        : t.weatherKind === "rain" || t.weatherKind === "storm"
+          ? 0.7
+          : 1;
+  return {
+    position: [
+      14 * Math.cos(r) * Math.sin(o),
+      Math.max(3, 14 * Math.sin(r)),
+      -14 * Math.cos(r) * Math.cos(o),
+    ],
+    color: t.phase === "day" ? void 0 : s ? "#9fb4ff" : "#ffc48a",
+    scale: n * a,
+  };
+}
+// ===== ha3d-self: B6 持续动画限帧（eco 20 fps、smooth 30 fps，标签页隐藏时暂停） =====
+// frameloop 为 demand，按帧率定时 invalidate；同时用优先级 1 的 useFrame 接管渲染，
+// 设备自带的逐帧动画（空调出风、风扇等会每帧 invalidate）在这期间也不会超过上限，被跳过的帧补一次延迟渲染。
+function ha3dFrameTicker({ fps: t }) {
+  const s = be((n) => n.invalidate),
+    o = M.useRef(0),
+    r = M.useRef(0);
+  return (
+    M.useEffect(() => {
+      let n = 0;
+      const a = () => {
+          n && (window.clearInterval(n), (n = 0));
+        },
+        i = () => {
+          (a(), document.hidden || (n = window.setInterval(() => s(), 1e3 / t)));
+        };
+      return (
+        i(),
+        document.addEventListener("visibilitychange", i),
+        () => {
+          (a(),
+            document.removeEventListener("visibilitychange", i),
+            r.current && window.clearTimeout(r.current),
+            (r.current = 0));
+        }
+      );
+    }, [t, s]),
+    te((n) => {
+      const a = performance.now(),
+        i = (1e3 / t) * 0.95,
+        d = a - o.current;
+      d >= i
+        ? ((o.current = a), n.gl.render(n.scene, n.camera))
+        : r.current ||
+          (r.current = window.setTimeout(() => {
+            ((r.current = 0), s());
+          }, i - d));
+    }, 1),
+    null
+  );
 }
 // ===== ha3d-self: B2 双击（双击触摸）后拖动改为平移 =====
 // 第二次按下与上次按下间隔 ≤ 350 ms、距离 ≤ 30 px 时，本次拖动的左键/单指改为 PAN，抬起后恢复旋转。
@@ -12460,6 +12194,8 @@ const t0 = M.memo(function ({
     controlPanelOpen: O = !1,
     focusEntityId: g,
     weather: _,
+    environment: ha3dEnv, // ha3d-self: F3 { phase, elevation, azimuth, weatherKind, intensity, windSpeed }
+    pet: ha3dPetKind = "none", // ha3d-self: F6 none / cat / dog
   }) {
     const k = M.useMemo(
         () =>
@@ -12500,8 +12236,22 @@ const t0 = M.memo(function ({
       se = K.extraLights !== "minimal",
       ve = k.distance * (P ? 5.6 : N ? 7.4 : u ? 3.9 : 2.5),
       ue = k.distance * (P ? 11.2 : N ? 14.8 : u ? 8.4 : 5.8),
-      fe = !!(u && !P && _ && _.kind !== "clear"),
-      Me = m || fe ? "always" : "demand";
+      // ha3d-self: F3/F6/B6 持续动画：天气不是 clear（含多云）、夜晚有星空、宠物在走、自动旋转；
+      // eco/smooth 下改为 demand + ha3dFrameTicker 限帧，balanced/high 仍是 always
+      ha3dReduced = xt(),
+      ha3dEnvOn = !!(u && !P && ha3dEnv),
+      ha3dStars =
+        ha3dEnvOn &&
+        ha3dEnv.phase === "night" &&
+        (ha3dEnv.weatherKind === "clear" || ha3dEnv.weatherKind === "cloudy"),
+      fe =
+        !!(u && !P && _ && _.kind !== "clear") ||
+        (ha3dStars && !ha3dReduced) ||
+        (u && ha3dPetKind !== "none" && !ha3dReduced),
+      ha3dLimitFps = m || fe ? (p === "eco" ? 20 : p === "smooth" ? 30 : 0) : 0,
+      Me = (m || fe) && !ha3dLimitFps ? "always" : "demand",
+      ha3dLight = ha3dEnvOn ? ha3dEnvironmentLight(ha3dEnv) : null,
+      ha3dLightScale = ha3dLight ? ha3dLight.scale : 1;
     return e.jsxs(
       xr,
       {
@@ -12535,25 +12285,39 @@ const t0 = M.memo(function ({
           if (new URLSearchParams(location.search).has("ha3dDebug"))
             window.__ha3dDebug = { get: ha3dState.get };
         },
-        children: [
+        // ha3d-self: B6 Canvas 内容外包一层画质 context，eco 下 ee（Edges）不渲染
+        children: e.jsxs(ha3dQualityContext.Provider, {
+          value: p,
+          children: [
           e.jsx(Tn, {}),
+          ha3dLimitFps > 0 && e.jsx(ha3dFrameTicker, { fps: ha3dLimitFps }), // ha3d-self: B6
           !u && e.jsx("color", { attach: "background", args: [F] }),
           e.jsx("fog", { attach: "fog", args: [u ? R.fog : F, ve, ue] }),
           e.jsx("ambientLight", {
-            intensity: (P ? 0.72 : N ? 0.4 : z ? 0.56 : u ? 0.58 : 0.76) * V,
+            intensity:
+              (P ? 0.72 : N ? 0.4 : z ? 0.56 : u ? 0.58 : 0.76) *
+              V *
+              ha3dLightScale, // ha3d-self: F3
             color: P ? "#fff2df" : N ? "#eadfce" : z ? "#a8b5dc" : "#edf4ff",
           }),
           e.jsx("hemisphereLight", {
             args: [
               P ? "#fff4df" : N ? "#f4eadb" : z ? "#c3ceee" : "#f5f8ff",
               P ? "#7fa5c4" : N ? "#7f715f" : z ? "#050817" : "#647b9a",
-              (P ? 1.08 : N ? 0.62 : z ? 0.78 : u ? 0.82 : 1.2) * V,
+              (P ? 1.08 : N ? 0.62 : z ? 0.78 : u ? 0.82 : 1.2) *
+                V *
+                ha3dLightScale, // ha3d-self: F3
             ],
           }),
           e.jsx("directionalLight", {
-            position: [8, 14, 9],
-            color: P ? "#fff0cc" : N ? "#f5e3c8" : z ? "#e4eaff" : "#ffffff",
-            intensity: (P ? 1.44 : N ? 1.12 : z ? 0.96 : u ? 0.88 : 1.8) * U,
+            position: ha3dLight ? ha3dLight.position : [8, 14, 9], // ha3d-self: F3
+            color:
+              (ha3dLight && ha3dLight.color) ||
+              (P ? "#fff0cc" : N ? "#f5e3c8" : z ? "#e4eaff" : "#ffffff"),
+            intensity:
+              (P ? 1.44 : N ? 1.12 : z ? 0.96 : u ? 0.88 : 1.8) *
+              U *
+              ha3dLightScale, // ha3d-self: F3
             castShadow: K.shadows,
             "shadow-mapSize": K.shadowMapSize,
             "shadow-bias": -16e-5,
@@ -12627,6 +12391,12 @@ const t0 = M.memo(function ({
             weather: _,
             visualStyle: x,
           }),
+          ha3dEnvOn &&
+            e.jsx(ha3dEnvironmentLayer, {
+              environment: ha3dEnv,
+              frame: k,
+              quality: p,
+            }), // ha3d-self: F3
           e.jsx(qa, {
             project: s,
             entities: o,
@@ -12650,6 +12420,7 @@ const t0 = M.memo(function ({
             onEntitySelect: L,
             onDeviceSelect: I,
             autoRotate: m && !O,
+            pet: u ? ha3dPetKind : "none", // ha3d-self: F6
           }),
           e.jsx(Qa, {
             preset: a,
@@ -12661,7 +12432,6 @@ const t0 = M.memo(function ({
             controlPanelOpen: O,
             focusEntityId: g,
           }),
-          P && e.jsx(Ja, { enabled: P }),
           e.jsx(yr, {
             makeDefault: !0,
             enableDamping: !0,
@@ -12671,7 +12441,8 @@ const t0 = M.memo(function ({
             maxPolarAngle: Math.PI / 2.05,
           }),
           e.jsx(ha3dDoubleTapPan, {}), // ha3d-self: B2
-        ],
+          ],
+        }),
       },
       p,
     );

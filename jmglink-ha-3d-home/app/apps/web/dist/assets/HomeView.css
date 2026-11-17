@@ -162,6 +162,130 @@
   button:focus-visible {
   outline-color: var(--cream-accent);
 }
+/* ha3d-self: F3/F6 设置面板新增的三段按钮和天气实体下拉框 */
+.home-settings-segmented.ha3d-segmented-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.home-settings-panel .ha3d-weather-select .app-select-trigger {
+  min-height: 2.25rem;
+  border-radius: 0.75rem;
+}
+/* ===== ha3d-self: F3 时间与天气同步的天空背景 =====
+   展示模式画布透明，.home-scene 的背景就是天空。先按昼夜阶段、再按天气（夜晚另一套）设置 --ha3d-sky，
+   只在全屋、照明、环境模式下生效（遮阳、安防模式保留原来的深色背景）。夜晚和雨天比白天暗。 */
+.home-workspace.env-sync {
+  --ha3d-sky: radial-gradient(ellipse at 76% 8%, rgba(255, 238, 196, 0.2), transparent 36%),
+    linear-gradient(165deg, #2f558e, #4a77b2 48%, #7da1d0);
+}
+.home-workspace.env-sync.env-phase-dawn {
+  --ha3d-sky: radial-gradient(ellipse at 66% 14%, rgba(255, 200, 140, 0.3), transparent 42%),
+    linear-gradient(170deg, #2b3a6c, #675d8c 52%, #c58b6d);
+}
+.home-workspace.env-sync.env-phase-dusk {
+  --ha3d-sky: radial-gradient(ellipse at 84% 16%, rgba(255, 168, 110, 0.32), transparent 44%),
+    linear-gradient(170deg, #252f5c, #685286 50%, #c97c5e);
+}
+.home-workspace.env-sync.env-phase-night {
+  --ha3d-sky: radial-gradient(ellipse at 50% 108%, rgba(58, 82, 138, 0.32), transparent 58%),
+    linear-gradient(180deg, #040818, #0b1530 55%, #16244a);
+}
+.home-workspace.env-sync.env-weather-cloudy {
+  --ha3d-sky: linear-gradient(170deg, #3a4a64, #5b6d89 52%, #8494ab);
+}
+.home-workspace.env-sync.env-weather-rain {
+  --ha3d-sky: linear-gradient(175deg, #232d3d, #3a4659 52%, #59667a);
+}
+.home-workspace.env-sync.env-weather-storm {
+  --ha3d-sky: linear-gradient(175deg, #151a26, #262d3e 52%, #3d4559);
+}
+.home-workspace.env-sync.env-weather-snow {
+  --ha3d-sky: linear-gradient(170deg, #4d5d77, #74849c 52%, #a2b0c3);
+}
+.home-workspace.env-sync.env-weather-fog {
+  --ha3d-sky: linear-gradient(170deg, #4f5a6a, #727d8c 52%, #98a1ad);
+}
+.home-workspace.env-sync.env-phase-day.env-weather-wind {
+  --ha3d-sky: linear-gradient(165deg, #2d5288, #4874ad 48%, #87a8d2);
+}
+.home-workspace.env-sync.env-phase-night.env-weather-cloudy {
+  --ha3d-sky: linear-gradient(180deg, #080d1a, #131c2f 55%, #222d44);
+}
+.home-workspace.env-sync.env-phase-night.env-weather-rain {
+  --ha3d-sky: linear-gradient(180deg, #05070f, #0d121e 55%, #1a2131);
+}
+.home-workspace.env-sync.env-phase-night.env-weather-storm {
+  --ha3d-sky: linear-gradient(180deg, #030409, #0a0d16 55%, #141a28);
+}
+.home-workspace.env-sync.env-phase-night.env-weather-snow {
+  --ha3d-sky: linear-gradient(180deg, #121a2b, #233049 55%, #3a4862);
+}
+.home-workspace.env-sync.env-phase-night.env-weather-fog {
+  --ha3d-sky: linear-gradient(180deg, #121722, #222a38 55%, #353e4e);
+}
+.home-workspace.env-sync.env-phase-night.env-weather-wind {
+  --ha3d-sky: radial-gradient(ellipse at 50% 108%, rgba(58, 82, 138, 0.28), transparent 58%),
+    linear-gradient(180deg, #050a1b, #0c1733 55%, #18264c);
+}
+/* 奶油风格：白天沿用暖色调；夜晚天空压暗，标题文字改为浅色（见下面 env-phase-night 的文字规则） */
+.home-workspace.visual-style-cream.env-sync {
+  --ha3d-sky: radial-gradient(ellipse at 74% 8%, rgba(255, 246, 222, 0.34), transparent 38%),
+    radial-gradient(ellipse at 16% 86%, rgba(78, 65, 49, 0.2), transparent 50%),
+    linear-gradient(145deg, #ae9f88, #d8cdb9 52%, #a29379);
+}
+.home-workspace.visual-style-cream.env-sync.env-phase-dawn {
+  --ha3d-sky: radial-gradient(ellipse at 66% 14%, rgba(255, 214, 170, 0.36), transparent 42%),
+    linear-gradient(150deg, #a48b7b, #d6b39a 52%, #9a8070);
+}
+.home-workspace.visual-style-cream.env-sync.env-phase-dusk {
+  --ha3d-sky: radial-gradient(ellipse at 84% 16%, rgba(255, 196, 150, 0.36), transparent 44%),
+    linear-gradient(150deg, #9a7f72, #cfa48a 52%, #8e7466);
+}
+.home-workspace.visual-style-cream.env-sync.env-phase-night {
+  --ha3d-sky: radial-gradient(ellipse at 50% 104%, rgba(54, 46, 37, 0.24), transparent 58%),
+    linear-gradient(150deg, #5d554b, #776d60 52%, #554e45);
+}
+.home-workspace.visual-style-cream.env-sync.env-weather-cloudy {
+  --ha3d-sky: linear-gradient(150deg, #a19a8f, #c5beb2 52%, #988f83);
+}
+.home-workspace.visual-style-cream.env-sync.env-weather-rain {
+  --ha3d-sky: linear-gradient(160deg, #8b857b, #a9a297 52%, #7f786e);
+}
+.home-workspace.visual-style-cream.env-sync.env-weather-storm {
+  --ha3d-sky: linear-gradient(160deg, #77716a, #918a80 52%, #6c665f);
+}
+.home-workspace.visual-style-cream.env-sync.env-weather-snow {
+  --ha3d-sky: linear-gradient(150deg, #b5b1aa, #d9d6cf 52%, #aaa59d);
+}
+.home-workspace.visual-style-cream.env-sync.env-weather-fog {
+  --ha3d-sky: linear-gradient(150deg, #aaa59c, #c9c4ba 52%, #a09a90);
+}
+.home-workspace.visual-style-cream.env-sync.env-phase-night.env-weather-cloudy {
+  --ha3d-sky: linear-gradient(150deg, #59524a, #70685d 52%, #514a43);
+}
+.home-workspace.visual-style-cream.env-sync.env-phase-night.env-weather-rain {
+  --ha3d-sky: linear-gradient(160deg, #4f4942, #655e55 52%, #48433d);
+}
+.home-workspace.visual-style-cream.env-sync.env-phase-night.env-weather-storm {
+  --ha3d-sky: linear-gradient(160deg, #45403a, #5a544c 52%, #3f3a35);
+}
+.home-workspace.visual-style-cream.env-sync.env-phase-night.env-weather-snow {
+  --ha3d-sky: linear-gradient(150deg, #6a645b, #857e73 52%, #625c54);
+}
+.home-workspace.visual-style-cream.env-sync.env-phase-night.env-weather-fog {
+  --ha3d-sky: linear-gradient(150deg, #625c54, #7b756b 52%, #5a554e);
+}
+.home-workspace.env-sync:is(.scene-mode-overview, .scene-mode-lighting, .scene-mode-environment) .home-scene {
+  background: var(--ha3d-sky);
+}
+/* 奶油风格夜晚：深色天空上的标题用浅色字 */
+.home-workspace.visual-style-cream.env-sync.env-phase-night
+  :is(.scene-title h1, .scene-title h1 .scene-name, .scene-title h1 .scene-temp-pill, .scene-title-meta span, .scene-title-meta strong, .scene-connection) {
+  color: #f6efe4;
+  text-shadow: 0 1px 8px rgba(30, 24, 18, 0.35);
+}
+.home-workspace.visual-style-cream.env-sync.env-phase-night .scene-title-meta svg {
+  color: #efe6d8b8;
+}
 @media (prefers-reduced-motion: reduce) {
   .scene-shortcuts .spin-icon {
     animation: none;

@@ -9,7 +9,6 @@ import {
     s as Lt,
     a0 as Pt,
     a1 as Qa,
-    O as Rt,
     _ as Tt,
     x as Ua,
     w as Xa,
@@ -43,7 +42,6 @@ import {
     R as us,
     X as ut,
 } from "./AppSelect.js";
-import "./hls.js";
 import {
     u as Ie,
     c as Z,
@@ -61,17 +59,14 @@ import { j as e } from "./three.js";
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
+ *
+ * ha3d-self: B6 本文件里每个 lucide 图标前都有这同一份许可声明，合并为这一处
  */ const vs = [
     ["path", { d: "m12 19-7-7 7-7", key: "1l729n" }],
     ["path", { d: "M19 12H5", key: "x3x0zl" }],
   ],
   lt = Z("arrow-left", vs);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const gs = [
+const gs = [
     ["path", { d: "M3 3h18", key: "o7r712" }],
     ["path", { d: "M20 7H8", key: "gd2fo2" }],
     ["path", { d: "M20 11H8", key: "1ynp89" }],
@@ -81,44 +76,9 @@ import { j as e } from "./three.js";
     ["circle", { cx: "4", cy: "19", r: "2", key: "p3m9r0" }],
   ],
   js = Z("blinds", gs);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const ws = [
-    ["path", { d: "M12 20v-9", key: "1qisl0" }],
-    [
-      "path",
-      {
-        d: "M14 7a4 4 0 0 1 4 4v3a6 6 0 0 1-12 0v-3a4 4 0 0 1 4-4z",
-        key: "uouzyp",
-      },
-    ],
-    ["path", { d: "M14.12 3.88 16 2", key: "qol33r" }],
-    ["path", { d: "M21 21a4 4 0 0 0-3.81-4", key: "1b0z45" }],
-    ["path", { d: "M21 5a4 4 0 0 1-3.55 3.97", key: "5cxbf6" }],
-    ["path", { d: "M22 13h-4", key: "1jl80f" }],
-    ["path", { d: "M3 21a4 4 0 0 1 3.81-4", key: "1fjd4g" }],
-    ["path", { d: "M3 5a4 4 0 0 0 3.55 3.97", key: "1d7oge" }],
-    ["path", { d: "M6 13H2", key: "82j7cp" }],
-    ["path", { d: "m8 2 1.88 1.88", key: "fmnt4t" }],
-    ["path", { d: "M9 7.13V6a3 3 0 1 1 6 0v1.13", key: "1vgav8" }],
-  ],
-  ks = Z("bug", ws);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Is = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]],
+const Is = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]],
   Ss = Z("chevron-right", Is);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ns = [
+const Ns = [
     [
       "path",
       {
@@ -130,12 +90,7 @@ import { j as e } from "./three.js";
     ["path", { d: "M17 21H9", key: "1u2q02" }],
   ],
   $s = Z("cloud-fog", Ns);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ms = [
+const Ms = [
     [
       "path",
       {
@@ -146,12 +101,7 @@ import { j as e } from "./three.js";
     ["path", { d: "m13 12-3 5h4l-3 5", key: "1t22er" }],
   ],
   Cs = Z("cloud-lightning", Ms);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const _s = [
+const _s = [
     [
       "path",
       {
@@ -164,12 +114,7 @@ import { j as e } from "./three.js";
     ["path", { d: "M12 16v6", key: "c8a4gj" }],
   ],
   zs = Z("cloud-rain", _s);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const As = [
+const As = [
     [
       "path",
       {
@@ -185,23 +130,13 @@ import { j as e } from "./three.js";
     ["path", { d: "M16 19h.01", key: "1vcnzz" }],
   ],
   Ds = Z("cloud-snow", As);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Es = [
+const Es = [
     ["path", { d: "M4 5h16", key: "1tepv9" }],
     ["path", { d: "M4 12h16", key: "1lakjw" }],
     ["path", { d: "M4 19h16", key: "1djgab" }],
   ],
   Fs = Z("menu", Es);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Rs = [
+const Rs = [
     [
       "path",
       {
@@ -211,12 +146,7 @@ import { j as e } from "./three.js";
     ],
   ],
   Hs = Z("moon", Rs);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ts = [
+const Ts = [
     [
       "rect",
       { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "afitv7" },
@@ -225,12 +155,7 @@ import { j as e } from "./three.js";
     ["path", { d: "m10 15-3-3 3-3", key: "1pgupc" }],
   ],
   Ps = Z("panel-right-open", Ts);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ls = [
+const Ls = [
     ["path", { d: "M12 17v5", key: "bb1du9" }],
     [
       "path",
@@ -241,12 +166,7 @@ import { j as e } from "./three.js";
     ],
   ],
   Os = Z("pin", Ls);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ws = [
+const Ws = [
     [
       "path",
       { d: "M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8", key: "1p45f6" },
@@ -265,341 +185,18 @@ import { j as e } from "./three.js";
     ["path", { d: "M21 5h-7", key: "ha3d-s7" }],
     ["path", { d: "M8 10v4", key: "ha3d-s8" }],
     ["path", { d: "M8 12H3", key: "ha3d-s9" }],
-  ]),
-  Bs = { enabled: !1, modelShowcase: "none", weatherState: "live" },
-  Xs = [
-    { label: "真实天气", value: "live" },
-    { label: "晴天", value: "sunny" },
-    { label: "小雨", value: "rainy" },
-    { label: "大雨", value: "pouring" },
-    { label: "下雪", value: "snowy" },
-    { label: "刮风", value: "windy" },
-    { label: "雷雨", value: "lightning-rainy" },
-    { label: "有雾", value: "fog" },
-  ],
-  Ot = [
-    { label: "不展示", value: "none", description: "不叠加临时模型" },
-    {
-      label: "照明模型",
-      value: "lighting",
-      description: "灯具、灯带与开关控制灯",
-    },
-    {
-      label: "开关插座",
-      value: "switch",
-      description: "墙壁开关、场景按钮与插座",
-    },
-    { label: "遮阳窗帘", value: "shade", description: "窗帘、百叶和卷帘" },
-    {
-      label: "空调温控",
-      value: "climate",
-      description: "壁挂、中央、柜机和温控面板",
-    },
-    {
-      label: "环境传感",
-      value: "sensor",
-      description: "温湿度、照度、CO₂、PM2.5 等",
-    },
-    {
-      label: "安防模型",
-      value: "security",
-      description: "门锁、门磁、人体、烟感、水浸和安防面板",
-    },
-    {
-      label: "摄像头",
-      value: "camera",
-      description: "墙面、云台、枪机和门铃摄像头",
-    },
-    {
-      label: "风扇影音",
-      value: "fan_media",
-      description: "风扇、电视、音箱和扫地机器人",
-    },
-    { label: "全部模型", value: "all", description: "叠加全部可用模型" },
-  ],
-  Wt = "2026-08-13T00:00:00.000Z";
-function K(t, a, s, i, r = {}, d) {
-  return {
-    areaId: d,
-    attributes: r,
-    domain: a,
-    entityId: t,
-    lastChanged: Wt,
-    lastUpdated: Wt,
-    name: s,
-    state: i,
-  };
-}
-function Ks() {
-  return !1;
-}
-function ft() {
-  return Ks();
-}
-function qs(t) {
-  const a = [
-    {
-      condition: t,
-      datetime: "2026-08-14T09:00:00+08:00",
-      precipitation_probability: t === "sunny" ? 8 : 62,
-      temperature: 32,
-      templow: 27,
-    },
-    {
-      condition: "partlycloudy",
-      datetime: "2026-08-15T09:00:00+08:00",
-      precipitation_probability: 18,
-      temperature: 34,
-      templow: 28,
-    },
-    {
-      condition: "rainy",
-      datetime: "2026-08-16T09:00:00+08:00",
-      precipitation_probability: 58,
-      temperature: 31,
-      templow: 26,
-    },
-    {
-      condition: "windy",
-      datetime: "2026-08-17T09:00:00+08:00",
-      precipitation_probability: 24,
-      temperature: 30,
-      templow: 25,
-    },
-  ];
-  return K(
-    "weather.dev_weather",
-    "weather",
-    "开发天气",
-    t,
-    {
-      fog: {
-        forecast: a,
-        humidity: 94,
-        temperature: 13,
-        visibility: 0.8,
-        wind_speed: 4,
-      },
-      "lightning-rainy": {
-        forecast: a,
-        humidity: 91,
-        precipitation: 12,
-        temperature: 18,
-        wind_speed: 28,
-      },
-      pouring: {
-        forecast: a,
-        humidity: 88,
-        precipitation: 16,
-        temperature: 19,
-        wind_speed: 16,
-      },
-      rainy: {
-        forecast: a,
-        humidity: 82,
-        precipitation: 4,
-        temperature: 20,
-        wind_speed: 9,
-      },
-      snowy: {
-        forecast: a,
-        humidity: 76,
-        precipitation: 6,
-        temperature: -2,
-        wind_speed: 7,
-      },
-      sunny: { forecast: a, humidity: 46, temperature: 26, wind_speed: 5 },
-      windy: { forecast: a, humidity: 58, temperature: 22, wind_speed: 30 },
-    }[t],
-  );
-}
-const Qs = {
-  all: [],
-  camera: ["camera"],
-  climate: ["climate"],
-  fan_media: ["fan", "media_player", "vacuum"],
-  lighting: ["light"],
-  none: [],
-  security: ["binary_sensor", "lock", "alarm_control_panel"],
-  sensor: ["sensor"],
-  shade: ["cover"],
-  switch: ["switch"],
-};
-function sa(t) {
-  if (t === "none") return [];
-  if (t === "all") return [...Rt];
-  const a = new Set(Qs[t]);
-  return Rt.filter((s) => a.has(s.kind));
-}
-function Zs(t, a) {
-  const s = `${t.kind}.dev_model_${t.id.replace(/\W+/g, "_")}`,
-    i = { model_id: t.id, friendly_name: t.label };
-  return t.kind === "light"
-    ? K(s, "light", t.label, "on", {
-        ...i,
-        brightness: 218,
-        rgb_color: [255, 204, 138],
-      })
-    : t.kind === "switch"
-      ? K(s, "switch", t.label, "on", i)
-      : t.kind === "cover"
-        ? K(s, "cover", t.label, "open", { ...i, current_position: 72 })
-        : t.kind === "climate"
-          ? K(s, "climate", t.label, "cool", {
-              ...i,
-              current_temperature: 27,
-              temperature: 24,
-            })
-          : t.kind === "sensor"
-            ? K(
-                s,
-                "sensor",
-                t.label,
-                String(a % 3 === 0 ? 27.6 : a % 3 === 1 ? 58 : 820),
-                {
-                  ...i,
-                  unit_of_measurement:
-                    a % 3 === 0 ? "°C" : a % 3 === 1 ? "%" : "ppm",
-                },
-              )
-            : t.kind === "binary_sensor"
-              ? K(s, "binary_sensor", t.label, "on", {
-                  ...i,
-                  device_class: t.id.includes("door")
-                    ? "door"
-                    : t.id.includes("water")
-                      ? "moisture"
-                      : t.id.includes("smoke")
-                        ? "smoke"
-                        : "motion",
-                })
-              : t.kind === "lock"
-                ? K(s, "lock", t.label, "unlocked", i)
-                : t.kind === "camera"
-                  ? K(s, "camera", t.label, "idle", i)
-                  : t.kind === "fan"
-                    ? K(s, "fan", t.label, "on", {
-                        ...i,
-                        percentage: 68,
-                        oscillating: !0,
-                      })
-                    : t.kind === "media_player"
-                      ? K(s, "media_player", t.label, "playing", {
-                          ...i,
-                          media_title: "模型预览",
-                        })
-                      : t.kind === "vacuum"
-                        ? K(s, "vacuum", t.label, "cleaning", i)
-                        : t.kind === "alarm_control_panel"
-                          ? K(
-                              s,
-                              "alarm_control_panel",
-                              t.label,
-                              "armed_home",
-                              i,
-                            )
-                          : K(s, t.kind, t.label, "on", i);
-}
-function Us(t) {
-  return sa(t).map(Zs);
-}
-function Gs(t) {
-  const a = [
-    ...t.rooms.flatMap((s) => s.polygon),
-    ...t.walls.flatMap((s) => [s.start, s.end]),
-    ...t.furniture.map((s) => s.position),
-  ];
-  return a.length
-    ? a.reduce(
-        (s, i) => ({
-          maxX: Math.max(s.maxX, i[0]),
-          maxZ: Math.max(s.maxZ, i[1]),
-          minX: Math.min(s.minX, i[0]),
-          minZ: Math.min(s.minZ, i[1]),
-        }),
-        { maxX: -1 / 0, maxZ: -1 / 0, minX: 1 / 0, minZ: 1 / 0 },
-      )
-    : { minX: -1.5, maxX: 1.5, minZ: -1.5, maxZ: 1.5 };
-}
-function Ys(t, a) {
-  return t.placement === "ceiling"
-    ? Math.max(0.2, a - 0.08)
-    : t.id === "climate.wall_ac"
-      ? Math.max(0.2, a - 0.32)
-      : t.defaultHeight;
-}
-function Js(t, a, s) {
-  if (!ft() || !a.enabled) return [];
-  const i = sa(a.modelShowcase),
-    r = t.floors.find((N) => N.id === s) ?? t.floors[0];
-  if (!r || !i.length) return [];
-  const d = Gs(r),
-    f = Math.min(6, Math.max(3, Math.ceil(Math.sqrt(i.length)))),
-    m = 1.06,
-    y = 1.05,
-    I = d.minX + y,
-    w = d.minZ + y,
-    _ = Math.max(I, d.maxX - y),
-    P = Math.max(w, d.maxZ - y);
-  return i.map((N, W) => {
-    var B;
-    const z = W % f,
-      x = Math.floor(W / f),
-      v = Math.min(_, I + z * m),
-      U = Math.min(P, w + x * m);
-    return {
-      entityId: `${N.kind}.dev_model_${N.id.replace(/\W+/g, "_")}`,
-      floorId: r.id,
-      id: `dev-model-${N.id}`,
-      kind: N.kind,
-      modelId: N.id,
-      position: [v, Ys(N, r.height), U],
-      rotation: [0, N.placement === "wall" ? Math.PI : 0, 0],
-      roomId:
-        (B = r.rooms.find((D) => D.polygon.length)) == null ? void 0 : B.id,
-    };
-  });
-}
-function en(t, a) {
-  if (!ft() || !a.enabled) return t;
-  const s = [
-    ...Us(a.modelShowcase),
-    ...(a.weatherState === "live" ? [] : [qs(a.weatherState)]),
-  ];
-  return s.length
-    ? { ...t, ...Object.fromEntries(s.map((i) => [i.entityId, i])) }
-    : t;
-}
-function tn(t, a, s) {
-  const i = Js(t, a, s);
-  if (!i.length) return t;
-  const r = i[0].floorId;
-  return {
-    ...t,
-    floors: t.floors.map((d) =>
-      d.id === r
-        ? {
-            ...d,
-            devices: [
-              ...d.devices.filter((f) => !f.id.startsWith("dev-model-")),
-              ...i,
-            ],
-          }
-        : {
-            ...d,
-            devices: d.devices.filter((f) => !f.id.startsWith("dev-model-")),
-          },
-    ),
-  };
-}
+  ]);
+// ha3d-self: B6 删除开发展示死代码（Ks()/ft() 恒为 false：Bs、Xs、Ot、qs、Qs、sa、Zs、Us、Gs、Ys、Js、en、tn、Gn）
 const an = new Set(["sunny", "clear-night", "partlycloudy", "cloudy"]),
   sn = new Set(["rainy", "pouring", "hail", "snowy-rainy"]),
   nn = new Set(["snowy"]),
   rn = new Set(["windy", "windy-variant"]),
   on = new Set(["lightning", "lightning-rainy", "exceptional"]),
   ln = new Set(["fog"]),
+  ha3dCloudyConditions = new Set(["partlycloudy", "cloudy"]), // ha3d-self: F3 多云单独成为 cloudy
   ge = {
     clear: "天气正常",
+    cloudy: "多云", // ha3d-self: F3
     fog: "有雾",
     rain: "下雨",
     snow: "下雪",
@@ -627,10 +224,13 @@ function na(t) {
           ? "wind"
           : ln.has(t)
             ? "fog"
-            : (an.has(t), "clear");
+            : ha3dCloudyConditions.has(t) // ha3d-self: F3
+              ? "cloudy"
+              : (an.has(t), "clear");
 }
 function dn(t, a, s) {
   if (t === "clear") return 0;
+  if (t === "cloudy") return a === "partlycloudy" ? 0.45 : 0.8; // ha3d-self: F3
   const i = ee(s.precipitation) ?? ee(s.precipitation_probability),
     r = ee(s.wind_speed);
   return a === "pouring" || a === "lightning-rainy"
@@ -729,9 +329,15 @@ function mn(t) {
     )
     .slice(0, 5);
 }
-function pn(t) {
+// ha3d-self: F3 第二个参数 preferredId：设置里选的天气实体存在且属于 weather 域时优先使用；
+// 原来的 weather.dev_weather 只由已删除的开发展示代码生成，一并去掉
+function pn(t, ha3dPreferredId) {
   const a = Object.values(t),
-    s = t["weather.dev_weather"] ?? a.find((d) => d.domain === "weather");
+    ha3dPreferred = ha3dPreferredId ? t[ha3dPreferredId] : void 0,
+    s =
+      ((ha3dPreferred == null ? void 0 : ha3dPreferred.domain) === "weather"
+        ? ha3dPreferred
+        : void 0) ?? a.find((d) => d.domain === "weather");
   if (s) {
     const d = s.state.toLowerCase(),
       f = na(d),
@@ -755,6 +361,25 @@ function pn(t) {
         r.indexOf(d.kind) - r.indexOf(f.kind) || f.intensity - d.intensity,
     )[0] ?? { forecast: [], kind: "clear", label: ge.clear, intensity: 0 }
   );
+}
+// ===== ha3d-self: F3 昼夜阶段：优先用 sun.sun 的 elevation/azimuth/rising，没有时按本机时钟近似 =====
+// elevation ≥ 6 白天，≤ −6 夜晚，介于两者之间 rising 为 true 是黎明、否则黄昏。
+// 本机时钟：6–18 点 elevation = 50·sin(π(h−6)/12)，其余时间为负；azimuth 从 6 点的 90° 线性变到 18 点的 270°。
+function ha3dEnvironmentFromSun(t, a = new Date()) {
+  const s = t && t.domain === "sun" ? ee(t.attributes.elevation) : void 0,
+    i = (h, l) => (h >= 6 ? "day" : h <= -6 ? "night" : l ? "dawn" : "dusk");
+  if (s !== void 0)
+    return {
+      phase: i(s, t.attributes.rising === !0),
+      elevation: s,
+      azimuth: ee(t.attributes.azimuth) ?? 180,
+      source: "sun",
+    };
+  const r = a.getHours() + a.getMinutes() / 60,
+    d = r >= 6 && r <= 18,
+    f = d ? 50 * Math.sin((Math.PI * (r - 6)) / 12) : -50 * Math.sin((Math.PI * ((r + 6) % 24)) / 12),
+    m = (((90 + (r - 6) * 15) % 360) + 360) % 360;
+  return { phase: i(f, r < 12), elevation: f, azimuth: m, source: "clock" };
 }
 const fn = new Set([
     "sensor",
@@ -1864,7 +1489,44 @@ const Se = "all",
     { key: "cream", label: "奶油", short: "奶" },
   ],
   _n = new Set(oe.map((t) => t.key)),
-  qt = { clear: ea, fog: $s, rain: zs, snow: Ds, storm: Cs, wind: as };
+  // ha3d-self: F3 多云图标（lucide cloud）
+  ha3dCloudIcon = Z("cloud", [
+    ["path", { d: "M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z", key: "cloud" }],
+  ]),
+  qt = { clear: ea, cloudy: ha3dCloudIcon, fog: $s, rain: zs, snow: Ds, storm: Cs, wind: as },
+  // ha3d-self: F3/F6 3D 设置里新增的选项（localStorage）
+  ha3dEnvironmentSyncKey = "ha3d.home.environmentSync",
+  ha3dWeatherEntityKey = "ha3d.home.weatherEntityId",
+  ha3dPetKey = "ha3d.home.pet",
+  ha3dPetOptions = [
+    { value: "none", label: "无" },
+    { value: "cat", label: "小猫" },
+    { value: "dog", label: "小狗" },
+  ];
+function ha3dReadSetting(t, a, s) {
+  if (typeof window > "u") return a;
+  try {
+    const i = window.localStorage.getItem(t);
+    return i === null ? a : s(i);
+  } catch {
+    return a;
+  }
+}
+function ha3dWriteSetting(t, a) {
+  try {
+    window.localStorage.setItem(t, a);
+  } catch {}
+}
+const ha3dLowEndQuality = () => {
+  // ha3d-self: B6 没保存过画质时按设备能力选默认值：≤2 核或 ≤2 GB → 省电，≤4 → 流畅
+  const t = typeof navigator > "u" ? void 0 : navigator.hardwareConcurrency,
+    a = typeof navigator > "u" ? void 0 : navigator.deviceMemory;
+  return (t && t <= 2) || (a && a <= 2)
+    ? "eco"
+    : (t && t <= 4) || (a && a <= 4)
+      ? "smooth"
+      : void 0;
+};
 function zn(t) {
   return Cn.has(t);
 }
@@ -1877,9 +1539,9 @@ function Dn() {
     const t = window.localStorage.getItem(la);
     if (zn(t)) return t;
   } catch {
-    return window.innerWidth <= 1180 ? "balanced" : "high";
+    return ha3dLowEndQuality() ?? (window.innerWidth <= 1180 ? "balanced" : "high"); // ha3d-self: B6
   }
-  return window.innerWidth <= 1180 ? "balanced" : "high";
+  return ha3dLowEndQuality() ?? (window.innerWidth <= 1180 ? "balanced" : "high"); // ha3d-self: B6
 }
 function En() {
   if (typeof window > "u") return "glass";
@@ -2468,79 +2130,6 @@ function Un({ forecast: t, weatherIcons: a }) {
       })
     : null;
 }
-function Gn({ controls: t, entityCount: a, onChange: s }) {
-  var i;
-  return e.jsxs("aside", {
-    className: `home-dev-panel ${t.enabled ? "enabled" : ""}`,
-    "aria-label": "开发调试面板",
-    children: [
-      e.jsxs("header", {
-        children: [
-          e.jsxs("span", { children: [e.jsx(ks, { size: 15 }), "开发调试"] }),
-          e.jsxs("label", {
-            children: [
-              e.jsx("input", {
-                type: "checkbox",
-                checked: t.enabled,
-                onChange: (r) => s({ ...t, enabled: r.target.checked }),
-              }),
-              "启用",
-            ],
-          }),
-        ],
-      }),
-      e.jsxs("div", {
-        className: "home-dev-grid",
-        children: [
-          e.jsxs("label", {
-            children: [
-              e.jsx("span", { children: "天气" }),
-              e.jsx(fe, {
-                value: t.weatherState,
-                onChange: (r) =>
-                  s({ ...t, weatherState: r.target.value, enabled: !0 }),
-                children: Xs.map((r) =>
-                  e.jsx(
-                    "option",
-                    { value: r.value, children: r.label },
-                    r.value,
-                  ),
-                ),
-              }),
-            ],
-          }),
-          e.jsxs("label", {
-            children: [
-              e.jsx("span", { children: "模型展示" }),
-              e.jsx(fe, {
-                value: t.modelShowcase,
-                onChange: (r) =>
-                  s({ ...t, modelShowcase: r.target.value, enabled: !0 }),
-                children: Ot.map((r) =>
-                  e.jsx(
-                    "option",
-                    { value: r.value, children: r.label },
-                    r.value,
-                  ),
-                ),
-              }),
-            ],
-          }),
-        ],
-      }),
-      e.jsxs("p", {
-        children: [
-          ((i = Ot.find((r) => r.value === t.modelShowcase)) == null
-            ? void 0
-            : i.description) ?? "模型预览",
-          " · 当前 ",
-          a,
-          " 个实体",
-        ],
-      }),
-    ],
-  });
-}
 function Yn({
   cameraRoom: t,
   entities: a,
@@ -2660,10 +2249,48 @@ const ha3dClickModeOptions = [
     hint: "灯、开关、风扇、窗帘点击即切换；门锁、空调、传感器等仍弹出详情。",
   },
 ];
+// ha3d-self: F3/F6 设置面板里的一组分段按钮
+function ha3dSettingsSegmented({ label: t, hint: a, options: s, value: i, onChange: r }) {
+  return e.jsxs("section", {
+    className: "dashboard-manager-section home-settings-section",
+    children: [
+      e.jsxs("div", {
+        className: "home-settings-copy",
+        children: [e.jsx("strong", { children: t }), e.jsx("span", { children: a })],
+      }),
+      e.jsx("div", {
+        className: `home-settings-segmented ${s.length > 2 ? "ha3d-segmented-3" : ""}`,
+        role: "group",
+        "aria-label": t,
+        children: s.map((d) =>
+          e.jsx(
+            "button",
+            {
+              type: "button",
+              className: d.value === i ? "active" : "",
+              "aria-pressed": d.value === i,
+              onClick: () => r(d.value),
+              children: d.label,
+            },
+            String(d.value),
+          ),
+        ),
+      }),
+    ],
+  });
+}
 function ha3dSettingsPanel({
   deviceClickMode: t,
   onDeviceClickModeChange: a,
   onClose: s,
+  environmentSync: ha3dSync,
+  onEnvironmentSyncChange: ha3dOnSync,
+  environmentSource: ha3dSource,
+  weatherEntityId: ha3dWeatherId,
+  weatherEntities: ha3dWeatherList,
+  onWeatherEntityChange: ha3dOnWeather,
+  pet: ha3dPetValue,
+  onPetChange: ha3dOnPet,
 }) {
   const i =
     ha3dClickModeOptions.find((r) => r.value === t) ?? ha3dClickModeOptions[0];
@@ -2726,6 +2353,62 @@ function ha3dSettingsPanel({
               }),
             ],
           }),
+          // ===== ha3d-self: F3 时间与天气同步、天气实体 =====
+          e.jsx(ha3dSettingsSegmented, {
+            label: "时间与天气同步",
+            hint: ha3dSync
+              ? ha3dSource === "sun"
+                ? "按 sun.sun 的太阳高度切换昼夜，按天气实体显示晴、云、雨、雪等动画。"
+                : "没有 sun.sun，按本机时间近似昼夜；按天气实体显示晴、云、雨、雪等动画。"
+              : "关闭后是静态场景，不显示天气动画，昼夜按 7–18 点切换。",
+            options: [
+              { value: !0, label: "开启" },
+              { value: !1, label: "关闭" },
+            ],
+            value: ha3dSync,
+            onChange: ha3dOnSync,
+          }),
+          e.jsxs("section", {
+            className: "dashboard-manager-section home-settings-section",
+            children: [
+              e.jsxs("div", {
+                className: "home-settings-copy",
+                children: [
+                  e.jsx("strong", { children: "天气实体" }),
+                  e.jsx("span", {
+                    children: ha3dWeatherList.length
+                      ? "自动时使用第一个 weather.* 实体。"
+                      : "Home Assistant 里没有 weather.* 实体。",
+                  }),
+                ],
+              }),
+              e.jsxs(fe, {
+                className: "ha3d-weather-select",
+                value: ha3dWeatherId,
+                disabled: !ha3dSync,
+                onChange: (r) => ha3dOnWeather(r.target.value),
+                "aria-label": "天气实体",
+                children: [
+                  e.jsx("option", { value: "", children: "自动" }, ""),
+                  ...ha3dWeatherList.map((r) =>
+                    e.jsx(
+                      "option",
+                      { value: r.entityId, children: `${r.name} · ${r.entityId}` },
+                      r.entityId,
+                    ),
+                  ),
+                ],
+              }),
+            ],
+          }),
+          // ===== ha3d-self: F6 宠物 =====
+          e.jsx(ha3dSettingsSegmented, {
+            label: "宠物",
+            hint: "在首页当前楼层的房间里随机走动、避开家具，不能点击。",
+            options: ha3dPetOptions,
+            value: ha3dPetValue,
+            onChange: ha3dOnPet,
+          }),
         ],
       }),
     ],
@@ -2741,7 +2424,6 @@ function ni({
   voiceEnabled: f,
   onVoiceEnabledChange: m,
 }) {
-  var Ft;
   const y = Ie((n) => n.selectedEntityId),
     I = Ie((n) => n.selectEntity),
     w = Ie((n) => n.act),
@@ -2750,13 +2432,26 @@ function ni({
     ha3dClickMode = Ie((n) => n.deviceClickMode), // ha3d-self: F4
     ha3dSetClickMode = Ie((n) => n.setDeviceClickMode), // ha3d-self: F4
     [ha3dSettingsOpen, ha3dSetSettingsOpen] = c.useState(!1), // ha3d-self: 3D 设置面板
+    // ha3d-self: F3 时间与天气同步（默认开）、天气实体（空 = 自动）；F6 宠物（默认无）
+    [ha3dSync, ha3dSetSync] = c.useState(() =>
+      ha3dReadSetting(ha3dEnvironmentSyncKey, !0, (n) => n !== "false"),
+    ),
+    [ha3dWeatherId, ha3dSetWeatherId] = c.useState(() =>
+      ha3dReadSetting(ha3dWeatherEntityKey, "", (n) => n),
+    ),
+    [ha3dPetKind, ha3dSetPetKind] = c.useState(() =>
+      ha3dReadSetting(ha3dPetKey, "none", (n) =>
+        ha3dPetOptions.some((l) => l.value === n) ? n : "none",
+      ),
+    ),
+    [ha3dClockTick, ha3dSetClockTick] = c.useState(() => Date.now()),
     [N, W] = c.useState(""),
     [z, x] = c.useState(Se),
     [v, U] = c.useState(() => {
       var n;
       return ((n = t.floors[0]) == null ? void 0 : n.id) ?? "all";
     }),
-    [B, D] = c.useState(() => Qt()),
+    [ha3dClockTheme, D] = c.useState(() => Qt()), // ha3d-self: F3 最终主题 B 在下面按 sun.sun 计算
     [q, de] = c.useState("overview"),
     [X, S] = c.useState(!1),
     [te, u] = c.useState(!1),
@@ -2770,18 +2465,15 @@ function ni({
     [V, we] = c.useState(),
     [Q, Ce] = c.useState(),
     [xa, ba] = c.useState(0),
-    [be, ya] = c.useState(Bs),
     [ue, va] = c.useState(Fn),
     [ga, yt] = c.useState(!1),
     [Ve, Be] = c.useState(!1),
     [se, vt] = c.useState(() => Ut(t.id)),
     { width: G, height: _e } = Rn(),
-    gt = ft(),
     he = ps(i),
-    O = he || (gt && be.enabled),
-    jt = v === "all" ? ((Ft = t.floors[0]) == null ? void 0 : Ft.id) : v,
-    me = c.useMemo(() => tn(t, be, jt), [be, jt, t]),
-    E = c.useMemo(() => en(a, be), [be, a]),
+    O = he, // ha3d-self: B6 去掉开发展示后 me 直接用 t、E 直接用 a
+    me = t,
+    E = a,
     F = c.useMemo(() => Object.values(E), [E]),
     Xe = c.useMemo(() => {
       const n = new Map(_.map((l) => [l.id, l.name]));
@@ -2827,7 +2519,50 @@ function ni({
       [ne.airQuality, ne.humidityRange, ne.temperatureRange, E, se],
     ),
     Ia = dt.filter((n) => se[n.key].length).length,
-    T = c.useMemo(() => pn(E), [E]),
+    T = c.useMemo(() => pn(E, ha3dWeatherId), [E, ha3dWeatherId]), // ha3d-self: F3 可指定天气实体
+    // ===== ha3d-self: F3 环境同步：昼夜阶段、主题、传给场景的 environment =====
+    ha3dSun = ha3dSync ? E["sun.sun"] : void 0,
+    ha3dEnvBase = c.useMemo(
+      () =>
+        ha3dSync ? ha3dEnvironmentFromSun(ha3dSun, new Date(ha3dClockTick)) : void 0,
+      [ha3dSync, ha3dSun, ha3dClockTick],
+    ),
+    B =
+      ha3dEnvBase && ha3dEnvBase.source === "sun"
+        ? ha3dEnvBase.elevation < -3
+          ? "night"
+          : "day"
+        : ha3dClockTheme,
+    ha3dEnvironment = c.useMemo(
+      () =>
+        ha3dEnvBase
+          ? {
+              phase: ha3dEnvBase.phase,
+              elevation: ha3dEnvBase.elevation,
+              azimuth: ha3dEnvBase.azimuth,
+              weatherKind: T.kind,
+              intensity: T.intensity,
+              windSpeed: T.windSpeed,
+            }
+          : void 0,
+      [ha3dEnvBase, T.kind, T.intensity, T.windSpeed],
+    ),
+    ha3dWeatherEntities = c.useMemo(
+      () =>
+        F.filter((n) => n.domain === "weather").sort((n, l) =>
+          n.entityId.localeCompare(l.entityId),
+        ),
+      [F],
+    ),
+    ha3dChangeSync = (n) => {
+      (ha3dSetSync(n), ha3dWriteSetting(ha3dEnvironmentSyncKey, String(n)));
+    },
+    ha3dChangeWeather = (n) => {
+      (ha3dSetWeatherId(n), ha3dWriteSetting(ha3dWeatherEntityKey, n));
+    },
+    ha3dChangePet = (n) => {
+      (ha3dSetPetKind(n), ha3dWriteSetting(ha3dPetKey, n));
+    },
     Sa = c.useMemo(
       () => ({ kind: T.kind, intensity: T.intensity, windSpeed: T.windSpeed }),
       [T.kind, T.intensity, T.windSpeed],
@@ -2879,6 +2614,13 @@ function ni({
         window.localStorage.setItem(da, String(ue));
       } catch {}
     }, [ue]));
+  // ha3d-self: F3 没有 sun.sun 时按本机时钟近似，每分钟刷新一次
+  c.useEffect(() => {
+    if (!ha3dSync || ha3dSun) return;
+    ha3dSetClockTick(Date.now());
+    const n = window.setInterval(() => ha3dSetClockTick(Date.now()), 6e4);
+    return () => window.clearInterval(n);
+  }, [ha3dSync, !ha3dSun]);
   // ===== ha3d-self: B5 奶油风格时给 body 加 class，portal 弹窗也能用到 --cream-* 变量 =====
   c.useEffect(() => {
     if (o !== "cream") return;
@@ -3118,7 +2860,7 @@ function ni({
       [I, G],
     );
   return e.jsxs("section", {
-    className: `home-workspace theme-${B} scene-mode-${q} visual-style-${o} render-quality-${M} ${It ? "weather-forecast-visible" : ""}`,
+    className: `home-workspace theme-${B} scene-mode-${q} visual-style-${o} render-quality-${M} ${It ? "weather-forecast-visible" : ""}${ha3dEnvironment ? ` env-sync env-phase-${ha3dEnvironment.phase} env-weather-${ha3dEnvironment.weatherKind}` : ""}`, // ha3d-self: F3 env-*
     children: [
       e.jsxs("div", {
         className: "home-scene",
@@ -3135,7 +2877,9 @@ function ni({
             presentation: !0,
             quality: M,
             visualStyle: o,
-            weather: Sa,
+            weather: ha3dSync ? Sa : void 0, // ha3d-self: F3 关闭同步时不显示天气粒子
+            environment: ha3dEnvironment, // ha3d-self: F3
+            pet: ha3dPetKind, // ha3d-self: F6
             viewportInsets: Ra,
             focusedRoom: Q,
             showDevices: O,
@@ -3235,6 +2979,14 @@ function ni({
               deviceClickMode: ha3dClickMode,
               onDeviceClickModeChange: ha3dSetClickMode,
               onClose: () => ha3dSetSettingsOpen(!1),
+              environmentSync: ha3dSync,
+              onEnvironmentSyncChange: ha3dChangeSync,
+              environmentSource: ha3dEnvBase ? ha3dEnvBase.source : void 0,
+              weatherEntityId: ha3dWeatherId,
+              weatherEntities: ha3dWeatherEntities,
+              onWeatherEntityChange: ha3dChangeWeather,
+              pet: ha3dPetKind,
+              onPetChange: ha3dChangePet,
             }), // ha3d-self: 3D 设置面板
           O &&
             e.jsx(kn, {
@@ -3284,7 +3036,6 @@ function ni({
               ],
             }),
           O && e.jsx(Kn, { users: Fa }),
-          gt && e.jsx(Gn, { controls: be, entityCount: Ae, onChange: ya }),
           e.jsxs("div", {
             className: `home-corner-dock ${te ? "tools-open" : ""}`,
             "aria-label": "页面工具",

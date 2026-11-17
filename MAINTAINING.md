@@ -24,8 +24,49 @@
 `app/` 下的文件就是源码，没有前端构建步骤，改完直接生效。
 
 - 后端：直接改 `app/apps/server/dist/**/*.js`。
-- 前端：`app/apps/web/dist/assets/` 里的 `index.js`、`AppSelect.js`、`HomeView.js`、`FloorplanEditor.js`、`AuthorSupportDialog.js`、`index.css`、`HomeView.css` 是用 prettier 格式化过的业务代码，直接改。`three.js`、`react.js`、`hls.js` 是第三方库，保持压缩内容，不要改。
+- 前端：`app/apps/web/dist/assets/` 里的 `index.js`、`AppSelect.js`、`HomeView.js`、`FloorplanEditor.js`、`AuthorSupportDialog.js`、`index.css`、`HomeView.css` 是用 prettier 格式化过的业务代码，直接改。`three.js`、`react.js`、`hls.js` 是第三方库，保持压缩内容，不要改（`three.js` 开头对 hls.js 的副作用导入已删除）。
+- `ha3dPet.js` 是本仓库新增的按需加载模块（宠物），只在 3D 设置里选了小猫或小狗时由 `AppSelect.js` 动态导入；它直接从 `react.js`、`three.js` 导入用到的别名。
+- `hls.js` 只在播放摄像头视频时由 `AppSelect.js` 的 `import("./hls.js")` 加载。不要再在其他文件里写 `import "./hls.js"`，也不要把它加回 `index.html` 的 modulepreload 或 `__vite__mapDeps` 列表，否则首页又会多下载约 525 KB。
 - 变量名是压缩后的短名字。新代码写在对应的大文件里，可以直接用文件内部的别名（例如 AppSelect 里 `J` 是 Vector3、`te` 是 useFrame）。
+- 每个文件只保留一份 lucide 许可声明（文件里第一个图标前），新增图标时不要再复制许可注释。
+
+### 首页设置（localStorage）
+
+首页的选项都存在浏览器的 localStorage，键名统一是 `ha3d.home.*`：
+
+| 键 | 取值 | 默认 | 说明 |
+| --- | --- | --- | --- |
+| `ha3d.home.sceneQuality` | `eco` / `smooth` / `balanced` / `high` | 没保存过时：≤2 核或 ≤2 GB → `eco`，≤4 → `smooth`，否则屏宽 ≤1180 px → `balanced`、更宽 → `high` | 画质（上游已有，低端判断是本仓库加的） |
+| `ha3d.home.sceneVisualStyle` | `glass` / `cream` | `glass` | 视觉风格（上游已有） |
+| `ha3d.home.weatherForecastVisible` | `true` / `false` | `true` | 天气预报条（上游已有） |
+| `ha3d.home.overviewDataSettings` | JSON | — | 顶部概览数据（上游已有） |
+| `ha3d.home.deviceClickMode` | `detail` / `toggle` | `detail` | 3D 设置「点击设备」：弹出详情 / 直接开关（store 里的 `deviceClickMode`） |
+| `ha3d.home.environmentSync` | `true` / `false` | `true` | 3D 设置「时间与天气同步」；关闭后不显示天气动画，昼夜按 7–18 点 |
+| `ha3d.home.weatherEntityId` | `weather.*` 或空 | 空（自动：第一个 `weather.*`） | 3D 设置「天气实体」 |
+| `ha3d.home.pet` | `none` / `cat` / `dog` | `none` | 3D 设置「宠物」 |
+
+昼夜和太阳位置优先用 `sun.sun` 的 `elevation`、`azimuth`、`rising`（后端对 `sun`、`weather` 两个域始终推送 `state_changed`），没有时按本机时钟近似。
+
+### 3D 对象命名（`ha3d-*`）
+
+新增或修改的 3D 对象都设置了 `name`（部分还有 `userData`），e2e 通过 `?ha3dDebug=1` 时暴露的 `window.__ha3dDebug.get()`（R3F 状态）按名字查找。新增对象请沿用 `ha3d-<功能>-<部件>` 的命名：
+
+| 名字 | 对象 |
+| --- | --- |
+| `ha3d-door-frame`、`ha3d-door-leaf`（`userData.doorStyle`） | 门框、门扇 |
+| `ha3d-light-halo` | 开灯时灯具外的光晕 |
+| `ha3d-furniture-<kind>` | 家具（`userData.furnitureId`） |
+| `ha3d-computer-screen`、`ha3d-clothes-rack-bars` | 电脑屏幕、晾衣架横杆 |
+| `ha3d-env-layer`、`ha3d-env-sun`、`ha3d-env-moon`、`ha3d-env-stars`、`ha3d-env-clouds` | 环境层（跟随相机）和太阳、月亮、星空、云层 |
+| `ha3d-weather-rain`、`ha3d-weather-snow`、`ha3d-weather-wind`、`ha3d-weather-fog`、`ha3d-weather-lightning` | 上游已有的天气粒子 |
+| `ha3d-pet`（`userData.petKind`、`userData.floorId`） | 宠物，位置是楼层局部坐标（等于平面坐标） |
+
+不参与点击的装饰对象（光晕、环境层、宠物）把 `raycast` 设为空函数。
+
+### 渲染与性能
+
+- 场景默认按需渲染（`frameloop="demand"`）。有持续动画（天气不是晴、多云、夜晚星空、宠物、自动旋转）时，balanced/high 用 `always`；eco/smooth 由 `ha3dFrameTicker` 按 20/30 fps 定时渲染，标签页隐藏时暂停。新增的持续动画只在 `useFrame` 里按 `delta` 推进，不要每帧 `invalidate()`，并把它加进 `t0` 里的持续动画判断。
+- eco 画质下 `ee`（drei Edges 的包装）不渲染描边。
 
 ### 固定文件名与缓存
 
@@ -51,7 +92,7 @@ npm ci --prefix tools
 - 本地启动：`node tools/dev/start-local.mjs --project <项目.json>` 先启动 mock HA（`:18123`），再以 standalone 模式启动应用（`:18099`），数据目录默认 `/tmp/ha3d-dev`（在仓库之外）。
 - 单元测试：`npm --prefix tools run test:unit`
 - 前端模块图静态检查（esbuild，抓语法错误和不存在的导入名）：`npm --prefix tools run check:web`
-- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。
+- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。套件：`smoke export models editor interaction cream environment pets perf`（`baseline` 只在改动前采集基线时用）。`perf` 会和 `<证据目录>/baseline/…/baseline.json` 对比（也可用 `HA3D_BASELINE_JSON` 指定），并用 `docker image inspect` 记录 `ha3d:arm64`、`ha3d:amd64` 和上游 0.1.6 镜像的大小（docker 不可用时跳过这一项）。
 
 只想快速看后端是否正常：
 

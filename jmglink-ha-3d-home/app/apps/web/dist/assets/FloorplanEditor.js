@@ -6,7 +6,6 @@ const __vite__mapDeps = (
       "./AuthorSupportDialog.js",
       "./three.js",
       "./react.js",
-      "./hls.js",
       "./index.js",
       "./index.css",
     ]),
@@ -64,7 +63,7 @@ import {
     u as yl,
     W as Zr,
 } from "./AppSelect.js";
-import "./hls.js";
+// ha3d-self: B6 去掉 hls.js 副作用导入（只在播放摄像头时动态加载）
 import {
     d as Al,
     u as at,
@@ -1084,7 +1083,7 @@ function Kc(s, a) {
 const Wc = x.lazy(() =>
     jl(
       () => import("./AuthorSupportDialog.js"),
-      __vite__mapDeps([0, 1, 2, 3, 4, 5]),
+      __vite__mapDeps([0, 1, 2, 3, 4]), // ha3d-self: B6 去掉 hls.js
       import.meta.url,
     ).then((s) => ({ default: s.AuthorSupportDialog })),
   ),

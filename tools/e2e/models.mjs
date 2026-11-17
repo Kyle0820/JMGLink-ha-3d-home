@@ -371,7 +371,8 @@ export default async function models(ctx) {
         const file = await ctx.shot(page, `B1-door-${style}-${door.id}-${stateName}`);
         const doorNow = (await doorReport(page)).find((item) => item.openingId === door.id);
         record[stateName] = { screenshot: path.basename(file.path), focused, spread: round(lumaSpread(file.buffer)), frames: doorNow?.frames, leafEdges: doorNow?.leafEdges, frameEdges: doorNow?.frameEdges, leafRotations: doorNow?.leafRotations };
-        check(`B1[${style}] ${door.id} ${stateName === "closed" ? "关门" : "开门"}特写有效（机位到位、画面不是纯色）`, focused && record[stateName].spread >= 8, { focused, spread: record[stateName].spread, view });
+        // 纯色画面的亮度标准差约 0–2；FEAT-005 起主光源跟随太阳方位，开门特写里门扇和墙的明暗更接近（APT 有两张降到 6–8），阈值取 5
+        check(`B1[${style}] ${door.id} ${stateName === "closed" ? "关门" : "开门"}特写有效（机位到位、画面不是纯色）`, focused && record[stateName].spread >= 5, { focused, spread: record[stateName].spread, view });
         if (stateName === "closed" && doorNow?.leafCenters?.[0]) {
           const leafPoint = await ctx.projectToScreen(page, doorNow.leafCenters[0]);
           const wallPoint = await ctx.projectToScreen(page, await ctx.planToWorld(page, wallSamplePoint(floor, door)));
@@ -443,6 +444,8 @@ export default async function models(ctx) {
       ["glass", NIGHT, false],
     ]) {
       const label = `${style}-${time === DAY ? "day" : "night"}`;
+      // FEAT-005 起「时间与天气同步」默认开启，有 sun.sun 时昼夜跟太阳高度走：夜晚这一轮同时把太阳设到地平线以下
+      await ctx.mock.set("sun.sun", time === DAY ? "above_horizon" : "below_horizon", time === DAY ? { elevation: 45, azimuth: 180, rising: false } : { elevation: -20, azimuth: 340, rising: false });
       const page = await ctx.newPage({ startTime: time });
       await setAll(false);
       await ctx.gotoHome(page, { style });

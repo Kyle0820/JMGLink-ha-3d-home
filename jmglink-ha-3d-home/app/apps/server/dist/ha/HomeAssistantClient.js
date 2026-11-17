@@ -414,11 +414,19 @@ export class HomeAssistantClient extends EventEmitter {
         const event = message.event;
         if (event?.event_type !== "state_changed" || !event.data?.entity_id || !event.data.new_state)
             return;
-        const entity = this.toEntity(event.data.new_state);
+        const entity = this.ha3dKeepForecast(this.toEntity(event.data.new_state)); // ha3d-self: F3
         this.entities.set(entity.entityId, entity);
         this.queueEntityUpdate(entity);
         if (entity.domain === "weather")
             void this.syncWeatherForecasts(socket);
+    }
+    // ===== ha3d-self: F3 weather 的 state_changed 不带预报（预报要另外用 get_forecasts 取），沿用上一次取到的预报 =====
+    // 否则每次天气更新推到前端时预报条都会消失，直到下一次预报同步（同步有 5 秒限频，可能一直不来）。
+    ha3dKeepForecast(entity) {
+        if (entity.domain !== "weather" || Array.isArray(entity.attributes?.forecast))
+            return entity;
+        const previous = this.entities.get(entity.entityId)?.attributes?.forecast;
+        return Array.isArray(previous) ? { ...entity, attributes: { ...entity.attributes, forecast: previous } } : entity;
     }
     scheduleReconnect() {
         if (!this.config.ha.token || this.reconnectTimer)

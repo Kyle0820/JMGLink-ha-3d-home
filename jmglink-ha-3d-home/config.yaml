@@ -1,5 +1,5 @@
 name: JMGLink HA 3D Home
-version: 0.1.6-fix1
+version: 0.2.0
 slug: jmglink_ha_3d_home
 description: Home Assistant的3D户型图可视化与控制中心
 url: https://github.com/Kyle0820/JMGLink-ha-3d-home

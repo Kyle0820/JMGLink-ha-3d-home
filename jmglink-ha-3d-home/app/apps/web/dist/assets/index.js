@@ -6,13 +6,12 @@ const __vite__mapDeps = (
       "./FloorplanEditor.js",
       "./three.js",
       "./react.js",
-      "./hls.js",
       "./AppSelect.js",
       "./HomeView.js",
       "./HomeView.css",
     ]),
 ) => i.map((i) => d[i]);
-import "./hls.js";
+// ha3d-self: B6 hls.js 只在播放摄像头时由 AppSelect.js 动态加载，去掉首屏的副作用导入和预加载
 import { c as fe, R as he, a as l } from "./react.js";
 import { j as i, _ as ie, c as pe } from "./three.js";
 (function () {
@@ -50,41 +49,23 @@ import { j as i, _ as ie, c as pe } from "./three.js";
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
+ *
+ * ha3d-self: B6 本文件里每个 lucide 图标前都有这同一份许可声明，合并为这一处
  */ const oe = (...t) =>
   t
     .filter((e, s, a) => !!e && e.trim() !== "" && a.indexOf(e) === s)
     .join(" ")
     .trim();
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const me = (t) => t.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const ye = (t) =>
+const me = (t) => t.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+const ye = (t) =>
   t.replace(/^([A-Z])|[\s-_]+(\w)/g, (e, s, a) =>
     a ? a.toUpperCase() : s.toLowerCase(),
   );
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Z = (t) => {
+const Z = (t) => {
   const e = ye(t);
   return e.charAt(0).toUpperCase() + e.slice(1);
 };
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ var U = {
+var U = {
   xmlns: "http://www.w3.org/2000/svg",
   width: 24,
   height: 24,
@@ -95,12 +76,7 @@ import { j as i, _ as ie, c as pe } from "./three.js";
   strokeLinecap: "round",
   strokeLinejoin: "round",
 };
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const we = (t) => {
+const we = (t) => {
     for (const e in t)
       if (e.startsWith("aria-") || e === "role" || e === "title") return !0;
     return !1;
@@ -149,12 +125,7 @@ import { j as i, _ as ie, c as pe } from "./three.js";
       );
     },
   );
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const P = (t, e) => {
+const P = (t, e) => {
   const s = l.forwardRef(({ className: a, ...r }, n) =>
     l.createElement(xe, {
       ref: n,
@@ -165,23 +136,13 @@ import { j as i, _ as ie, c as pe } from "./three.js";
   );
   return ((s.displayName = Z(t)), s);
 };
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const be = [
+const be = [
     ["ellipse", { cx: "12", cy: "5", rx: "9", ry: "3", key: "msslwz" }],
     ["path", { d: "M3 5V19A9 3 0 0 0 21 19V5", key: "1wlel7" }],
     ["path", { d: "M3 12A9 3 0 0 0 21 12", key: "mv7ke4" }],
   ],
   X = P("database", be);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const ve = [
+const ve = [
     [
       "path",
       {
@@ -195,12 +156,7 @@ import { j as i, _ as ie, c as pe } from "./three.js";
     ],
   ],
   ke = P("key-round", ve);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ee = [
+const Ee = [
     [
       "path",
       {
@@ -217,12 +173,7 @@ import { j as i, _ as ie, c as pe } from "./three.js";
     ],
   ],
   Se = P("link", Ee);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ae = [
+const Ae = [
     ["path", { d: "M12 19v3", key: "npa21l" }],
     ["path", { d: "M15 9.34V5a3 3 0 0 0-5.68-1.33", key: "1gzdoj" }],
     ["path", { d: "M16.95 16.95A7 7 0 0 1 5 12v-2", key: "cqa7eg" }],
@@ -231,12 +182,7 @@ import { j as i, _ as ie, c as pe } from "./three.js";
     ["path", { d: "M9 9v3a3 3 0 0 0 5.12 2.12", key: "r2i35w" }],
   ],
   Te = P("mic-off", Ae);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ne = [
+const Ne = [
     ["path", { d: "M12 19v3", key: "npa21l" }],
     ["path", { d: "M19 10v2a7 7 0 0 1-14 0v-2", key: "1vc78b" }],
     [
@@ -245,12 +191,7 @@ import { j as i, _ as ie, c as pe } from "./three.js";
     ],
   ],
   Re = P("mic", Ne);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ce = [
+const Ce = [
     [
       "path",
       {
@@ -269,12 +210,7 @@ import { j as i, _ as ie, c as pe } from "./three.js";
     ["path", { d: "M8 16H3v5", key: "1cv678" }],
   ],
   Y = P("refresh-cw", Ce);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Pe = [
+const Pe = [
     [
       "path",
       {
@@ -285,12 +221,7 @@ import { j as i, _ as ie, c as pe } from "./three.js";
     ["path", { d: "m21.854 2.147-10.94 10.939", key: "12cjpa" }],
   ],
   Me = P("send", Pe);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const $e = [
+const $e = [
     [
       "rect",
       {
@@ -319,24 +250,14 @@ import { j as i, _ as ie, c as pe } from "./three.js";
     ["line", { x1: "6", x2: "6.01", y1: "18", y2: "18", key: "nzw8ys" }],
   ],
   Oe = P("server", $e);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Ie = [
+const Ie = [
     ["path", { d: "M12 20h.01", key: "zekei9" }],
     ["path", { d: "M2 8.82a15 15 0 0 1 20 0", key: "dnpr2z" }],
     ["path", { d: "M5 12.859a10 10 0 0 1 14 0", key: "1x1e6c" }],
     ["path", { d: "M8.5 16.429a5 5 0 0 1 7 0", key: "1bycff" }],
   ],
   Q = P("wifi", Ie);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const Le = [
+const Le = [
     ["path", { d: "M18 6 6 18", key: "1bl5f8" }],
     ["path", { d: "m6 6 12 12", key: "d8bk6v" }],
   ],
@@ -1452,14 +1373,14 @@ const pt = {},
   ft = l.lazy(() =>
     ie(
       () => import("./FloorplanEditor.js"),
-      __vite__mapDeps([0, 1, 2, 3, 4]),
+      __vite__mapDeps([0, 1, 2, 3]), // ha3d-self: B6 去掉 hls.js
       import.meta.url,
     ).then((t) => ({ default: t.FloorplanEditor })),
   ),
   ht = l.lazy(() =>
     ie(
       () => import("./HomeView.js"),
-      __vite__mapDeps([5, 1, 2, 3, 4, 6]),
+      __vite__mapDeps([4, 1, 2, 3, 5]), // ha3d-self: B6 去掉 hls.js
       import.meta.url,
     ).then((t) => ({ default: t.HomeView })),
   );

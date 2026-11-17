@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // 本地调试用的 mock Home Assistant：实现 HomeAssistantClient 用到的 REST / WebSocket 子集。
-// 实体从项目 JSON 引用到的 entity_id 自动生成，另加 sun.sun 和 weather.home。
+// 实体从项目 JSON 引用到的 entity_id 自动生成，另加 sun.sun、weather.home 和 weather.backup。
 // 用法：node mock-ha/server.mjs --port 18123 --project <json> --token dev-token
 import { readFileSync } from "node:fs";
 import http from "node:http";
@@ -122,7 +122,7 @@ export function defaultEntityState(entityId, lightIndex = 0) {
       return {
         state: "sunny",
         attributes: {
-          friendly_name: "Home",
+          friendly_name: objectId === "home" ? "Home" : friendly_name.replace(/^./, (c) => c.toUpperCase()),
           temperature: 24,
           temperature_unit: "°C",
           humidity: 55,
@@ -155,12 +155,15 @@ function forecastFor(entity) {
 }
 
 export function createMockHa({ project, token = "dev-token", log = console.log } = {}) {
-  const entityIds = [...new Set([...collectProjectEntityIds(project), "sun.sun", "weather.home"])];
+  // weather.backup：第二个天气实体，供 3D 设置里的「天气实体」下拉框测试
+  const entityIds = [...new Set([...collectProjectEntityIds(project), "sun.sun", "weather.home", "weather.backup"])];
   const states = new Map();
   const calls = [];
   const subscribers = new Map(); // socket -> Set<subscription id>
 
+  // 恢复默认状态；和真实 HA 一样，对状态或属性有变化的实体广播 state_changed（否则应用里还是旧状态，例如 sun.sun 的高度）
   const reset = () => {
+    const previous = new Map(states);
     states.clear();
     calls.length = 0;
     let lightIndex = 0;
@@ -169,9 +172,10 @@ export function createMockHa({ project, token = "dev-token", log = console.log }
       const { state, attributes } = defaultEntityState(entityId, isLight ? lightIndex++ : 0);
       const time = now();
       states.set(entityId, { entity_id: entityId, state, attributes, last_changed: time, last_updated: time, context: { id: `mock-${entityId}` } });
+      const old = previous.get(entityId);
+      if (old && (old.state !== state || JSON.stringify(old.attributes) !== JSON.stringify(attributes))) broadcast(entityId, old);
     }
   };
-  reset();
 
   const broadcast = (entityId, oldState) => {
     const newState = states.get(entityId);
@@ -187,6 +191,7 @@ export function createMockHa({ project, token = "dev-token", log = console.log }
       }
     }, 50);
   };
+  reset();
 
   const setState = (entityId, state, attributes, { merge = true } = {}) => {
     const previous = states.get(entityId);

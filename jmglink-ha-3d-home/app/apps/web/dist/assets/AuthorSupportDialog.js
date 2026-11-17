@@ -1,7 +1,7 @@
 import { j as a } from "./three.js";
 import { c as l, X as p } from "./index.js";
 import "./react.js";
-import "./hls.js";
+// ha3d-self: B6 去掉 hls.js 副作用导入
 /**
  * @license lucide-react v1.25.0 - ISC
  *

@@ -160,8 +160,9 @@ const mockUrl = () => {
 };
 
 export const mock = {
-  async set(entityId, stateValue, attributes) {
-    const response = await fetch(`${mockUrl()}/mock/set`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ entityId, state: stateValue, attributes }) });
+  /** merge=false 时整个替换属性（例如去掉 sun.sun 的 elevation，测试本机时钟兜底）。 */
+  async set(entityId, stateValue, attributes, { merge } = {}) {
+    const response = await fetch(`${mockUrl()}/mock/set`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ entityId, state: stateValue, attributes, merge }) });
     if (!response.ok) throw new Error(`mock.set 失败：${response.status}`);
     return (await response.json()).state;
   },
@@ -176,6 +177,35 @@ export const mock = {
     return (await (await fetch(`${mockUrl()}/mock/states`)).json()).states;
   },
 };
+
+/** 场景里以 prefix 开头的对象名 → 数量（只统计 visible 的对象链）。 */
+export async function namedObjects(page, prefix = "ha3d-") {
+  return page.evaluate((prefix) => {
+    const s = window.__ha3dDebug?.get();
+    const out = {};
+    if (!s) return out;
+    const visit = (object) => {
+      if (!object.visible) return;
+      if (object.name && object.name.startsWith(prefix)) out[object.name] = (out[object.name] ?? 0) + 1;
+      for (const child of object.children) visit(child);
+    };
+    visit(s.scene);
+    return out;
+  }, prefix);
+}
+
+/** 关闭页面所在的上下文让录像落盘，再另存为 file（录像目录里的随机文件名删掉）。 */
+export async function saveVideo(page, file) {
+  const video = page.video();
+  if (!video) return null;
+  const context = page.context();
+  state.contexts.delete(context);
+  await context.close();
+  await mkdir(path.dirname(file), { recursive: true });
+  await video.saveAs(file);
+  await video.delete().catch(() => undefined);
+  return file;
+}
 
 /** 场景里带 userData.focusEntityId 的设备数量（按 entityId 去重）。 */
 export async function countSceneDevices(page) {
