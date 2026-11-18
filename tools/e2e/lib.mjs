@@ -345,6 +345,45 @@ export async function countFrames(page, ms = 5000) {
   return (await read()) - before;
 }
 
+/** B3：首页 3D 区域里各处文字的计算样式 user-select，以及画布的 touch-action；元素不存在时为 null。修复前后都记录，用来对照。 */
+export async function sceneUserSelect(page) {
+  return page.evaluate(() => {
+    const of = (selector) => {
+      const el = document.querySelector(selector);
+      if (!el) return null;
+      const style = getComputedStyle(el);
+      return style.userSelect || style.webkitUserSelect;
+    };
+    const canvas = document.querySelector(".home-scene canvas");
+    return {
+      scene: of(".home-scene"),
+      canvas: of(".home-scene canvas"),
+      canvasTouchAction: canvas ? getComputedStyle(canvas).touchAction : null,
+      title: of(".scene-title h1"),
+      dashboardCard: of(".home-dashboard-card"),
+      forecastItem: of(".weather-forecast-item"),
+      roomBadge: of(".mijia-room-badge"),
+      statusChip: of(".scene-device-status-chip"),
+    };
+  });
+}
+
+/** 触屏长按：CDP touchStart，按住 ms 毫秒后 touchEnd；返回按住期间和松开后 getSelection() 的文字（页面要用 touch: true 创建）。 */
+export async function touchLongPress(page, point, ms = 1200) {
+  const read = () => page.evaluate(() => window.getSelection()?.toString() ?? "");
+  await page.evaluate(() => window.getSelection()?.removeAllRanges());
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x: point.x, y: point.y }] });
+  await sleep(ms);
+  const during = await read();
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  await sleep(300);
+  const after = await read();
+  await cdp.detach();
+  await page.evaluate(() => window.getSelection()?.removeAllRanges());
+  return { during, after };
+}
+
 /** 手动渲染一帧，读取 draw call 和三角形数量。 */
 export async function drawCallsPerFrame(page) {
   return page.evaluate(() => {

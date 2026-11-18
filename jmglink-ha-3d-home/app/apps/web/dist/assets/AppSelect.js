@@ -1876,7 +1876,7 @@ const dn = {
     deviceBody: "#fbfdff",
     glow: "#f4fbff",
   };
-// ha3d-self: B6 删除卡通风格调色板 Fe、un()（visualStyle 不会是 "cartoon"，见 Ja 处说明）
+// ha3d-self: B6 删除卡通风格调色板 Fe、un()，以及 Nn、Fn 的卡通配色和各模型的 meshToonMaterial 分支（visualStyle 不会是 "cartoon"，见 Ja 处说明）
 const Ae = {
   background: "#c8bcaa",
   fog: "#d9cdbc",
@@ -2483,49 +2483,38 @@ function As(t) {
 const Ft = As("fabric"),
   In = As("wood");
 function Nn(t, s) {
-  return t === "cartoon"
+  return t === "cream"
     ? {
-        wood: "#efad76",
-        fabric: "#78bbd7",
-        linen: "#fff4de",
-        metal: "#526a87",
-        stone: "#f5d7a1",
-        accentA: "#ff9e85",
-        accentB: "#9d9bea",
-        screen: "#46627d",
+        wood: "#bd8c58",
+        fabric: "#c8a986",
+        linen: "#f8efe2",
+        metal: "#9a876e",
+        stone: "#e7d6bd",
+        accentA: "#d8cbbb",
+        accentB: "#c9c5b9",
+        screen: "#64736f",
       }
-    : t === "cream"
+    : s
       ? {
-          wood: "#bd8c58",
-          fabric: "#c8a986",
-          linen: "#f8efe2",
-          metal: "#9a876e",
-          stone: "#e7d6bd",
-          accentA: "#d8cbbb",
-          accentB: "#c9c5b9",
-          screen: "#64736f",
+          wood: "#718294",
+          fabric: "#8297a7",
+          linen: "#c7d2dd",
+          metal: "#93a5b7",
+          stone: "#b8c8d7",
+          accentA: "#abb6c4",
+          accentB: "#a2b1c0",
+          screen: "#4c6377",
         }
-      : s
-        ? {
-            wood: "#718294",
-            fabric: "#8297a7",
-            linen: "#c7d2dd",
-            metal: "#93a5b7",
-            stone: "#b8c8d7",
-            accentA: "#abb6c4",
-            accentB: "#a2b1c0",
-            screen: "#4c6377",
-          }
-        : {
-            wood: "#aebdcd",
-            fabric: "#a4b8c9",
-            linen: "#edf4fa",
-            metal: "#a5b5c3",
-            stone: "#d5e1ea",
-            accentA: "#ccd3dd",
-            accentB: "#bfccd8",
-            screen: "#607a91",
-          };
+      : {
+          wood: "#aebdcd",
+          fabric: "#a4b8c9",
+          linen: "#edf4fa",
+          metal: "#a5b5c3",
+          stone: "#d5e1ea",
+          accentA: "#ccd3dd",
+          accentB: "#bfccd8",
+          screen: "#607a91",
+        };
 }
 function W({
   at: t,
@@ -3330,29 +3319,21 @@ function Rn({ item: t, night: s, visualStyle: o = "glass" }) {
   });
 }
 function Fn(t) {
-  return t === "cartoon"
+  return t === "cream"
     ? {
-        shell: "#fff3df",
-        trim: "#566f91",
-        dark: "#344c6a",
-        lens: "#5b8fd0",
-        reflection: "#cbeaff",
+        shell: "#faf3e7",
+        trim: "#b8a58e",
+        dark: "#655a4f",
+        lens: "#6b8790",
+        reflection: "#f5dfb8",
       }
-    : t === "cream"
-      ? {
-          shell: "#faf3e7",
-          trim: "#b8a58e",
-          dark: "#655a4f",
-          lens: "#6b8790",
-          reflection: "#f5dfb8",
-        }
-      : {
-          shell: "#f4f8fc",
-          trim: "#b9c8d5",
-          dark: "#465866",
-          lens: "#527e9b",
-          reflection: "#d9efff",
-        };
+    : {
+        shell: "#f4f8fc",
+        trim: "#b9c8d5",
+        dark: "#465866",
+        lens: "#527e9b",
+        reflection: "#d9efff",
+      };
 }
 function An(t, s) {
   if (!t) return s.dark;
@@ -3413,22 +3394,19 @@ function Bn({
   visualStyle: n = "glass",
 }) {
   const a = Fn(n),
-    i = n === "cartoon",
     d = s ? 0.42 : 1,
     l = (j = a.dark, v = !1, y = !1) => {
       const x = An(j, a);
-      return i
-        ? e.jsx("meshToonMaterial", { color: x, transparent: s, opacity: d })
-        : e.jsx("meshPhysicalMaterial", {
-            color: x,
-            roughness: y ? 0.91 : v ? 0.3 : 0.48,
-            metalness: v ? 0.65 : 0.02,
-            clearcoat: v || y ? 0 : 0.18,
-            bumpMap: y ? Ft : void 0,
-            bumpScale: 0.0018,
-            transparent: s,
-            opacity: d,
-          });
+      return e.jsx("meshPhysicalMaterial", {
+        color: x,
+        roughness: y ? 0.91 : v ? 0.3 : 0.48,
+        metalness: v ? 0.65 : 0.02,
+        clearcoat: v || y ? 0 : 0.18,
+        bumpMap: y ? Ft : void 0,
+        bumpScale: 0.0018,
+        transparent: s,
+        opacity: d,
+      });
     },
     c = (j, v, y, x = !1, b = !1) =>
       e.jsx(B, {
@@ -4735,28 +4713,19 @@ function ua({
         },
         children: [
           e.jsx("shapeGeometry", { args: [j] }),
-          x
-            ? e.jsx("meshToonMaterial", {
-                color: I,
-                emissive: m,
-                emissiveIntensity: C * 0.58,
-                polygonOffset: !0,
-                polygonOffsetFactor: -1,
-                polygonOffsetUnits: -1,
-              })
-            : e.jsx("meshPhysicalMaterial", {
-                color: I,
-                roughness: n ? (l ? 0.5 : 0.46) : 0.72,
-                metalness: n ? 0.02 : 0.015,
-                clearcoat: n ? (l ? 0.18 : 0.2) : 0,
-                clearcoatRoughness: n ? 0.68 : 0.82,
-                reflectivity: n ? (l ? 0.12 : 0.14) : 0.08,
-                emissive: m,
-                emissiveIntensity: C,
-                polygonOffset: n,
-                polygonOffsetFactor: -1,
-                polygonOffsetUnits: -1,
-              }),
+          e.jsx("meshPhysicalMaterial", {
+            color: I,
+            roughness: n ? (l ? 0.5 : 0.46) : 0.72,
+            metalness: n ? 0.02 : 0.015,
+            clearcoat: n ? (l ? 0.18 : 0.2) : 0,
+            clearcoatRoughness: n ? 0.68 : 0.82,
+            reflectivity: n ? (l ? 0.12 : 0.14) : 0.08,
+            emissive: m,
+            emissiveIntensity: C,
+            polygonOffset: n,
+            polygonOffsetFactor: -1,
+            polygonOffsetUnits: -1,
+          }),
           $ > 0 &&
             e.jsx(ee, {
               color:
@@ -4817,17 +4786,15 @@ function A({
         : n
           ? T(et(o), "#eef5ff", 0.24)
           : et(o),
-    c = i
-      ? e.jsx("meshToonMaterial", { color: l })
-      : e.jsx("meshPhysicalMaterial", {
-          color: l,
-          roughness: d ? 0.64 : n ? Math.min(r, 0.44) : r,
-          metalness: d ? 0.006 : 0.018,
-          clearcoat: d ? 0.08 : n ? 0.34 : 0.16,
-          clearcoatRoughness: d ? 0.82 : n ? 0.56 : 0.82,
-          transparent: !1,
-          opacity: 1,
-        });
+    c = e.jsx("meshPhysicalMaterial", {
+      color: l,
+      roughness: d ? 0.64 : n ? Math.min(r, 0.44) : r,
+      metalness: d ? 0.006 : 0.018,
+      clearcoat: d ? 0.08 : n ? 0.34 : 0.16,
+      clearcoatRoughness: d ? 0.82 : n ? 0.56 : 0.82,
+      transparent: !1,
+      opacity: 1,
+    });
   if (n) {
     const h = Math.min(0.12, Math.min(s[0], s[1], s[2]) * 0.5),
       u = mt(i, d);
@@ -4902,22 +4869,16 @@ function fa({
     receiveShadow: !0,
     children: [
       e.jsx("boxGeometry", { args: [o, r, n] }),
-      u
-        ? e.jsx("meshToonMaterial", {
-            color: j.wallColor,
-            transparent: j.wallOpacity < 0.99,
-            opacity: j.wallOpacity,
-          })
-        : e.jsx("meshPhysicalMaterial", {
-            color: i ? j.wallColor : a,
-            roughness: f ? 0.74 : i ? 0.5 : 0.84,
-            metalness: 0,
-            clearcoat: f ? 0.02 : i ? 0.16 : 0,
-            clearcoatRoughness: f ? 0.94 : 0.72,
-            transparent: i && j.wallOpacity < 0.99,
-            opacity: i ? Math.max(0.2, j.wallOpacity * (f ? 1 : 0.82)) : 1,
-            depthWrite: f || !i,
-          }),
+      e.jsx("meshPhysicalMaterial", {
+        color: i ? j.wallColor : a,
+        roughness: f ? 0.74 : i ? 0.5 : 0.84,
+        metalness: 0,
+        clearcoat: f ? 0.02 : i ? 0.16 : 0,
+        clearcoatRoughness: f ? 0.94 : 0.72,
+        transparent: i && j.wallOpacity < 0.99,
+        opacity: i ? Math.max(0.2, j.wallOpacity * (f ? 1 : 0.82)) : 1,
+        depthWrite: f || !i,
+      }),
       c &&
         e.jsx(ee, {
           color: v,
@@ -5307,24 +5268,17 @@ const ga = M.memo(function ({
       geometry: i,
       receiveShadow: !0,
       children:
-        d === "cartoon"
-          ? e.jsx("meshToonMaterial", {
-              color: l.wallColor,
-              transparent: l.wallOpacity < 0.99,
-              opacity: l.wallOpacity,
-              side: Y,
-            })
-          : e.jsx("meshPhysicalMaterial", {
-              color: l.wallColor,
-              roughness: c ? 0.72 : 0.46,
-              metalness: 0.004,
-              clearcoat: c ? 0.02 : 0.16,
-              clearcoatRoughness: c ? 0.94 : 0.7,
-              transparent: l.wallOpacity < 0.99,
-              opacity: Math.max(0.18, l.wallOpacity * (c ? 1 : 0.88)),
-              depthWrite: c,
-              side: Y,
-            }),
+        e.jsx("meshPhysicalMaterial", {
+          color: l.wallColor,
+          roughness: c ? 0.72 : 0.46,
+          metalness: 0.004,
+          clearcoat: c ? 0.02 : 0.16,
+          clearcoatRoughness: c ? 0.94 : 0.7,
+          transparent: l.wallOpacity < 0.99,
+          opacity: Math.max(0.18, l.wallOpacity * (c ? 1 : 0.88)),
+          depthWrite: c,
+          side: Y,
+        }),
     });
   }),
   ma = M.memo(function ({
@@ -5431,26 +5385,19 @@ const ga = M.memo(function ({
                     : { depth: y, bevelEnabled: !1, curveSegments: 1 },
                 ],
               }),
-              $
-                ? e.jsx("meshToonMaterial", {
-                    color: m.wallColor,
-                    transparent: m.wallOpacity < 0.99,
-                    opacity: m.wallOpacity,
-                    side: Y,
-                  })
-                : e.jsx("meshPhysicalMaterial", {
-                    color: a ? m.wallColor : o,
-                    roughness: p ? 0.72 : a ? 0.46 : 0.84,
-                    metalness: 0.004,
-                    clearcoat: p ? 0.02 : a ? 0.16 : 0,
-                    clearcoatRoughness: p ? 0.94 : 0.7,
-                    transparent: a && m.wallOpacity < 0.99,
-                    opacity: a
-                      ? Math.max(0.18, m.wallOpacity * (p ? 1 : 0.88))
-                      : 1,
-                    depthWrite: p || !a,
-                    side: Y,
-                  }),
+              e.jsx("meshPhysicalMaterial", {
+                color: a ? m.wallColor : o,
+                roughness: p ? 0.72 : a ? 0.46 : 0.84,
+                metalness: 0.004,
+                clearcoat: p ? 0.02 : a ? 0.16 : 0,
+                clearcoatRoughness: p ? 0.94 : 0.7,
+                transparent: a && m.wallOpacity < 0.99,
+                opacity: a
+                  ? Math.max(0.18, m.wallOpacity * (p ? 1 : 0.88))
+                  : 1,
+                depthWrite: p || !a,
+                side: Y,
+              }),
               e.jsx(ee, {
                 color: C,
                 threshold: $ ? 18 : p ? 28 : a ? 26 : 35,
@@ -5720,6 +5667,25 @@ const ba = `
     if (gl_FragColor.a < 0.004) discard;
   }
 `;
+// ===== ha3d-self: B6 设备动画限帧（省电 20 fps、流畅 30 fps） =====
+// 出风（ce，空调、风扇等）和传感器脉冲环（Na，人在、门开、读数变化时）原来每帧 invalidate，场景里只有它们在动时也按显示器刷新率渲染。
+// 省电/流畅下改为按帧率排队一次 invalidate，同一画布上的多个设备动画共用一个定时器；
+// 拖动、缩放视角时帧由 OrbitControls 驱动，不受这里影响。均衡/高照旧每帧 invalidate。
+const ha3dDeviceAnimFps = { eco: 20, smooth: 30 },
+  ha3dDeviceAnimTimers = new WeakMap();
+function ha3dDeviceAnimInvalidate(t, s) {
+  const o = ha3dDeviceAnimFps[s];
+  if (!o) return t();
+  let r = ha3dDeviceAnimTimers.get(t);
+  if (!r) ((r = { timer: 0, last: 0 }), ha3dDeviceAnimTimers.set(t, r));
+  r.timer ||
+    (r.timer = window.setTimeout(
+      () => {
+        ((r.timer = 0), (r.last = performance.now()), t());
+      },
+      Math.max(0, 1e3 / o - (performance.now() - r.last)),
+    ));
+}
 function ce({
   color: t,
   direction: s,
@@ -5737,7 +5703,8 @@ function ce({
   turbulence: j = 0.1,
   visible: v = !0,
 }) {
-  const y = be((G) => G.invalidate);
+  const y = be((G) => G.invalidate),
+    ha3dQuality = M.useContext(ha3dQualityContext); // ha3d-self: B6
   M.useEffect(() => {
     v && y();
   }, [y, v]);
@@ -5749,7 +5716,7 @@ function ce({
       ((b.current = X.damp(b.current, 1, 5, Math.min(L, 0.05))),
       (S.uOpacity.value = n * (x ? 1 : b.current)),
       (S.uTime.value = x ? 0 : Ks.value),
-      x || y());
+      x || ha3dDeviceAnimInvalidate(y, ha3dQuality)); // ha3d-self: B6 省电/流畅下限帧
   });
   const w = T(t, "#f0f8f5", 0.45),
     S = M.useMemo(
@@ -6446,26 +6413,18 @@ function Ga({
     G = ($ = 0.04) =>
       e.jsxs(e.Fragment, {
         children: [
-          c
-            ? e.jsx("meshToonMaterial", {
-                color: y,
-                emissive: f ? x : "#000000",
-                emissiveIntensity: f ? 0.12 : 0,
-                transparent: r,
-                opacity: v,
-              })
-            : e.jsx("meshPhysicalMaterial", {
-                color: y,
-                roughness: $ >= 0.1 ? 0.3 : 0.48,
-                metalness: Math.min($, 0.12),
-                clearcoat: 0.12,
-                clearcoatRoughness: 0.42,
-                emissive: f ? x : "#000000",
-                emissiveIntensity: f ? 0.06 : 0,
-                side: Y,
-                transparent: r,
-                opacity: v,
-              }),
+          e.jsx("meshPhysicalMaterial", {
+            color: y,
+            roughness: $ >= 0.1 ? 0.3 : 0.48,
+            metalness: Math.min($, 0.12),
+            clearcoat: 0.12,
+            clearcoatRoughness: 0.42,
+            emissive: f ? x : "#000000",
+            emissiveIntensity: f ? 0.06 : 0,
+            side: Y,
+            transparent: r,
+            opacity: v,
+          }),
           e.jsx(ee, {
             color: a ? S.color : Bt(y),
             threshold: a ? S.threshold : 34,
@@ -6477,25 +6436,17 @@ function Ga({
     L = () =>
       e.jsxs(e.Fragment, {
         children: [
-          c
-            ? e.jsx("meshToonMaterial", {
-                color: b,
-                emissive: u || f ? x : "#000000",
-                emissiveIntensity: w * 0.56,
-                transparent: !0,
-                opacity: r ? 0.42 : u ? 0.98 : f ? 0.88 : 0.82,
-              })
-            : e.jsx("meshPhysicalMaterial", {
-                color: b,
-                emissive: u || f ? x : "#000000",
-                emissiveIntensity: w,
-                roughness: a ? 0.22 : 0.3,
-                metalness: 0,
-                clearcoat: a ? 0.36 : 0.26,
-                clearcoatRoughness: a ? 0.5 : 0.6,
-                transparent: !0,
-                opacity: r ? 0.42 : u ? 0.98 : f ? 0.9 : 0.84,
-              }),
+          e.jsx("meshPhysicalMaterial", {
+            color: b,
+            emissive: u || f ? x : "#000000",
+            emissiveIntensity: w,
+            roughness: a ? 0.22 : 0.3,
+            metalness: 0,
+            clearcoat: a ? 0.36 : 0.26,
+            clearcoatRoughness: a ? 0.5 : 0.6,
+            transparent: !0,
+            opacity: r ? 0.42 : u ? 0.98 : f ? 0.9 : 0.84,
+          }),
           a &&
             e.jsx(ee, {
               color: S.color,
@@ -6518,56 +6469,38 @@ function Ga({
   if (t === "light.ceiling_panel") {
     const $ = a ? T(y, "#d8dde0", 0.36) : "#d7dcdd",
       p = u || f ? T(x, "#ffffff", 0.52) : "#f4f7f5",
-      m = c
-        ? e.jsx("meshToonMaterial", {
-            color: y,
-            emissive: f ? x : "#000000",
-            emissiveIntensity: f ? 0.08 : 0,
-            transparent: r,
-            opacity: v,
-          })
-        : e.jsx("meshPhysicalMaterial", {
-            color: y,
-            roughness: a ? 0.3 : 0.44,
-            metalness: 0.05,
-            clearcoat: a ? 0.34 : 0.18,
-            clearcoatRoughness: a ? 0.58 : 0.74,
-            emissive: f ? x : "#000000",
-            emissiveIntensity: f ? 0.08 : 0,
-            transparent: r,
-            opacity: v,
-          }),
-      C = c
-        ? e.jsx("meshToonMaterial", {
-            color: b,
-            emissive: u || f ? x : "#000000",
-            emissiveIntensity: w * 0.5,
-            transparent: !0,
-            opacity: r ? 0.42 : u ? 0.98 : f ? 0.88 : 0.84,
-          })
-        : e.jsx("meshPhysicalMaterial", {
-            color: b,
-            emissive: u || f ? x : "#000000",
-            emissiveIntensity: w,
-            roughness: a ? 0.24 : 0.32,
-            metalness: 0,
-            clearcoat: a ? 0.34 : 0.24,
-            clearcoatRoughness: a ? 0.52 : 0.62,
-            transparent: !0,
-            opacity: r ? 0.42 : u ? 0.98 : f ? 0.9 : 0.86,
-          }),
+      m = e.jsx("meshPhysicalMaterial", {
+        color: y,
+        roughness: a ? 0.3 : 0.44,
+        metalness: 0.05,
+        clearcoat: a ? 0.34 : 0.18,
+        clearcoatRoughness: a ? 0.58 : 0.74,
+        emissive: f ? x : "#000000",
+        emissiveIntensity: f ? 0.08 : 0,
+        transparent: r,
+        opacity: v,
+      }),
+      C = e.jsx("meshPhysicalMaterial", {
+        color: b,
+        emissive: u || f ? x : "#000000",
+        emissiveIntensity: w,
+        roughness: a ? 0.24 : 0.32,
+        metalness: 0,
+        clearcoat: a ? 0.34 : 0.24,
+        clearcoatRoughness: a ? 0.52 : 0.62,
+        transparent: !0,
+        opacity: r ? 0.42 : u ? 0.98 : f ? 0.9 : 0.86,
+      }),
       O = () =>
-        c
-          ? e.jsx("meshToonMaterial", { color: $, transparent: r, opacity: v })
-          : e.jsx("meshPhysicalMaterial", {
-              color: $,
-              roughness: 0.36,
-              metalness: 0.12,
-              clearcoat: 0.28,
-              clearcoatRoughness: 0.64,
-              transparent: r,
-              opacity: v,
-            });
+        e.jsx("meshPhysicalMaterial", {
+          color: $,
+          roughness: 0.36,
+          metalness: 0.12,
+          clearcoat: 0.28,
+          clearcoatRoughness: 0.64,
+          transparent: r,
+          opacity: v,
+        });
     return e.jsxs("group", {
       children: [
         e.jsx(B, {
@@ -7101,27 +7034,19 @@ function Ta({
       const E = k === "detail" ? w : b;
       return e.jsxs(e.Fragment, {
         children: [
-          v
-            ? e.jsx("meshToonMaterial", {
-                color: E,
-                emissive: G,
-                emissiveIntensity: L * 0.38,
-                transparent: a,
-                opacity: x,
-              })
-            : e.jsx("meshPhysicalMaterial", {
-                color: E,
-                roughness: h
-                  ? Math.max(Math.min(g, 0.4), 0.26)
-                  : Math.max(g, 0.38),
-                metalness: h ? Math.min(_, 0.12) : _,
-                clearcoat: h ? 0.38 : 0.22,
-                clearcoatRoughness: h ? 0.58 : 0.7,
-                emissive: G,
-                emissiveIntensity: L,
-                transparent: a,
-                opacity: x,
-              }),
+          e.jsx("meshPhysicalMaterial", {
+            color: E,
+            roughness: h
+              ? Math.max(Math.min(g, 0.4), 0.26)
+              : Math.max(g, 0.38),
+            metalness: h ? Math.min(_, 0.12) : _,
+            clearcoat: h ? 0.38 : 0.22,
+            clearcoatRoughness: h ? 0.58 : 0.7,
+            emissive: G,
+            emissiveIntensity: L,
+            transparent: a,
+            opacity: x,
+          }),
           e.jsx(ee, {
             color: h ? $.color : Bt(E),
             threshold: h ? $.threshold : 34,
@@ -7328,17 +7253,15 @@ function Ta({
       _ = y ? "#5a4f45" : "#2f3742",
       k = y ? "#8a7d6e" : "#5b6573",
       E = (q, N = 0.42, R = 0.1) =>
-        v
-          ? e.jsx("meshToonMaterial", { color: q, transparent: a, opacity: x })
-          : e.jsx("meshPhysicalMaterial", {
-              color: q,
-              roughness: N,
-              metalness: R,
-              clearcoat: 0.2,
-              clearcoatRoughness: 0.6,
-              transparent: a,
-              opacity: x,
-            }),
+        e.jsx("meshPhysicalMaterial", {
+          color: q,
+          roughness: N,
+          metalness: R,
+          clearcoat: 0.2,
+          clearcoatRoughness: 0.6,
+          transparent: a,
+          opacity: x,
+        }),
       P = (N) =>
         h &&
         e.jsx(ee, {
@@ -7421,21 +7344,15 @@ function Ta({
   if (s === "cover.clothes_rack") {
     const g = X.clamp(I / 100, 0, 1),
       _ = X.lerp(0.15, 1, 1 - g),
-      k = v
-        ? e.jsx("meshToonMaterial", {
-            color: T(b, "#ffffff", 0.3),
-            transparent: a,
-            opacity: a ? 0.4 : 1,
-          })
-        : e.jsx("meshPhysicalMaterial", {
-            color: T(b, "#ffffff", 0.36),
-            roughness: 0.34,
-            metalness: 0.24,
-            clearcoat: 0.3,
-            clearcoatRoughness: 0.56,
-            transparent: a,
-            opacity: a ? 0.4 : 1,
-          }),
+      k = e.jsx("meshPhysicalMaterial", {
+        color: T(b, "#ffffff", 0.36),
+        roughness: 0.34,
+        metalness: 0.24,
+        clearcoat: 0.3,
+        clearcoatRoughness: 0.56,
+        transparent: a,
+        opacity: a ? 0.4 : 1,
+      }),
       E = e.jsx("meshBasicMaterial", {
         color: T(w, "#ffffff", h ? 0.4 : 0.2),
         transparent: !0,
@@ -7564,38 +7481,25 @@ function Ta({
       R = 10,
       F = X.lerp(-0.06, 0.72, g),
       z = (K, q = 0.12) =>
-        v
-          ? e.jsx("meshToonMaterial", {
-              color: T(w, "#ffffff", q),
-              transparent: !0,
-              opacity: a ? 0.2 : K,
-              side: Y,
-            })
-          : e.jsx("meshPhysicalMaterial", {
-              color: T(w, h ? "#f7fbff" : "#ffffff", q),
-              roughness: 0.54,
-              metalness: 0.02,
-              clearcoat: 0.16,
-              clearcoatRoughness: 0.72,
-              transparent: !0,
-              opacity: a ? 0.22 : K,
-              side: Y,
-            }),
-      U = v
-        ? e.jsx("meshToonMaterial", {
-            color: T(b, "#ffffff", 0.26),
-            transparent: a,
-            opacity: a ? 0.38 : 1,
-          })
-        : e.jsx("meshPhysicalMaterial", {
-            color: T(b, "#ffffff", 0.38),
-            roughness: 0.34,
-            metalness: 0.2,
-            clearcoat: 0.28,
-            clearcoatRoughness: 0.54,
-            transparent: a,
-            opacity: a ? 0.38 : 1,
-          }),
+        e.jsx("meshPhysicalMaterial", {
+          color: T(w, h ? "#f7fbff" : "#ffffff", q),
+          roughness: 0.54,
+          metalness: 0.02,
+          clearcoat: 0.16,
+          clearcoatRoughness: 0.72,
+          transparent: !0,
+          opacity: a ? 0.22 : K,
+          side: Y,
+        }),
+      U = e.jsx("meshPhysicalMaterial", {
+        color: T(b, "#ffffff", 0.38),
+        roughness: 0.34,
+        metalness: 0.2,
+        clearcoat: 0.28,
+        clearcoatRoughness: 0.54,
+        transparent: a,
+        opacity: a ? 0.38 : 1,
+      }),
       V = e.jsx("meshBasicMaterial", {
         color: T(w, "#ffffff", h ? 0.48 : 0.28),
         transparent: !0,
@@ -7688,40 +7592,27 @@ function Ta({
   if (s === "cover.curtain") {
     const g = X.clamp(I / 100, 0, 1),
       _ = (P = 0.82) =>
-        v
-          ? e.jsx("meshToonMaterial", {
-              color: T(w, "#ffffff", 0.08),
-              side: Y,
-              transparent: !0,
-              opacity: a ? 0.24 : P,
-            })
-          : e.jsx("meshPhysicalMaterial", {
-              color: T(w, h ? "#edf5ff" : "#ffffff", h ? 0.18 : 0.08),
-              side: Y,
-              roughness: 0.96,
-              metalness: 0,
-              bumpMap: Ft,
-              bumpScale: 0.004,
-              sheen: 0.35,
-              sheenColor: "#e4e9e5",
-              transparent: a,
-              opacity: a ? 0.26 : 1,
-            }),
-      k = v
-        ? e.jsx("meshToonMaterial", {
-            color: T(b, "#ffffff", 0.28),
-            transparent: a,
-            opacity: a ? 0.42 : 1,
-          })
-        : e.jsx("meshPhysicalMaterial", {
-            color: T(b, "#ffffff", 0.42),
-            roughness: 0.36,
-            metalness: 0.22,
-            clearcoat: 0.34,
-            clearcoatRoughness: 0.58,
-            transparent: a,
-            opacity: a ? 0.42 : 1,
-          }),
+        e.jsx("meshPhysicalMaterial", {
+          color: T(w, h ? "#edf5ff" : "#ffffff", h ? 0.18 : 0.08),
+          side: Y,
+          roughness: 0.96,
+          metalness: 0,
+          bumpMap: Ft,
+          bumpScale: 0.004,
+          sheen: 0.35,
+          sheenColor: "#e4e9e5",
+          transparent: a,
+          opacity: a ? 0.26 : 1,
+        }),
+      k = e.jsx("meshPhysicalMaterial", {
+        color: T(b, "#ffffff", 0.42),
+        roughness: 0.36,
+        metalness: 0.22,
+        clearcoat: 0.34,
+        clearcoatRoughness: 0.58,
+        transparent: a,
+        opacity: a ? 0.42 : 1,
+      }),
       E = (P) => {
         const N = X.lerp(0.47, 0.145, g),
           R = P * X.lerp(0.235, 0.425, g),
@@ -9426,6 +9317,7 @@ function Na({ active: t, unavailable: s, value: o, color: r }) {
     i = M.useRef(0),
     d = M.useRef(o),
     l = be((u) => u.invalidate),
+    ha3dQuality = M.useContext(ha3dQualityContext), // ha3d-self: B6
     [c, h] = M.useState(
       () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     );
@@ -9457,7 +9349,7 @@ function Na({ active: t, unavailable: s, value: o, color: r }) {
           b.scale.setScalar(v ? 1 + w * 2.4 : 1),
           (b.material.opacity = v ? (c ? 0.3 : 0.6 * (1 - w)) : 0.16));
       }),
-        v && !c && l());
+        v && !c && ha3dDeviceAnimInvalidate(l, ha3dQuality)); // ha3d-self: B6 传感器脉冲环同样限帧
     }),
     e.jsx("group", {
       ref: n,
@@ -9525,6 +9417,9 @@ function ha3dCanDirectToggle(t, s) {
 // 否则双击拖动从灯上开始时，第一次轻点和平移松手各算一次 click，灯会开→关闪一下。
 const ha3dDirectToggleDelayMs = 350,
   ha3dPendingToggles = [];
+// R3F 对拖动后的松手也派发 click（只要按下、松手时都命中设备），移动距离放在 event.delta（px）里；
+// 超过 6 px（与 ha3dDoubleTapPan 判定拖动的距离相同）算拖动视角，不开关也不弹详情。
+const ha3dIsDragClick = (t) => t.delta > 6;
 let ha3dDownSeq = 0,
   ha3dLastDown = { seq: 0, time: -1 / 0, x: 0, y: 0 },
   ha3dSecondTap = !1;
@@ -9646,9 +9541,11 @@ const Ra = M.memo(function ({
             d == null || d(s.entityId),
             l == null || l(s.id, s.entityId));
         };
-        // ha3d-self: F4 直接开关模式下，开关类设备点击即 toggle，不弹详情
+        // ha3d-self: F4 直接开关模式下，开关类设备点击即 toggle，不弹详情；拖动视角后的松手什么都不做
         if (r && ha3dCanDirectToggle(ha3dClickMode, o)) {
-          (je.stopPropagation(), as(), ha3dDirectToggle(ha3dAct, o.entityId, ha3dSelect));
+          je.stopPropagation();
+          if (ha3dIsDragClick(je)) return;
+          (as(), ha3dDirectToggle(ha3dAct, o.entityId, ha3dSelect));
           return;
         }
         (je.stopPropagation(), as(), ha3dSelect());
@@ -9799,10 +9696,11 @@ const Ra = M.memo(function ({
       rotation: s.rotation ?? [0, 0, 0],
       scale: I,
       onClick: (C) => {
-        // ha3d-self: F4 开关控制的灯具按开关实体 toggle；失败时退回选中
+        // ha3d-self: F4 开关控制的灯具按开关实体 toggle；失败时退回选中；拖动视角后的松手什么都不做
         if (n && ha3dCanDirectToggle(ha3dClickMode, r)) {
-          (C.stopPropagation(),
-            as(),
+          C.stopPropagation();
+          if (ha3dIsDragClick(C)) return;
+          (as(),
             ha3dDirectToggle(ha3dAct, o.entityId, () => {
               (c(o.entityId),
                 d == null || d(o.entityId),
@@ -10796,15 +10694,13 @@ const Wa = {
             castShadow: !0,
             children: [
               e.jsx("extrudeGeometry", { args: [u, Wa] }),
-              a
-                ? e.jsx("meshToonMaterial", { color: c })
-                : e.jsx("meshPhysicalMaterial", {
-                    color: c,
-                    roughness: i ? 0.68 : 0.42,
-                    metalness: i ? 0.012 : 0.035,
-                    clearcoat: i ? 0.05 : 0.24,
-                    clearcoatRoughness: i ? 0.86 : 0.58,
-                  }),
+              e.jsx("meshPhysicalMaterial", {
+                color: c,
+                roughness: i ? 0.68 : 0.42,
+                metalness: i ? 0.012 : 0.035,
+                clearcoat: i ? 0.05 : 0.24,
+                clearcoatRoughness: i ? 0.86 : 0.58,
+              }),
               e.jsx(ee, {
                 color: h,
                 threshold: 18,

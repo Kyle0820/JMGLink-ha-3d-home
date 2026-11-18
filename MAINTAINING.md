@@ -66,6 +66,8 @@
 ### 渲染与性能
 
 - 场景默认按需渲染（`frameloop="demand"`）。有持续动画（天气不是晴、多云、夜晚星空、宠物、自动旋转）时，balanced/high 用 `always`；eco/smooth 由 `ha3dFrameTicker` 按 20/30 fps 定时渲染，标签页隐藏时暂停。新增的持续动画只在 `useFrame` 里按 `delta` 推进，不要每帧 `invalidate()`，并把它加进 `t0` 里的持续动画判断。
+- 设备自带的逐帧动画（出风 `ce`、传感器脉冲环 `Na`）在 eco/smooth 下不直接 `invalidate()`，而是经 `ha3dDeviceAnimInvalidate` 按 20/30 fps 排队（同一画布共用一个定时器），所以只有设备在动时也限帧，拖动、缩放视角由 OrbitControls 驱动、不受影响。新增的设备逐帧动画也走这个函数。
+- 直接开关模式下，设备 `onClick` 先用 `ha3dIsDragClick`（R3F 的 `event.delta` > 6 px）排除拖动视角后的松手。
 - eco 画质下 `ee`（drei Edges 的包装）不渲染描边。
 
 ### 固定文件名与缓存

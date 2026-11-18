@@ -105,7 +105,9 @@ async function waitPet(ctx, page, timeout = 15_000) {
 
 export default async function pets(ctx) {
   const { check } = ctx;
-  const floor = ctx.project.floors[0];
+  // 用页面实际加载的项目（前面的 interaction 套件会在 2D 编辑器里把床、床头柜拖开 1 m 并保存），不用原始项目文件
+  const current = (await (await fetch(`${ctx.stack.appUrl}/api/projects/current`)).json()).project;
+  const floor = current.floors.find((item) => item.id === ctx.project.floors[0].id) ?? current.floors[0];
   const rooms = floor.rooms.filter((room) => room.polygon?.length >= 3);
   const out = { quality: QUALITY, floorId: floor.id, pets: {}, settings: {}, reducedMotion: {} };
 
@@ -164,9 +166,9 @@ export default async function pets(ctx) {
     await ctx.focusCamera(page, (await readPet(page)).world, 3.2, { direction: [0.6, 0.95, 0.75] });
     await ctx.shot(page, `F6-${kind}-closeup`);
     // 点击宠物所在位置：不会选中任何设备（宠物不可点击）。点击会穿过宠物打到后面的东西，
-    // 所以等宠物走到身后（屏幕上）没有设备的位置再点，最多等 8 次
+    // 所以等宠物走到身后（屏幕上）没有设备的位置再点，最多等 20 秒（宠物到一个点会停 2–6 秒，停在空调前面时 8 秒不一定够）
     let after;
-    for (let attempt = 0; attempt < 8; attempt += 1) {
+    for (let attempt = 0; attempt < 20; attempt += 1) {
       after = await readPet(page);
       after.deviceBehind = await page.evaluate(({ x, y }) => {
         const s = window.__ha3dDebug.get();

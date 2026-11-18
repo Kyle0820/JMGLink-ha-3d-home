@@ -143,6 +143,65 @@ async function measureDrag(ctx, page, start, options, settleMs = 400) {
 }
 
 /**
+ * 这个页面坐标上点击会落到哪个设备：和 R3F 一样按距离遍历射线命中（没有事件处理的物体不挡），
+ * 沿父链找带 onClick 的物体，返回第一个带 focusEntityId 的。
+ */
+async function clickTargetAt(page, point) {
+  return page.evaluate(({ x, y }) => {
+    const s = window.__ha3dDebug?.get();
+    if (!s) return null;
+    const rect = s.gl.domElement.getBoundingClientRect();
+    const pointer = s.pointer.clone().set(((x - rect.left) / rect.width) * 2 - 1, -((y - rect.top) / rect.height) * 2 + 1);
+    s.raycaster.setFromCamera(pointer, s.camera);
+    for (const hit of s.raycaster.intersectObjects(s.scene.children, true)) {
+      for (let object = hit.object; object; object = object.parent) {
+        if (object.__r3f?.handlers?.onClick && object.userData?.focusEntityId) return object.userData.focusEntityId;
+      }
+    }
+    return null;
+  }, point);
+}
+
+/**
+ * 从设备上按下、横向拖动旋转视角，在「方位角变化 > 10° 且设备仍在指针下」的位置松手：
+ * 这时 R3F 照样给设备派发 click（拖动距离在 event.delta 里），修复前直接开关模式会因此开关设备。
+ * 按住期间每走一段就等阻尼走完、用射线判断设备是否还在指针下；往回拖只是把视角转回来。
+ * 两个方向都找不到这样的位置时，在设备外松手并返回 release: null。
+ */
+async function dragFromDevice(ctx, page, entityId, start) {
+  await waitCameraStill(ctx, page);
+  const before = await ctx.readCamera(page);
+  const probes = [];
+  let x = start.x;
+  const moveTo = async (target) => {
+    const from = x;
+    const steps = Math.max(1, Math.ceil(Math.abs(target - from) / 8));
+    for (let step = 1; step <= steps; step += 1) await page.mouse.move(from + ((target - from) * step) / steps, start.y);
+    x = target;
+    await waitCameraStill(ctx, page);
+  };
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  let release = null;
+  // 先试 50–130 px（约 20°–50°），灯在屏幕上小时退回 30 px（约 12°）
+  for (const direction of [1, -1]) {
+    for (const dx of [50, 70, 90, 110, 130, 30]) {
+      if (release) break;
+      await moveTo(start.x + direction * dx);
+      const azimuthDeltaDeg = round(angleDelta(before.azimuthDeg, (await ctx.readCamera(page)).azimuthDeg), 2);
+      const target = await clickTargetAt(page, { x, y: start.y });
+      probes.push({ dx: direction * dx, azimuthDeltaDeg, target });
+      if (azimuthDeltaDeg > 10 && target === entityId) release = { dx: direction * dx, azimuthDeltaDeg };
+    }
+    if (release) break;
+    await moveTo(start.x);
+  }
+  if (!release) await moveTo(start.x + 130);
+  await page.mouse.up();
+  return { before, release, probes };
+}
+
+/**
  * 找一个双击会落到「退出房间聚焦」的点：射线命中的物体链上，带 onDoubleClick 的只有楼层根 group
  * （房间地面自己有 onDoubleClick 会重新聚焦，所以要避开射线穿过地面的点）。
  */
@@ -294,6 +353,44 @@ export default async function interaction(ctx) {
     }
     out.F4.doubleDrag = doubleDrag ?? null;
     check("F4 直接开关模式下从灯上双击后拖动：画面平移（target 移动 ≥ 0.3 m），0 次 toggle，不弹详情", doubleDrag && doubleDrag.targetMoveM >= 0.3 && doubleDrag.toggles === 0 && !detailOpen(doubleDrag.detail), doubleDrag);
+
+    // 从灯上单次拖动旋转视角，松手时灯仍在指针下（R3F 照样派发 click）：不开关、不弹详情
+    let singleDrag;
+    const dragCandidates = [...toggles].sort((a, b) => (b.device.entityId === tested?.entityId) - (a.device.entityId === tested?.entityId)).slice(0, 4);
+    for (const { device } of dragCandidates) {
+      await ctx.gotoHome(page, { prefs: { [CLICK_MODE_KEY]: "toggle" } });
+      const position = await ctx.screenPosOf(page, { entityId: device.entityId });
+      if (!position) continue;
+      // 相机对准这盏灯并拉近，灯在画面中间、足够大，转动一定角度后仍可能在指针下
+      await ctx.focusOn(page, position.world, 3.2, [0.2, 1, 0.45]);
+      const point = await ctx.projectToScreen(page, position.world);
+      if (!point?.onCanvas || (await clickTargetAt(page, point)) !== device.entityId) continue;
+      const callsBefore = (await ctx.mock.calls()).length;
+      const drag = await dragFromDevice(ctx, page, device.entityId, point);
+      // 直接开关延迟约 350 ms 发送，主线程忙时更晚：多等一会儿再看 mock 日志
+      await page.waitForTimeout(2500);
+      await waitCameraStill(ctx, page);
+      const after = await ctx.readCamera(page);
+      const calls = (await ctx.mock.calls()).slice(callsBefore);
+      singleDrag = {
+        entityId: device.entityId,
+        point: { x: round(point.x, 1), y: round(point.y, 1) },
+        release: drag.release,
+        probes: drag.probes,
+        azimuthDeltaDeg: round(angleDelta(drag.before.azimuthDeg, after.azimuthDeg), 2),
+        toggles: togglesOf(calls, device.entityId),
+        calls,
+        detail: await detailState(page),
+        screenshot: path.basename((await ctx.shot(page, "F4-toggle-mode-single-drag")).path),
+      };
+      if (drag.release) break;
+    }
+    out.F4.singleDrag = singleDrag ?? null;
+    check(
+      "F4 直接开关模式下从灯上单次拖动旋转（松手时灯仍在指针下）：方位角变化 > 10°，0 次 toggle，不弹详情",
+      singleDrag && singleDrag.release && singleDrag.azimuthDeltaDeg > 10 && singleDrag.toggles === 0 && !detailOpen(singleDrag.detail),
+      singleDrag && { entityId: singleDrag.entityId, release: singleDrag.release, azimuthDeltaDeg: singleDrag.azimuthDeltaDeg, toggles: singleDrag.toggles, calls: singleDrag.calls, detail: singleDrag.detail, probes: singleDrag.probes },
+    );
 
     // 非开关类设备（门锁优先）仍然弹出详情
     let other;
@@ -498,15 +595,16 @@ export default async function interaction(ctx) {
       await probe(label, await centerOf(selector));
     }
     await page.locator(".mijia-mode-tabs button", { hasText: "全屋" }).first().click({ force: true, timeout: 5000 });
-    const userSelect = await page.evaluate(() => {
-      const of = (selector) => {
-        const el = document.querySelector(selector);
-        return el ? getComputedStyle(el).userSelect || getComputedStyle(el).webkitUserSelect : null;
-      };
-      return { scene: of(".home-scene"), canvas: of(".home-scene canvas"), touchAction: getComputedStyle(document.querySelector(".home-scene canvas")).touchAction, title: of(".scene-title h1") };
-    });
+    // 同一组元素的计算样式在修复前基线（baseline.mjs 的 B3userSelect）里是 auto，桌面 Chromium 双击、三击在修复前也选不中文字，
+    // 所以这条才是能区分修复前后的断言
+    const userSelect = await ctx.sceneUserSelect(page);
     out.B3userSelect = userSelect;
-    check("B3 .home-scene 及其中元素 user-select: none，画布 touch-action: none", userSelect.scene === "none" && userSelect.canvas === "none" && userSelect.title === "none" && userSelect.touchAction === "none", userSelect);
+    const textNodes = ["scene", "canvas", "title", "dashboardCard", "forecastItem"].filter((key) => userSelect[key] !== null);
+    check(
+      "B3 .home-scene 及其中的标题、数据卡片、天气预报条目 user-select: none，画布 touch-action: none",
+      ["scene", "canvas", "title"].every((key) => textNodes.includes(key)) && textNodes.every((key) => userSelect[key] === "none") && userSelect.canvasTouchAction === "none",
+      userSelect,
+    );
     await ctx.shot(page, "B3-after-clicks");
 
     // 3D 区域里的输入框仍然可以选中文字（数据卡片管理的「卡片标题」）

@@ -2,6 +2,7 @@
 // 写 <证据>/perf/perf.json 和 perf.md（前后对比表、镜像大小、删掉的代码）。
 // - 首页和编辑器加载都不请求 hls.js，首页 JS 字节数比基线少 ≥ 500 KB，默认不加载宠物代码；
 // - 没有持续动画（晴天白天、无宠物、设备不在动）时，各画质稳定后 5 秒 0 帧；
+// - 只有设备动画（空调出风；传感器脉冲环）时 eco ≤ 22 fps、smooth ≤ 32 fps，同时拖动视角时不受这个限制；
 // - 有持续动画（下雨 + 宠物，空调出风也开着）时 eco ≤ 22 fps、smooth ≤ 32 fps（另在小视口下测一遍，那里软件渲染能跑得更快）；
 // - eco 每帧 draw call 比基线 eco 少，eco 下没有 drei Edges 描边；
 // - 模拟低端设备、没保存过画质时默认 eco（4 核 / 4 GB 时 smooth）。
@@ -64,6 +65,31 @@ async function waitIdle(ctx, page, maxMs = 45_000) {
   return Date.now() - started;
 }
 
+/** 用 CDP 按住左键在画布中间左右来回拖动 ms 毫秒（每 16 ms 一步，旋转视角），返回这段时间的帧率。 */
+async function dragFps(ctx, page, ms = 4000) {
+  const box = await page.locator(".home-scene canvas").first().boundingBox();
+  const cx = box.x + box.width / 2;
+  const cy = box.y + box.height * 0.6;
+  const cdp = await page.context().newCDPSession(page);
+  const send = (type, x, extra) => cdp.send("Input.dispatchMouseEvent", { type, x, y: cy, button: "left", ...extra });
+  const read = () => page.evaluate(() => window.__ha3dDebug.get().gl.info.render.frame);
+  await send("mouseMoved", cx, { buttons: 0, button: "none" });
+  await send("mousePressed", cx, { clickCount: 1, buttons: 1 });
+  const before = await read();
+  const started = Date.now();
+  let x = cx;
+  for (let step = 1; Date.now() - started < ms; step += 1) {
+    x = cx + 60 * Math.sin(step / 10);
+    await send("mouseMoved", x, { buttons: 1 });
+    await ctx.sleep(16);
+  }
+  const frames = (await read()) - before;
+  const elapsed = Date.now() - started;
+  await send("mouseReleased", x, { clickCount: 1, buttons: 0 });
+  await cdp.detach();
+  return Number(((frames * 1000) / elapsed).toFixed(1));
+}
+
 const qualityOf = (page) => page.evaluate(() => /render-quality-(\w+)/.exec(document.querySelector(".home-workspace")?.className ?? "")?.[1] ?? null);
 
 /** eco/high 下 drei Edges 的数量（LineMaterial 或非天气的 LineSegments）。 */
@@ -96,6 +122,30 @@ async function baselineSceneDrawCalls(ctx, page) {
       await ctx.gotoHome(page, { quality, settleMs: 3000, prefs: { "ha3d.home.pet": null } });
       result[quality] = await ctx.drawCallsPerFrame(page);
     }
+  } finally {
+    await put(current);
+  }
+  return result;
+}
+
+/**
+ * 把当前项目临时换成「同样的房间和墙，只留空调，没有家具和其他设备」，在 480×320 下测四种画质只有出风动画时的帧率
+ * 和拖动视角时的帧率，再换回来。场景够轻，SwiftShader 能跑到 60 fps 左右，才看得出 smooth 的 30 fps 上限。
+ */
+async function simpleSceneFps(ctx) {
+  const current = (await (await fetch(`${ctx.stack.appUrl}/api/projects/current`)).json()).project;
+  const put = (project) => fetch(`${ctx.stack.appUrl}/api/projects/${encodeURIComponent(current.id)}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...project, id: current.id }) });
+  const simple = { ...current, floors: current.floors.map((floor) => ({ ...floor, furniture: [], devices: (floor.devices ?? []).filter((device) => device.kind === "climate") })) };
+  const result = { devices: simple.floors.flatMap((floor) => floor.devices.map((device) => device.entityId)), deviceOnly: {}, drag: {} };
+  try {
+    if (!(await put(simple)).ok) throw new Error("保存只留空调的项目失败");
+    const page = await ctx.newPage({ startTime: NOON, viewport: { width: 480, height: 320 } });
+    for (const quality of QUALITIES) {
+      await ctx.gotoHome(page, { quality, settleMs: 3000, prefs: { "ha3d.home.pet": null } });
+      result.deviceOnly[quality] = Number(((await ctx.countFrames(page, 5000)) / 5).toFixed(1));
+      result.drag[quality] = await dragFps(ctx, page);
+    }
+    await page.context().close();
   } finally {
     await put(current);
   }
@@ -138,7 +188,7 @@ export default async function perf(ctx) {
   const { check } = ctx;
   const baseline = await loadBaseline(ctx);
   const before = baseline.data?.B6 ?? null;
-  const out = { baselineFile: baseline.file, idleFrames5s: {}, idleFramesWithDevices5s: {}, animatedFps: {}, animatedFpsSmallViewport: {}, drawCalls: {}, edges: {}, lowEnd: {} };
+  const out = { baselineFile: baseline.file, idleFrames5s: {}, idleFramesWithDevices5s: {}, deviceOnlyFpsSmallViewport: {}, dragFpsSmallViewport: {}, animatedFps: {}, animatedFpsSmallViewport: {}, drawCalls: {}, edges: {}, lowEnd: {} };
 
   // ---------- 资源：首页、编辑器 ----------
   {
@@ -181,6 +231,66 @@ export default async function perf(ctx) {
     check("B6 没有持续动画时（晴天白天、无宠物、设备停止）各画质稳定后 5 秒 0 帧", QUALITIES.every((quality) => out.idleFrames5s[quality] === 0), { idle: out.idleFrames5s, settleMs: out.idleSettleMs, withDevices: out.idleFramesWithDevices5s, stopped: out.stoppedDevices });
     await page.context().close();
     await ctx.mock.reset();
+  }
+
+  // ---------- 只有设备动画（晴天白天、无宠物，mock 默认空调制冷、出风开着）：eco/smooth 限帧，拖动视角不限帧 ----------
+  // 1440×900 用上面「默认设备状态」的空闲帧数；SwiftShader 在 1440×900 下 eco 本身只能跑 20 fps 左右，所以另在 480×320 下测
+  {
+    out.deviceOnlyFps = Object.fromEntries(QUALITIES.map((quality) => [quality, Number((out.idleFramesWithDevices5s[quality] / 5).toFixed(1))]));
+    const page = await ctx.newPage({ startTime: NOON, viewport: { width: 480, height: 320 } });
+    for (const quality of ["eco", "smooth", "balanced"]) {
+      await ctx.gotoHome(page, { quality, settleMs: 3000, prefs: { "ha3d.home.pet": null } });
+      out.deviceOnlyFpsSmallViewport[quality] = Number(((await ctx.countFrames(page, 5000)) / 5).toFixed(1));
+      out.dragFpsSmallViewport[quality] = await dragFps(ctx, page);
+    }
+    ctx.log(`只有出风动画的帧率：1440×900 ${JSON.stringify(out.deviceOnlyFps)}，480×320 ${JSON.stringify(out.deviceOnlyFpsSmallViewport)}；480×320 拖动时 ${JSON.stringify(out.dragFpsSmallViewport)}`);
+    const small = out.deviceOnlyFpsSmallViewport;
+    check(
+      "B6 只有设备动画（空调出风开着）时 eco ≤ 22 fps、smooth ≤ 32 fps，且都在渲染（1440×900 和 480×320）",
+      [out.deviceOnlyFps, small].every((fps) => fps.eco > 0 && fps.eco <= 22 && fps.smooth > 0 && fps.smooth <= 32),
+      { "1440x900": out.deviceOnlyFps, "480x320": small },
+    );
+    const drag = out.dragFpsSmallViewport;
+    check("B6 出风限帧不影响拖动视角：480×320 下 eco 拖动时 > 22 fps（出风限帧是 20 fps）", drag.eco > 22, { drag, deviceOnly: small });
+    await page.context().close();
+    // 整个户型下 smooth、balanced 在 SwiftShader 里本身只能跑 25–30 / 8 fps 左右，看不出 30 fps 的上限，也看不出 balanced/high 不限帧：
+    // 临时把场景换成只留空调（见 simpleSceneFps），再测一遍四种画质
+    out.simpleScene = await simpleSceneFps(ctx);
+    const simple = out.simpleScene;
+    ctx.log(`只留空调的场景（480×320）：只有出风 ${JSON.stringify(simple.deviceOnly)}，拖动时 ${JSON.stringify(simple.drag)}`);
+    // balanced/high 不限帧：只有出风时的帧率接近同画质拖动时的帧率（软件渲染本身的上限；户型大时 high 也跑不到 60 fps）
+    check(
+      "B6 只留空调的场景（480×320）：只有出风时 eco ≤ 22 fps、smooth ≤ 32 fps，balanced/high 不限帧（不低于同画质拖动时的 80%）；拖动视角时 eco、smooth 都 > 32 fps",
+      simple.deviceOnly.eco > 0 && simple.deviceOnly.eco <= 22 && simple.deviceOnly.smooth > 0 && simple.deviceOnly.smooth <= 32 &&
+        ["balanced", "high"].every((quality) => simple.deviceOnly[quality] >= simple.drag[quality] * 0.8) && simple.drag.eco > 32 && simple.drag.smooth > 32,
+      simple,
+    );
+    await ctx.mock.reset();
+  }
+
+  // ---------- 只有传感器脉冲环（设备都停下，改一次传感器读数，脉冲约 2.4 秒）：eco/smooth 同样限帧 ----------
+  {
+    const sensor = ctx.project.floors.flatMap((floor) => floor.devices ?? []).find((device) => device.kind === "sensor" && device.entityId);
+    if (sensor) {
+      await stopDeviceAnimations(ctx);
+      const page = await ctx.newPage({ startTime: NOON, viewport: { width: 480, height: 320 } });
+      const read = () => page.evaluate(() => window.__ha3dDebug.get().gl.info.render.frame);
+      out.sensorPulseFpsSmallViewport = {};
+      for (const [index, quality] of ["eco", "smooth", "balanced"].entries()) {
+        await ctx.gotoHome(page, { quality, settleMs: 3000, prefs: { "ha3d.home.pet": null } });
+        await waitIdle(ctx, page);
+        await ctx.mock.set(sensor.entityId, (40.5 + index).toFixed(1));
+        await ctx.sleep(300);
+        const before = await read();
+        await ctx.sleep(2000);
+        out.sensorPulseFpsSmallViewport[quality] = Number((((await read()) - before) / 2).toFixed(1));
+      }
+      const pulse = out.sensorPulseFpsSmallViewport;
+      ctx.log(`只有传感器脉冲环的帧率（480×320，${sensor.entityId}）：${JSON.stringify(pulse)}`);
+      check("B6 只有传感器脉冲环在动时（480×320）eco ≤ 22 fps、smooth ≤ 32 fps，且都在渲染", pulse.eco > 0 && pulse.eco <= 22 && pulse.smooth > 0 && pulse.smooth <= 32, { entityId: sensor.entityId, ...pulse });
+      await page.context().close();
+      await ctx.mock.reset();
+    }
   }
 
   // ---------- 持续动画（下雨 + 宠物；空调出风开着）下的帧率 ----------
@@ -266,6 +376,13 @@ export default async function perf(ctx) {
     row("首页加载宠物代码 ha3dPet.js（默认无宠物）", "—", yes(out.homeRequestedPet), !out.homeRequestedPet),
     ...QUALITIES.map((quality) => row(`空闲 5 秒帧数 ${quality}（默认设备状态，空调出风开着）`, before?.idleFrames5s?.[quality], out.idleFramesWithDevices5s[quality])),
     ...QUALITIES.map((quality) => row(`空闲 5 秒帧数 ${quality}（没有任何持续动画）`, "—", out.idleFrames5s[quality], out.idleFrames5s[quality] === 0)),
+    ...["eco", "smooth", "balanced"].map((quality) => row(`只有出风动画 帧率 ${quality}，480×320（fps）`, "—", out.deviceOnlyFpsSmallViewport[quality], quality === "eco" ? out.deviceOnlyFpsSmallViewport.eco <= 22 : quality === "smooth" ? out.deviceOnlyFpsSmallViewport.smooth <= 32 : undefined)),
+    ...["eco", "smooth", "balanced"].map((quality) => row(`只有出风动画、同时拖动视角 帧率 ${quality}，480×320（fps）`, "—", out.dragFpsSmallViewport[quality], quality === "eco" ? out.dragFpsSmallViewport.eco > 22 : undefined)),
+    ...QUALITIES.map((quality) => row(`只留空调的场景：只有出风动画 帧率 ${quality}，480×320（fps）`, "—", out.simpleScene.deviceOnly[quality], quality === "eco" ? out.simpleScene.deviceOnly.eco <= 22 : quality === "smooth" ? out.simpleScene.deviceOnly.smooth <= 32 : out.simpleScene.deviceOnly[quality] >= out.simpleScene.drag[quality] * 0.8)),
+    ...QUALITIES.map((quality) => row(`只留空调的场景：只有出风动画、同时拖动视角 帧率 ${quality}，480×320（fps）`, "—", out.simpleScene.drag[quality], quality === "eco" || quality === "smooth" ? out.simpleScene.drag[quality] > 32 : undefined)),
+    ...(out.sensorPulseFpsSmallViewport
+      ? ["eco", "smooth", "balanced"].map((quality) => row(`只有传感器脉冲环 帧率 ${quality}，480×320（fps）`, "—", out.sensorPulseFpsSmallViewport[quality], quality === "eco" ? out.sensorPulseFpsSmallViewport.eco <= 22 : quality === "smooth" ? out.sensorPulseFpsSmallViewport.smooth <= 32 : undefined))
+      : []),
     ...["eco", "smooth", "balanced"].map((quality) => row(`下雨 + 宠物 帧率 ${quality}，1440×900（fps）`, "—", out.animatedFps[quality], quality === "eco" ? out.animatedFps.eco <= 22 : quality === "smooth" ? out.animatedFps.smooth <= 32 : undefined)),
     ...["eco", "smooth", "balanced"].map((quality) => row(`下雨 + 宠物 帧率 ${quality}，480×320（fps）`, "—", out.animatedFpsSmallViewport[quality], quality === "eco" ? out.animatedFpsSmallViewport.eco <= 22 : quality === "smooth" ? out.animatedFpsSmallViewport.smooth <= 32 : undefined)),
     row("每帧 draw call eco（与基线同一场景）", before?.drawCalls?.eco?.calls, out.drawCallsSameScene?.eco?.calls, before?.drawCalls?.eco ? out.drawCallsSameScene?.eco?.calls < before.drawCalls.eco.calls : undefined),
@@ -276,7 +393,7 @@ export default async function perf(ctx) {
     row("低端设备（2 核 / 2 GB）默认画质", before?.lowEndDefaultQuality, out.lowEnd.twoCores.quality, out.lowEnd.twoCores.quality === "eco"),
     row("4 核 / 4 GB 默认画质", "—", out.lowEnd.fourCores.quality, out.lowEnd.fourCores.quality === "smooth"),
     "",
-    "说明：基线的空闲帧数不是 0，是因为项目里的空调处于制冷状态，出风动画每帧 invalidate（设备动画，不属于场景的持续动画）；只有设备动画时仍按显示器刷新率渲染，SwiftShader 下现在的数字更高是因为 eco/smooth 每帧更便宜（不画 Edges），能跑更多帧。设备都停下后各画质 5 秒 0 帧。场景有持续动画（天气、云、星空、宠物、自动旋转）时，eco/smooth 由 ha3dFrameTicker 接管渲染（20/30 fps 上限，设备动画在这期间也不会超过上限），balanced/high 仍是 always。SwiftShader 在 1440×900 下本身跑不到 30 fps，所以另在 480×320 下测了一遍。",
+    "说明：「默认设备状态」的空闲帧数不是 0，是因为 mock 里空调默认制冷，出风动画在动（设备动画，不属于场景的持续动画）。省电（eco）、流畅（smooth）下，设备动画自己触发的重绘（空调、风扇等的出风，传感器的脉冲环）经 ha3dDeviceAnimInvalidate 限到 20 / 30 fps；均衡（balanced）、高（high）照旧每帧重绘，SwiftShader 下受软件渲染速度限制，真机上是屏幕刷新率。拖动、缩放视角时帧由 OrbitControls 驱动，不受这个限制，仍按屏幕刷新率渲染（见「同时拖动视角」几行）。整个户型下 smooth、balanced 在 SwiftShader 里本身只能跑 25–30 / 8 fps 左右，看不出 smooth 的 30 fps 上限，也看不出 balanced/high 不限帧，所以另把场景临时换成「同样的房间和墙，只留空调」测了四种画质（「只留空调的场景」几行，eco、smooth 拖动时 SwiftShader 在这里能跑到 60 fps 左右；balanced/high 的达标条件是只有出风时不低于同画质拖动时的 80%，即和软件渲染本身的上限一致、没有被限帧）。传感器脉冲环那几行是设备都停下后改一次传感器读数，测脉冲期间 2 秒的帧率。设备都停下后各画质 5 秒 0 帧。场景有持续动画（天气、云、星空、宠物、自动旋转）时，eco/smooth 由 ha3dFrameTicker 接管渲染（20/30 fps 上限，这期间拖动视角和设备动画也不超过上限），balanced/high 仍是 always。SwiftShader 在 1440×900 下本身跑不到 30 fps，所以另在 480×320 下测了一遍。",
     "",
     "## 镜像大小（docker image inspect 的 Size）",
     "",
@@ -292,7 +409,7 @@ export default async function perf(ctx) {
     "",
     `删除的文件：${out.code.deleted.map((item) => `${item.file}（${item.bytes} B）`).join("、") || "无"}。`,
     "",
-    "删掉的代码：index.js / HomeView.js / FloorplanEditor.js / AuthorSupportDialog.js / three.js 里 hls.js 的副作用导入和 __vite__mapDeps 预加载项、index.html 的 hls modulepreload（hls.js 只在播放摄像头时由 AppSelect.js 动态加载）；HomeView.js 永远关闭的开发展示面板（Bs、Xs、Ot、K、Ks、ft、qs、Qs、sa、Zs、Us、Gs、Ys、Js、en、tn、Gn 和 bug 图标）；AppSelect.js 不可达的卡通风格描边（OutlineEffect 类 Ko、Ja）和卡通调色板（Fe、un）；每个 lucide 图标前重复的同一份许可声明合并为每个文件一处。宠物代码拆到按需加载的 ha3dPet.js。",
+    "删掉的代码：index.js / HomeView.js / FloorplanEditor.js / AuthorSupportDialog.js / three.js 里 hls.js 的副作用导入和 __vite__mapDeps 预加载项、index.html 的 hls modulepreload（hls.js 只在播放摄像头时由 AppSelect.js 动态加载）；HomeView.js 永远关闭的开发展示面板（Bs、Xs、Ot、K、Ks、ft、qs、Qs、sa、Zs、Us、Gs、Ys、Js、en、tn、Gn 和 bug 图标）；AppSelect.js 不可达的卡通风格描边（OutlineEffect 类 Ko、Ja）、卡通调色板（Fe、un，以及 Nn、Fn 里的卡通配色）和各模型的 meshToonMaterial 分支；每个 lucide 图标前重复的同一份许可声明合并为每个文件一处。宠物代码拆到按需加载的 ha3dPet.js。",
     "",
   ];
   await mkdir(ctx.dir, { recursive: true });

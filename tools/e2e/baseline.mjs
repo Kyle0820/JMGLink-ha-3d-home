@@ -302,6 +302,8 @@ export default async function baseline(ctx) {
       await page.waitForTimeout(1500);
       out.B3.push(await probe(label, centerOf(selector)));
     }
+    // 计算样式 user-select（修复后的 interaction 套件记录同一组元素）
+    out.B3userSelect = await ctx.sceneUserSelect(page);
     // 拖动选择：从 3D 区域按下、拖过标题和标签（模拟旋转模型时划过文字）
     const dragSelect = async (label, from, to) => {
       await page.evaluate(() => window.getSelection()?.removeAllRanges());
@@ -317,6 +319,21 @@ export default async function baseline(ctx) {
     out.B3.push(await dragSelect("从标题左侧拖过标题", { x: 20, y: 60 }, { x: 420, y: 60 }));
     if (badge) out.B3.push(await dragSelect("从 3D 区域拖过房间标签", { x: badge.x - 120, y: badge.y + 40 }, { x: badge.x + 120, y: badge.y }));
     await ctx.shot(page, "B3-after-clicks");
+    // 触屏长按（hasTouch 页面，CDP touchStart 按住 1.2 秒）
+    const touchPage = await ctx.newPage({ touch: true });
+    await ctx.gotoHome(touchPage);
+    out.B3touchLongPress = [];
+    for (const [label, selector] of [
+      ["标题", ".scene-title h1"],
+      ["数据卡片", ".home-dashboard-card"],
+      ["天气预报条目", ".weather-forecast-item"],
+    ]) {
+      const locator = touchPage.locator(selector).first();
+      const box = (await locator.count()) && (await locator.isVisible()) ? await locator.boundingBox() : null;
+      out.B3touchLongPress.push(box ? { label, ...(await ctx.touchLongPress(touchPage, { x: box.x + box.width / 2, y: box.y + box.height / 2 })) } : { label, present: false });
+    }
+    await ctx.shot(touchPage, "B3-touch-long-press");
+    await touchPage.context().close(); // 两个画布同时占着 SwiftShader 会让后面的编辑器加载超时
     // 编辑器 3D 视图里的房间标签（drei Html）
     await ctx.gotoEditor(page, { view: "3d" });
     const editorLabel = await centerOf(".room-label-3d")();
