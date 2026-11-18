@@ -11424,7 +11424,8 @@ input[type="range"]::-webkit-slider-thumb {
 .home-corner-dock:focus-within {
   opacity: 0.96;
   border-color: #e2ecff26;
-  background: #121a3047;
+  /* ha3d-self: F3 白天天空变亮后，展开的玻璃底栏文字对比度不足（「天气」4.28），背景 #121a3047 → #121a3053 */
+  background: #121a3053;
   box-shadow:
     0 16px 36px #0000001c,
     inset 0 1px #ffffff0d;
