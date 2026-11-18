@@ -244,10 +244,18 @@ export default async function interaction(ctx) {
       const callsBefore = (await ctx.mock.calls()).length;
       const beforeShot = await ctx.shot(page, "F4-toggle-before");
       await page.mouse.click(point.x, point.y);
-      await page.waitForTimeout(1500);
-      const calls = (await ctx.mock.calls()).slice(callsBefore);
-      const toggleCall = calls.find((call) => call.domain === "light" && call.service === "toggle" && [].concat(call.data?.entity_id ?? []).includes(device.entityId));
-      if (!toggleCall && !calls.length) continue; // 没点中，换一盏灯
+      // 直接开关延迟约 350 ms 才发送，主线程忙时还会更晚：轮询到这盏灯的 toggle 出现（最多 5 s），再多等 1 s 看有没有第二次
+      const isThisToggle = (call) => call.domain === "light" && call.service === "toggle" && [].concat(call.data?.entity_id ?? []).includes(device.entityId);
+      const deadline = Date.now() + 5000;
+      let calls = [];
+      while (Date.now() < deadline && !calls.some(isThisToggle)) {
+        await page.waitForTimeout(250);
+        calls = (await ctx.mock.calls()).slice(callsBefore);
+      }
+      await page.waitForTimeout(1000);
+      calls = (await ctx.mock.calls()).slice(callsBefore);
+      const toggleCall = calls.find(isThisToggle);
+      if (!toggleCall) continue; // 没点中（或点到了挡在前面的另一盏灯），换一盏灯
       const after = (await ctx.mock.states()).find((item) => item.entity_id === device.entityId)?.state;
       const detail = await detailState(page);
       const afterShot = await ctx.shot(page, "F4-toggle-after");
@@ -258,6 +266,34 @@ export default async function interaction(ctx) {
     check("F4 直接开关模式下点击灯：mock 日志出现 light/toggle", tested?.calls.some((call) => call.domain === "light" && call.service === "toggle"), tested && { entityId: tested.entityId, calls: tested.calls });
     check("F4 详情面板没有打开（.home-sidebar.entity-selected、.home-insight-panel.entity-selected、显示中的 .insight-detail 都不存在）", tested && !detailOpen(tested.detail), tested?.detail);
     check("F4 灯的状态翻转", tested && tested.before && tested.after && tested.before !== tested.after, tested && { before: tested.before, after: tested.after });
+    const togglesOf = (calls, entityId) => calls.filter((call) => call.service === "toggle" && [].concat(call.data?.entity_id ?? []).includes(entityId)).length;
+    check("F4 直接开关模式下单击灯只发 1 次 toggle", tested && togglesOf(tested.calls, tested.entityId) === 1, tested && { entityId: tested.entityId, toggles: togglesOf(tested.calls, tested.entityId) });
+
+    // 从同一盏灯上双击后拖动：画面平移，不开关（第一次轻点的 toggle 被第二次按下取消，平移松手的 click 也不开关）
+    let doubleDrag;
+    if (tested) {
+      await ctx.gotoHome(page, { prefs: { [CLICK_MODE_KEY]: "toggle" } });
+      const point = await clickablePoint(ctx, page, tested.entityId);
+      if (point) {
+        const callsBefore = (await ctx.mock.calls()).length;
+        const drag = await measureDrag(ctx, page, point, { doubleFirst: true });
+        await page.waitForTimeout(1000);
+        const calls = (await ctx.mock.calls()).slice(callsBefore);
+        doubleDrag = {
+          entityId: tested.entityId,
+          point: { x: round(point.x, 1), y: round(point.y, 1) },
+          pointerdownIntervalMs: drag.pointerdownIntervalMs,
+          targetMoveM: drag.targetMoveM,
+          azimuthDeltaDeg: drag.azimuthDeltaDeg,
+          toggles: togglesOf(calls, tested.entityId),
+          calls,
+          detail: await detailState(page),
+          screenshot: path.basename((await ctx.shot(page, "F4-toggle-mode-double-drag")).path),
+        };
+      }
+    }
+    out.F4.doubleDrag = doubleDrag ?? null;
+    check("F4 直接开关模式下从灯上双击后拖动：画面平移（target 移动 ≥ 0.3 m），0 次 toggle，不弹详情", doubleDrag && doubleDrag.targetMoveM >= 0.3 && doubleDrag.toggles === 0 && !detailOpen(doubleDrag.detail), doubleDrag);
 
     // 非开关类设备（门锁优先）仍然弹出详情
     let other;

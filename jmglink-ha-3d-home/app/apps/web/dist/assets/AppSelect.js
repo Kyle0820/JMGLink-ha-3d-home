@@ -9520,11 +9520,45 @@ const ha3dToggleDomains = new Set(["light", "switch", "fan", "cover"]);
 function ha3dCanDirectToggle(t, s) {
   return t === "toggle" && !!s && !Qe(s) && ha3dToggleDomains.has(s.domain);
 }
-/** 发送 toggle；失败时执行原来的选中逻辑 fallback。 */
+// toggle 延迟 350 ms 发送：等待期间出现第二次按下（双击、双击后拖动平移；条件与 ha3dDoubleTapPan 相同：
+// 两次按下间隔 ≤ 350 ms、距离 ≤ 30 px）就取消第一次的 toggle，第二次按下产生的 click 也不开关。
+// 否则双击拖动从灯上开始时，第一次轻点和平移松手各算一次 click，灯会开→关闪一下。
+const ha3dDirectToggleDelayMs = 350,
+  ha3dPendingToggles = [];
+let ha3dDownSeq = 0,
+  ha3dLastDown = { seq: 0, time: -1 / 0, x: 0, y: 0 },
+  ha3dSecondTap = !1;
+window.addEventListener(
+  "pointerdown",
+  (t) => {
+    if (t.button !== 0 || !t.isPrimary) return;
+    ha3dDownSeq += 1;
+    ha3dSecondTap =
+      t.timeStamp - ha3dLastDown.time <= ha3dDirectToggleDelayMs &&
+      Math.hypot(t.clientX - ha3dLastDown.x, t.clientY - ha3dLastDown.y) <= 30;
+    if (!ha3dSecondTap) {
+      ha3dLastDown = { seq: ha3dDownSeq, time: t.timeStamp, x: t.clientX, y: t.clientY };
+      return;
+    }
+    for (let s = ha3dPendingToggles.length - 1; s >= 0; s--)
+      ha3dPendingToggles[s].seq === ha3dLastDown.seq &&
+        (clearTimeout(ha3dPendingToggles[s].timer), ha3dPendingToggles.splice(s, 1));
+    ha3dLastDown = { seq: 0, time: -1 / 0, x: 0, y: 0 };
+  },
+  !0,
+);
+/** 延迟发送 toggle（见上）；失败时执行原来的选中逻辑 fallback。 */
 function ha3dDirectToggle(t, s, o) {
-  Promise.resolve()
-    .then(() => t({ type: "toggle", entityId: s }))
-    .catch(o);
+  if (ha3dSecondTap) return;
+  const r = { seq: ha3dDownSeq, timer: 0 };
+  ((r.timer = setTimeout(() => {
+    const n = ha3dPendingToggles.indexOf(r);
+    (n >= 0 && ha3dPendingToggles.splice(n, 1),
+      Promise.resolve()
+        .then(() => t({ type: "toggle", entityId: s }))
+        .catch(o));
+  }, ha3dDirectToggleDelayMs)),
+    ha3dPendingToggles.push(r));
 }
 const Ra = M.memo(function ({
     device: s,
