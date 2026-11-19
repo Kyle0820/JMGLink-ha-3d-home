@@ -7340,10 +7340,11 @@ function Ta({
     });
   }
   if (t === "switch") return O(1);
-  // ===== ha3d-self: F8 晾衣架（吊顶底座、两组吊绳、横杆按开合度升降：100 收到顶，0 降到最低） =====
+  // ===== ha3d-self: F8 晾衣架（吊顶底座、两组吊绳、横杆按开合度升降） =====
+  // ha3d-self: 0.2.1 映射反过来：晾衣架接入 HA 的 cover 一般把「降下」当作打开，position 100（open）降到最低，0（closed）收到顶
   if (s === "cover.clothes_rack") {
     const g = X.clamp(I / 100, 0, 1),
-      _ = X.lerp(0.15, 1, 1 - g),
+      _ = X.lerp(0.15, 1, g),
       k = e.jsx("meshPhysicalMaterial", {
         color: T(b, "#ffffff", 0.36),
         roughness: 0.34,
@@ -12033,6 +12034,11 @@ function ha3dFrameTicker({ fps: t }) {
 // ===== ha3d-self: B2 双击（双击触摸）后拖动改为平移 =====
 // 第二次按下与上次按下间隔 ≤ 350 ms、距离 ≤ 30 px 时，本次拖动的左键/单指改为 PAN，抬起后恢复旋转。
 // 平移结束时浏览器会补发 dblclick，拦下它，避免误触发房间聚焦。
+// ha3d-self: 0.2.1 触屏手势交给页面自己处理（touchstart/touchmove 非 passive 并 preventDefault）：
+// - 双指（≥2 个触点）：iOS/iPadOS 不再识别为原生手势（HA App 的「双指右滑 = 返回上一页」、页面缩放），双指平移/缩放只由 OrbitControls 处理；
+// - 双击的第二次按下：iPadOS 不再进入「双击按住 → 文本放大镜/选择」，也不再补发原生 click/dblclick；
+//   第二次按下没有拖动就松手时，由这里补发一次 dblclick，保留「双击退出房间聚焦 / 双击地板聚焦房间」。
+// 单指单击不 preventDefault，click 仍由浏览器生成（设备 onClick、直接开关不受影响）。鼠标不会产生 touch 事件，行为不变。
 function ha3dDoubleTapPan() {
   const t = be((r) => r.controls),
     s = be((r) => r.gl);
@@ -12051,9 +12057,45 @@ function ha3dDoubleTapPan() {
         c = !1,
         h = 0,
         u = 0,
-        f = !1;
-      const j = () => {
-          c && ((c = !1), (t.mouseButtons.LEFT = n), (t.touches.ONE = a));
+        f = !1,
+        ha3dTouchHandled = !1, // 本次双击的第二次按下已在 touchstart 里 preventDefault（浏览器不会再补发 click/dblclick）
+        ha3dSyntheticAt = -1 / 0,
+        ha3dDispatching = !1;
+      const j = (w) => {
+          if (!c) return;
+          const ha3dTap = ha3dTouchHandled && !f && w && w.type === "pointerup";
+          ((c = !1), (ha3dTouchHandled = !1), (t.mouseButtons.LEFT = n), (t.touches.ONE = a));
+          if (!ha3dTap) return;
+          const ha3dX = w.clientX,
+            ha3dY = w.clientY;
+          // 等 R3F 先处理完这次 pointerup，再补发 dblclick（R3F 按 pointerdown 时命中的对象派发 onDoubleClick）
+          window.setTimeout(() => {
+            ((ha3dSyntheticAt = performance.now()), (ha3dDispatching = !0));
+            try {
+              r.dispatchEvent(
+                new MouseEvent("dblclick", {
+                  bubbles: !0,
+                  cancelable: !0,
+                  composed: !0,
+                  view: window,
+                  detail: 2,
+                  button: 0,
+                  clientX: ha3dX,
+                  clientY: ha3dY,
+                }),
+              );
+            } finally {
+              ha3dDispatching = !1;
+            }
+          }, 0);
+        },
+        ha3dTouchStart = (w) => {
+          w.cancelable &&
+            (w.touches.length >= 2 || c) &&
+            (w.preventDefault(), c && (ha3dTouchHandled = !0));
+        },
+        ha3dTouchMove = (w) => {
+          w.cancelable && (w.touches.length >= 2 || c) && w.preventDefault();
         },
         v = (w) => {
           if (w.button !== 0 || !w.isPrimary) return;
@@ -12072,6 +12114,12 @@ function ha3dDoubleTapPan() {
           c && !f && Math.hypot(w.clientX - h, w.clientY - u) > 6 && (f = !0);
         },
         x = (w) => {
+          if (ha3dDispatching) return; // 自己补发的 dblclick
+          // 已补发过一次时，浏览器如果仍然补发原生 dblclick，拦下，避免同一次双击处理两次
+          if (performance.now() - ha3dSyntheticAt < 600) {
+            ((ha3dSyntheticAt = -1 / 0), w.stopImmediatePropagation());
+            return;
+          }
           f && ((f = !1), w.stopImmediatePropagation());
         };
       // OrbitControls 把 pointermove/pointerup 挂在 document 上，松手位置可能在画布外，这里同样挂在 window 上
@@ -12081,8 +12129,12 @@ function ha3dDoubleTapPan() {
         window.addEventListener("pointerup", j, !0),
         window.addEventListener("pointercancel", j, !0),
         r.addEventListener("dblclick", x, !0),
+        r.addEventListener("touchstart", ha3dTouchStart, { passive: !1 }),
+        r.addEventListener("touchmove", ha3dTouchMove, { passive: !1 }),
         () => {
-          (r.removeEventListener("pointerdown", v, !0),
+          (r.removeEventListener("touchstart", ha3dTouchStart, { passive: !1 }),
+            r.removeEventListener("touchmove", ha3dTouchMove, { passive: !1 }),
+            r.removeEventListener("pointerdown", v, !0),
             window.removeEventListener("pointermove", y, !0),
             window.removeEventListener("pointerup", j, !0),
             window.removeEventListener("pointercancel", j, !0),

@@ -17638,12 +17638,24 @@ body.ha3d-visual-cream {
   color: var(--cream-copy);
   background: var(--cream-panel);
 }
-/* 天气预报直接压在 3D 画面上，墙面颜色深浅不一，加一层奶油底 */
-.home-workspace.visual-style-cream .home-weather-forecast {
-  padding: 0.375rem 0.5rem;
-  border-radius: 0.875rem;
-  background: var(--cream-panel);
-  box-shadow: 0 3px 10px #3c2d191a;
+/* ha3d-self: 0.2.1 天气预报和玻璃风格一样保持透明（去掉 0.2.0 加的奶油底）；
+   文字直接压在 3D 画面上，用一圈浅色描边光晕保证在深浅不一的墙面上都看得清 */
+.home-workspace.visual-style-cream .weather-forecast-item {
+  text-shadow:
+    0 0 1px #fffaf2,
+    0 0 2px #fffaf2,
+    0 0 3px #fffaf2,
+    0 0 5px #fffaf2,
+    0 0 8px #fffaf2cc,
+    0 0 12px #fffaf299;
+}
+.home-workspace.visual-style-cream
+  .weather-forecast-item
+  :is(.forecast-day, small) {
+  color: var(--cream-ink);
+}
+.home-workspace.visual-style-cream .forecast-icon {
+  filter: drop-shadow(0 0 0.1875rem #fffaf2) drop-shadow(0 0 0.375rem #fffaf2cc);
 }
 /* 实体绑定、连接与服务仍是深色面板：奶油风格下把弱化文字提亮、数量徽标改为不透明 */
 body.ha3d-visual-cream

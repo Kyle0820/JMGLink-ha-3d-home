@@ -564,7 +564,7 @@ export default async function models(ctx) {
   }
   if (!computers.length) out.F7.skipped = "项目里没有 switch.computer 设备";
 
-  // F8：晾衣架 position 100 → 0，横杆世界坐标下降 ≥ 0.5 m
+  // F8：晾衣架 position 0（closed）→ 100（open），横杆世界坐标下降 ≥ 0.5 m（0.2.1 起 open 表示降下）
   const racks = floor.devices.filter((device) => device.modelId === "cover.clothes_rack");
   for (const device of racks) {
     const world = await ctx.planToWorld(page, device.position);
@@ -577,8 +577,8 @@ export default async function models(ctx) {
     const direction = [perpendicular[0], 0.35, perpendicular[1]];
     const record = {};
     for (const [stateName, value, position] of [
-      ["up", "open", 100],
-      ["down", "closed", 0],
+      ["up", "closed", 0],
+      ["down", "open", 100],
     ]) {
       await ctx.mock.set(device.entityId, value, { current_position: position });
       await page.waitForTimeout(3000);
@@ -588,7 +588,7 @@ export default async function models(ctx) {
     }
     record.drop = round(record.up.barsWorldY - record.down.barsWorldY, 3);
     out.F8[device.entityId] = record;
-    check(`F8 ${device.entityId} position 100 → 0 时横杆下降 ≥ 0.5 m`, record.up.bars === 1 && record.down.bars === 1 && record.drop >= 0.5, record);
+    check(`F8 ${device.entityId} position 0 → 100 时横杆下降 ≥ 0.5 m`, record.up.bars === 1 && record.down.bars === 1 && record.drop >= 0.5, record);
   }
   if (!racks.length) out.F8.skipped = "项目里没有 cover.clothes_rack 设备";
 

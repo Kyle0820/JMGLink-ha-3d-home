@@ -68,6 +68,7 @@
 - 场景默认按需渲染（`frameloop="demand"`）。有持续动画（天气不是晴、多云、夜晚星空、宠物、自动旋转）时，balanced/high 用 `always`；eco/smooth 由 `ha3dFrameTicker` 按 20/30 fps 定时渲染，标签页隐藏时暂停。新增的持续动画只在 `useFrame` 里按 `delta` 推进，不要每帧 `invalidate()`，并把它加进 `t0` 里的持续动画判断。
 - 设备自带的逐帧动画（出风 `ce`、传感器脉冲环 `Na`）在 eco/smooth 下不直接 `invalidate()`，而是经 `ha3dDeviceAnimInvalidate` 按 20/30 fps 排队（同一画布共用一个定时器），所以只有设备在动时也限帧，拖动、缩放视角由 OrbitControls 驱动、不受影响。新增的设备逐帧动画也走这个函数。
 - 直接开关模式下，设备 `onClick` 先用 `ha3dIsDragClick`（R3F 的 `event.delta` > 6 px）排除拖动视角后的松手。
+- 触屏手势（`ha3dDoubleTapPan`）：画布容器上非 passive 的 `touchstart`/`touchmove` 对两指以上的触摸、以及双击的第二次按下调用 `preventDefault`，iOS/iPadOS 和 HA App 的原生手势（双指滑动返回、双击按住的放大镜）拿不到这串触摸；第二次按下没拖动就松手时由它补发一次 `dblclick`。单指单击不拦截，`click` 仍由浏览器生成。
 - eco 画质下 `ee`（drei Edges 的包装）不渲染描边。
 
 ### 固定文件名与缓存
@@ -94,7 +95,7 @@ npm ci --prefix tools
 - 本地启动：`node tools/dev/start-local.mjs --project <项目.json>` 先启动 mock HA（`:18123`），再以 standalone 模式启动应用（`:18099`），数据目录默认 `/tmp/ha3d-dev`（在仓库之外）。
 - 单元测试：`npm --prefix tools run test:unit`
 - 前端模块图静态检查（esbuild，抓语法错误和不存在的导入名）：`npm --prefix tools run check:web`
-- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。套件：`smoke export models editor interaction cream environment pets perf`（`baseline` 只在改动前采集基线时用）。`perf` 会和 `<证据目录>/baseline/…/baseline.json` 对比（也可用 `HA3D_BASELINE_JSON` 指定），并用 `docker image inspect` 记录 `ha3d:arm64`、`ha3d:amd64` 和上游 0.1.6 镜像的大小（docker 不可用时跳过这一项）。
+- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。套件：`smoke export models editor interaction cream environment pets perf touch`（`touch`：iPad 视口 + CDP 触摸，`HA3D_TOUCH_BASELINE=1` 时只记录不断言）（`baseline` 只在改动前采集基线时用）。`perf` 会和 `<证据目录>/baseline/…/baseline.json` 对比（也可用 `HA3D_BASELINE_JSON` 指定），并用 `docker image inspect` 记录 `ha3d:arm64`、`ha3d:amd64` 和上游 0.1.6 镜像的大小（docker 不可用时跳过这一项）。
 
 只想快速看后端是否正常：
 

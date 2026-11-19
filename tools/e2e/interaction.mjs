@@ -61,7 +61,7 @@ const detailState = (page) =>
 const detailOpen = (state) => state.sidebarSelected || state.insightSelected || state.insightDetailShown;
 
 /** 让设备出现在画面里并且没被 HUD 挡住：先试当前机位，不行就俯视对准它。返回可点击的页面坐标。 */
-async function clickablePoint(ctx, page, entityId) {
+export async function clickablePoint(ctx, page, entityId) {
   let position = await ctx.screenPosOf(page, { entityId });
   if (!position) return null;
   let point = await ctx.projectToScreen(page, position.world);
@@ -205,7 +205,7 @@ async function dragFromDevice(ctx, page, entityId, start) {
  * 找一个双击会落到「退出房间聚焦」的点：射线命中的物体链上，带 onDoubleClick 的只有楼层根 group
  * （房间地面自己有 onDoubleClick 会重新聚焦，所以要避开射线穿过地面的点）。
  */
-async function findExitFocusPoint(page) {
+export async function findExitFocusPoint(page) {
   return page.evaluate(() => {
     const s = window.__ha3dDebug?.get();
     if (!s) return null;
