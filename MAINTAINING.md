@@ -25,14 +25,22 @@
 
 - 后端：直接改 `app/apps/server/dist/**/*.js`。
 - 前端：`app/apps/web/dist/assets/` 里的 `index.js`、`AppSelect.js`、`HomeView.js`、`FloorplanEditor.js`、`AuthorSupportDialog.js`、`index.css`、`HomeView.css` 是用 prettier 格式化过的业务代码，直接改。`three.js`、`react.js`、`hls.js` 是第三方库，保持压缩内容，不要改（`three.js` 开头对 hls.js 的副作用导入已删除）。
+- `ha3dSettingsSync.js` 是本仓库新增的模块（首页设置跨设备同步），由 `index.js` 和 `HomeView.js` 静态导入。
 - `ha3dPet.js` 是本仓库新增的按需加载模块（宠物），只在 3D 设置里选了小猫或小狗时由 `AppSelect.js` 动态导入；它直接从 `react.js`、`three.js` 导入用到的别名。
 - `hls.js` 只在播放摄像头视频时由 `AppSelect.js` 的 `import("./hls.js")` 加载。不要再在其他文件里写 `import "./hls.js"`，也不要把它加回 `index.html` 的 modulepreload 或 `__vite__mapDeps` 列表，否则首页又会多下载约 525 KB。
 - 变量名是压缩后的短名字。新代码写在对应的大文件里，可以直接用文件内部的别名（例如 AppSelect 里 `J` 是 Vector3、`te` 是 useFrame）。
 - 每个文件只保留一份 lucide 许可声明（文件里第一个图标前），新增图标时不要再复制许可注释。
 
-### 首页设置（localStorage）
+### 首页设置（后端同步 + localStorage）
 
-首页的选项都存在浏览器的 localStorage，键名统一是 `ha3d.home.*`：
+首页的选项键名统一是 `ha3d.home.*`。0.2.2 起，下表标「同步」的键保存在后端 `<dataDir>/ui-settings.json`（`GET/PUT /api/ui-settings`，`PUT` 的 body 是 `{ "values": { 键: 字符串或 null } }`），修改后后端通过 ws 广播 `ui.settings_updated`，其他已打开的页面不刷新就会更新；浏览器的 localStorage 仍保留一份作为本机缓存。标「本机」的键只存在 localStorage。前端逻辑在 `assets/ha3dSettingsSync.js`：页面启动时（`index.js` 的 `load()`）拉取后端设置写进本机缓存；本机有、后端没有的键上传（从 0.2.1 及以前升级时的迁移）；用户修改时用 `ha3dSaveSetting` 或 `ha3dUseSyncedSetting`（挂载时只写本机、不上传）。新增同步的键时，把键名加进 `ha3dSyncedKeys`，并在 `ha3dOnRemoteSettings` 的回调里重新读取对应的 state。
+
+| 同步 | 键（省略 `ha3d.home.` 前缀） |
+| --- | --- |
+| 同步 | `sceneVisualStyle`、`weatherForecastVisible`、`overviewDataSettings.<项目 id>`、`deviceClickMode`、`environmentSync`、`weatherEntityId`、`pet` |
+| 本机 | `sceneQuality`（和设备性能有关）、`voiceEnabled` 和 `ha3d.voice.pipeline`（和麦克风有关）、编辑器的 `ha3d:show-*` |
+
+各键的取值：
 
 | 键 | 取值 | 默认 | 说明 |
 | --- | --- | --- | --- |
@@ -95,7 +103,7 @@ npm ci --prefix tools
 - 本地启动：`node tools/dev/start-local.mjs --project <项目.json>` 先启动 mock HA（`:18123`），再以 standalone 模式启动应用（`:18099`），数据目录默认 `/tmp/ha3d-dev`（在仓库之外）。
 - 单元测试：`npm --prefix tools run test:unit`
 - 前端模块图静态检查（esbuild，抓语法错误和不存在的导入名）：`npm --prefix tools run check:web`
-- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。套件：`smoke export models editor interaction cream environment pets perf touch`（`touch`：iPad 视口 + CDP 触摸，`HA3D_TOUCH_BASELINE=1` 时只记录不断言）（`baseline` 只在改动前采集基线时用）。`perf` 会和 `<证据目录>/baseline/…/baseline.json` 对比（也可用 `HA3D_BASELINE_JSON` 指定），并用 `docker image inspect` 记录 `ha3d:arm64`、`ha3d:amd64` 和上游 0.1.6 镜像的大小（docker 不可用时跳过这一项）。
+- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。套件：`smoke export models editor interaction cream environment pets perf touch fixes022`（`fixes022`：0.2.2 的白色小狗、页面工具菜单拖动后仍显示、两个浏览器上下文的设置同步；`HA3D_FIXES022_BASELINE=1` 时只记录不断言）（`touch`：iPad 视口 + CDP 触摸，`HA3D_TOUCH_BASELINE=1` 时只记录不断言）（`baseline` 只在改动前采集基线时用）。`perf` 会和 `<证据目录>/baseline/…/baseline.json` 对比（也可用 `HA3D_BASELINE_JSON` 指定），并用 `docker image inspect` 记录 `ha3d:arm64`、`ha3d:amd64` 和上游 0.1.6 镜像的大小（docker 不可用时跳过这一项）。
 
 只想快速看后端是否正常：
 

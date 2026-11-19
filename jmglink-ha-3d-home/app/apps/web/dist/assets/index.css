@@ -11420,8 +11420,11 @@ input[type="range"]::-webkit-slider-thumb {
     background 0.18s ease,
     box-shadow 0.18s ease;
 }
+/* ha3d-self: 0.2.2 点开菜单（.tools-open）后和悬停、聚焦时一样显示。原来菜单项只在 :hover/:focus-within 时可见，
+   展开后去拖动 3D 模型，焦点离开菜单，菜单就只剩空白底板，指针移上去才重新显示 */
 .home-corner-dock:hover,
-.home-corner-dock:focus-within {
+.home-corner-dock:focus-within,
+.home-corner-dock.tools-open {
   opacity: 0.96;
   border-color: #e2ecff26;
   /* ha3d-self: F3 白天天空变亮后，展开的玻璃底栏文字对比度不足（「天气」4.28），背景 #121a3047 → #121a3053 */
@@ -11461,7 +11464,8 @@ input[type="range"]::-webkit-slider-thumb {
   transition: width 0.18s ease;
 }
 .home-corner-dock:hover .corner-dock-menu,
-.home-corner-dock:focus-within .corner-dock-menu {
+.home-corner-dock:focus-within .corner-dock-menu,
+.home-corner-dock.tools-open .corner-dock-menu {
   width: auto;
 }
 .corner-dock-menu > .corner-dock-action,
@@ -11475,7 +11479,9 @@ input[type="range"]::-webkit-slider-thumb {
 .home-corner-dock:hover .corner-dock-menu > .corner-dock-action,
 .home-corner-dock:hover .corner-dock-menu > .corner-dock-icon,
 .home-corner-dock:focus-within .corner-dock-menu > .corner-dock-action,
-.home-corner-dock:focus-within .corner-dock-menu > .corner-dock-icon {
+.home-corner-dock:focus-within .corner-dock-menu > .corner-dock-icon,
+.home-corner-dock.tools-open .corner-dock-menu > .corner-dock-action,
+.home-corner-dock.tools-open .corner-dock-menu > .corner-dock-icon {
   width: auto;
   min-width: clamp(2.25rem, 4.6vh, 2.375rem);
   padding: 0 clamp(0.4375rem, 0.9vw, 0.5625rem);
@@ -11515,7 +11521,8 @@ input[type="range"]::-webkit-slider-thumb {
   padding: 0;
 }
 .home-corner-dock:hover .corner-dock-icon,
-.home-corner-dock:focus-within .corner-dock-icon {
+.home-corner-dock:focus-within .corner-dock-icon,
+.home-corner-dock.tools-open .corner-dock-icon {
   width: auto;
   min-width: clamp(3.75rem, 6.6vw, 4.875rem);
   padding: 0 clamp(0.4375rem, 0.9vw, 0.5625rem);
@@ -11554,7 +11561,9 @@ input[type="range"]::-webkit-slider-thumb {
 .home-corner-dock:hover .corner-dock-action span,
 .home-corner-dock:focus-within .corner-dock-action span,
 .home-corner-dock:hover .corner-dock-icon span,
-.home-corner-dock:focus-within .corner-dock-icon span {
+.home-corner-dock:focus-within .corner-dock-icon span,
+.home-corner-dock.tools-open .corner-dock-action span,
+.home-corner-dock.tools-open .corner-dock-icon span {
   max-width: 4.5rem;
   margin-left: 0.375rem;
   opacity: 1;
@@ -11575,7 +11584,8 @@ input[type="range"]::-webkit-slider-thumb {
   transition: margin-left 0.19s ease;
 }
 .home-corner-dock:hover .corner-dock-action b,
-.home-corner-dock:focus-within .corner-dock-action b {
+.home-corner-dock:focus-within .corner-dock-action b,
+.home-corner-dock.tools-open .corner-dock-action b {
   margin-left: 0.375rem;
 }
 .quality-dock-action,
@@ -13002,7 +13012,8 @@ input[type="range"]::-webkit-slider-thumb {
   opacity: 0.9;
 }
 .visual-style-cream .home-corner-dock:hover,
-.visual-style-cream .home-corner-dock:focus-within {
+.visual-style-cream .home-corner-dock:focus-within,
+.visual-style-cream .home-corner-dock.tools-open {
   border-color: #4f413047;
   background: #efe6d8f0;
   box-shadow:
@@ -16112,7 +16123,8 @@ input[type="range"]::-webkit-slider-thumb {
     overflow: visible;
   }
   .mode-home .home-corner-dock:hover,
-  .mode-home .home-corner-dock:focus-within {
+  .mode-home .home-corner-dock:focus-within,
+  .mode-home .home-corner-dock.tools-open {
     border-color: transparent;
     background: transparent;
     box-shadow: none;

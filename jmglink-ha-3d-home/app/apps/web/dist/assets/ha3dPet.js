@@ -26,7 +26,8 @@ function xt() {
 // 路线依次经过门中心，每一段在栅格上 BFS 再拉直。速度按 useFrame 的 delta 计算，限帧时速度不变。
 const ha3dPetSpecs = {
   cat: { speed: 0.35, size: 1, legH: 0.11, color: "#e8923e", belly: "#fbe3c4", dark: "#9a521c" },
-  dog: { speed: 0.5, size: 1.42, legH: 0.12, color: "#c9a273", belly: "#f1dfc4", dark: "#6e4c30" },
+  // ha3d-self: 0.2.2 小狗改成白色（耳朵略带米白，和头部区分），黑色眼睛和鼻头
+  dog: { speed: 0.5, size: 1.42, legH: 0.12, color: "#f7f7f4", belly: "#ffffff", dark: "#e6e0d4", eye: "#111111" },
 };
 function ha3dInPolygon(t, s, o) {
   let r = !1;
@@ -251,14 +252,19 @@ function ha3dPetPlan(t, s) {
   }
   return null;
 }
-function ha3dPetMesh(t, s, o, r, n = [0, 0, 0]) {
+function ha3dPetMesh(t, s, o, r, n = [0, 0, 0], ha3dGloss = !1) {
   return e.jsxs("mesh", {
     raycast: ha3dNoRaycast,
     position: t,
     scale: s,
     rotation: n,
-    // 轻微自发光：玻璃风格的冷色光照下也能看清毛色
-    children: [o, e.jsx("meshStandardMaterial", { color: r, roughness: 0.78, emissive: r, emissiveIntensity: 0.22 })],
+    // 轻微自发光：玻璃风格的冷色光照下也能看清毛色；眼睛不发光、略带光泽
+    children: [
+      o,
+      ha3dGloss
+        ? e.jsx("meshStandardMaterial", { color: r, roughness: 0.25, metalness: 0 })
+        : e.jsx("meshStandardMaterial", { color: r, roughness: 0.78, emissive: r, emissiveIntensity: 0.22 }),
+    ],
   });
 }
 function ha3dPet({ floor: t, kind: s }) {
@@ -365,6 +371,15 @@ function ha3dPet({ floor: t, kind: s }) {
           j
             ? ha3dPetMesh([0, 0.115 * c, 0.33 * c], [1, 1, 1], f([0.055 * c, 0.045 * c, 0.07 * c]), o.belly)
             : ha3dPetMesh([0, 0.13 * c, 0.335 * c], [0.012, 0.01, 0.01], u(6), o.dark),
+          // ha3d-self: 0.2.2 小狗的黑眼睛（头部前上方两侧）和黑鼻头（口鼻前端）
+          ...(j
+            ? [
+                ...[-1, 1].map((g) =>
+                  ha3dPetMesh([g * 0.03 * c, 0.155 * c, 0.322 * c], [0.0115 * c, 0.0115 * c, 0.0115 * c], u(10), o.eye, [0, 0, 0], !0),
+                ),
+                ha3dPetMesh([0, 0.13 * c, 0.367 * c], [0.013 * c, 0.011 * c, 0.009 * c], u(10), o.eye, [0, 0, 0], !0),
+              ]
+            : []),
           ...[-1, 1].map((g) =>
             j
               ? ha3dPetMesh([g * 0.066 * c, 0.115 * c, 0.26 * c], [1, 1, 1], f([0.022 * c, 0.085 * c, 0.05 * c]), o.dark, [0, 0, g * 0.22])

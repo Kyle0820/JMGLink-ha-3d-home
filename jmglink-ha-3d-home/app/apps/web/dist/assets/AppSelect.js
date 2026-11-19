@@ -5085,8 +5085,12 @@ function pa({
     $ = (t.width * 0.96) / I.length,
     p = t.entityId ? Yt(i) : !0,
     m = p ? L * (r ? 0.68 : 0.58) : 0,
+    // ha3d-self: 0.2.2 首页里绑定了门磁且打开的门扇改成白色（原来自发光叠了薄荷绿 #9cf0ca，看起来是绿色）
+    ha3dOpenLeaf = !!(r && t.entityId && p),
     // 门扇实色：玻璃风格偏冷灰蓝、奶油风格暖木色；入户门为深色金属
-    C = ha3dEntrance
+    C = ha3dOpenLeaf
+      ? "#f7f8fa"
+      : ha3dEntrance
       ? ha3dWarm
         ? "#6f5847"
         : "#4b5563"
@@ -5095,7 +5099,7 @@ function pa({
           ? "#a87c52"
           : "#64788f"
         : "#b78b61",
-    O = r && t.entityId && p ? T("#9cf0ca", v, 0.22) : v,
+    O = ha3dOpenLeaf ? "#ffffff" : v,
     ha3dLeafDepth = ha3dEntrance ? 0.07 : 0.045,
     ha3dLeafZ = L * (ha3dEntrance ? 0.04 : 0.03),
     ha3dTrim = ha3dWarm ? "#d8c3a0" : "#d1d5db";
@@ -5132,7 +5136,7 @@ function pa({
                   }),
                   r &&
                     e.jsx(ee, {
-                      color: p && t.entityId ? "#d9fff2" : v,
+                      color: p && t.entityId ? "#ffffff" : v,
                       threshold: 18,
                       opacity: p && t.entityId ? 0.2 : 0.12,
                       transparent: !0,
@@ -6309,32 +6313,74 @@ const ha3dHaloLayouts = {
   "light.floor_lamp": { size: 0.7, position: [0, 1.2, 0] },
 };
 let ha3dHaloTexture;
+// ha3d-self: 0.2.2 光晕贴图改为直接生成像素（ImageData，256×256，带 mipmap）：RGB 恒为 255，只有 alpha 按半径衰减。
+// 原来用 2D canvas 的径向渐变（128×128）：canvas 内部按预乘 alpha 存 8 位，上传 WebGL 时再反预乘，
+// 低 alpha 处每个通道的舍入误差会变成颜色偏差；各浏览器/GPU 的 canvas 光栅化（抖动、色彩空间转换）也不同。
+// 手机上把镜头拉近时，128 px 的贴图被放大到上千像素，这些偏差就成了光晕里的彩色小点。
+// 现在不经过 canvas，也不再关掉 mipmap，远看时不闪烁。
+const ha3dHaloStops = [
+  [0, 1],
+  [0.3, 0.85],
+  [0.65, 0.4],
+  [1, 0],
+];
+function ha3dHaloAlpha(t) {
+  if (t >= 1) return 0;
+  for (let s = 1; s < ha3dHaloStops.length; s += 1) {
+    const [o, r] = ha3dHaloStops[s - 1],
+      [n, a] = ha3dHaloStops[s];
+    if (t <= n) {
+      const i = (t - o) / (n - o);
+      return r + (a - r) * i * i * (3 - 2 * i); // 段内 smoothstep，段与段之间没有折痕
+    }
+  }
+  return 0;
+}
 function ha3dGetHaloTexture() {
   if (ha3dHaloTexture !== void 0) return ha3dHaloTexture;
-  const t = document.createElement("canvas");
-  ((t.width = 128), (t.height = 128));
-  const s = t.getContext("2d");
-  if (!s) return (ha3dHaloTexture = null);
-  const o = s.createRadialGradient(64, 64, 0, 64, 64, 64);
-  (o.addColorStop(0, "rgba(255,255,255,1)"),
-    o.addColorStop(0.3, "rgba(255,255,255,0.85)"),
-    o.addColorStop(0.65, "rgba(255,255,255,0.4)"),
-    o.addColorStop(1, "rgba(255,255,255,0)"),
-    (s.fillStyle = o),
-    s.fillRect(0, 0, 128, 128));
-  const r = new wr(t);
-  return (
-    (r.colorSpace = ds),
-    (r.minFilter = _t),
-    (r.magFilter = _t),
-    (ha3dHaloTexture = r)
-  );
+  if (typeof ImageData > "u") return (ha3dHaloTexture = null);
+  const t = 256,
+    s = new Uint8ClampedArray(t * t * 4);
+  for (let o = 0; o < t; o += 1)
+    for (let r = 0; r < t; r += 1) {
+      const n = (o * t + r) * 4,
+        a = Math.hypot(r + 0.5 - t / 2, o + 0.5 - t / 2) / (t / 2);
+      ((s[n] = 255), (s[n + 1] = 255), (s[n + 2] = 255), (s[n + 3] = Math.round(255 * ha3dHaloAlpha(a))));
+    }
+  const o = new wr(new ImageData(s, t, t));
+  return ((o.colorSpace = ds), (o.magFilter = _t), (ha3dHaloTexture = o));
 }
-const ha3dNoRaycast = () => {};
+const ha3dNoRaycast = () => {},
+  ha3dHaloBase = new J(),
+  ha3dHaloToCamera = new J();
+// ha3d-self: 0.2.2 光晕是正对相机的平面（sprite），原来放在灯体中心附近，平面从灯体中间穿过：
+// 灯体在平面后面的一半被叠加了光，前面的一半没有，看起来一半亮一半暗（像阴影）。
+// 现在每帧把光晕沿「灯 → 相机」方向前移半个光晕尺寸，整块平面都在灯体前面，灯体整体被均匀照亮；
+// 前移是沿视线方向，所以屏幕上的位置不变，同时按距离缩小，屏幕上的大小也不变。
 function ha3dLightHalo({ modelId: t, color: s, brightness: o }) {
-  if (t === "light.strip") return null;
-  const r = ha3dHaloLayouts[t] ?? ha3dHaloLayouts["light.ceiling"];
+  const n = M.useRef(null),
+    r = ha3dHaloLayouts[t] ?? ha3dHaloLayouts["light.ceiling"];
+  if (
+    (te(({ camera: a }) => {
+      const i = n.current;
+      if (!i || !i.parent) return;
+      (i.parent.updateWorldMatrix(!0, !1),
+        ha3dHaloBase.set(r.position[0], r.position[1], r.position[2]),
+        i.parent.localToWorld(ha3dHaloBase));
+      const d = ha3dHaloToCamera.copy(a.position).sub(ha3dHaloBase),
+        l = d.length(),
+        c = Math.min(r.size * 0.5, l * 0.5),
+        h = l > 1e-6 ? (l - c) / l : 1;
+      (l > 1e-6 && ha3dHaloBase.addScaledVector(d, c / l),
+        i.parent.worldToLocal(ha3dHaloBase),
+        i.position.copy(ha3dHaloBase),
+        i.scale.set(r.size * h, r.size * h, 1));
+    }),
+    t === "light.strip")
+  )
+    return null;
   return e.jsx("sprite", {
+    ref: n,
     name: "ha3d-light-halo",
     position: r.position,
     scale: [r.size, r.size, 1],
@@ -7342,9 +7388,10 @@ function Ta({
   if (t === "switch") return O(1);
   // ===== ha3d-self: F8 晾衣架（吊顶底座、两组吊绳、横杆按开合度升降） =====
   // ha3d-self: 0.2.1 映射反过来：晾衣架接入 HA 的 cover 一般把「降下」当作打开，position 100（open）降到最低，0（closed）收到顶
+  // ha3d-self: 0.2.2 伸缩杆最长从 1 m 减半到 0.5 m（收起仍是 0.15 m），挂衣服的阈值按比例从 0.4 改到 0.25
   if (s === "cover.clothes_rack") {
     const g = X.clamp(I / 100, 0, 1),
-      _ = X.lerp(0.15, 1, g),
+      _ = X.lerp(0.15, 0.5, g),
       k = e.jsx("meshPhysicalMaterial", {
         color: T(b, "#ffffff", 0.36),
         roughness: 0.34,
@@ -7426,7 +7473,7 @@ function Ta({
                 N,
               ),
             ),
-            _ > 0.4 &&
+            _ > 0.25 &&
               [-0.3, 0, 0.3].map((N, R) =>
                 e.jsxs(
                   "group",

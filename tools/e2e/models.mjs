@@ -79,6 +79,7 @@ async function doorReport(page) {
       opacity: Number(m.opacity.toFixed(3)),
       depthWrite: m.depthWrite,
       color: m.color ? `#${m.color.getHexString()}` : undefined,
+      emissive: m.emissive ? `#${m.emissive.getHexString()}` : undefined,
     });
     const centerOf = (root) => {
       let box = null;
@@ -370,7 +371,19 @@ export default async function models(ctx) {
         const focused = await ctx.focusOn(page, center, view.distance, view.direction);
         const file = await ctx.shot(page, `B1-door-${style}-${door.id}-${stateName}`);
         const doorNow = (await doorReport(page)).find((item) => item.openingId === door.id);
-        record[stateName] = { screenshot: path.basename(file.path), focused, spread: round(lumaSpread(file.buffer)), frames: doorNow?.frames, leafEdges: doorNow?.leafEdges, frameEdges: doorNow?.frameEdges, leafRotations: doorNow?.leafRotations };
+        record[stateName] = { screenshot: path.basename(file.path), focused, spread: round(lumaSpread(file.buffer)), frames: doorNow?.frames, leafEdges: doorNow?.leafEdges, frameEdges: doorNow?.frameEdges, leafRotations: doorNow?.leafRotations, leafMaterial: doorNow?.leafMaterials?.[0] };
+        // 0.2.2：打开的门扇是白色（原来自发光叠了薄荷绿 #9cf0ca），画面里门扇中心偏白、不偏绿
+        if (stateName === "open" && doorNow?.leafCenters?.[0]) {
+          const point = await ctx.projectToScreen(page, doorNow.leafCenters[0]);
+          const rgb = point?.onCanvas ? sampleRgb(file.buffer, point.x, point.y, 6) : undefined;
+          record.open.leafRgb = rgb;
+          const material = record.open.leafMaterial;
+          check(
+            `门扇[${style}] ${door.id} 打开时是白色：材质 #f7f8fa、自发光 #ffffff，画面里 G 不比 R/B 高出 8 以上`,
+            material?.color === "#f7f8fa" && material?.emissive === "#ffffff" && (!rgb || rgb[1] - Math.max(rgb[0], rgb[2]) < 8),
+            { material, rgb },
+          );
+        }
         // 纯色画面的亮度标准差约 0–2；FEAT-005 起主光源跟随太阳方位，开门特写里门扇和墙的明暗更接近（APT 有两张降到 6–8），阈值取 5
         check(`B1[${style}] ${door.id} ${stateName === "closed" ? "关门" : "开门"}特写有效（机位到位、画面不是纯色）`, focused && record[stateName].spread >= 5, { focused, spread: record[stateName].spread, view });
         if (stateName === "closed" && doorNow?.leafCenters?.[0]) {
@@ -588,7 +601,8 @@ export default async function models(ctx) {
     }
     record.drop = round(record.up.barsWorldY - record.down.barsWorldY, 3);
     out.F8[device.entityId] = record;
-    check(`F8 ${device.entityId} position 0 → 100 时横杆下降 ≥ 0.5 m`, record.up.bars === 1 && record.down.bars === 1 && record.drop >= 0.5, record);
+    // 0.2.2 起伸缩杆最长 0.5 m（收起 0.15 m），横杆最多下降 0.35 m
+    check(`F8 ${device.entityId} position 0 → 100 时横杆下降 0.3–0.36 m（伸缩杆最长 0.5 m）`, record.up.bars === 1 && record.down.bars === 1 && record.drop >= 0.3 && record.drop <= 0.36, record);
   }
   if (!racks.length) out.F8.skipped = "项目里没有 cover.clothes_rack 设备";
 

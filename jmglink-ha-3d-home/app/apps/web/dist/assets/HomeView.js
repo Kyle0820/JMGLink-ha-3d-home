@@ -54,6 +54,12 @@ import {
 } from "./index.js";
 import { a as c } from "./react.js";
 import { j as e } from "./three.js";
+// ha3d-self: 0.2.2 首页设置跨设备同步
+import {
+  ha3dOnRemoteSettings,
+  ha3dSaveSetting,
+  ha3dUseSyncedSetting,
+} from "./ha3dSettingsSync.js";
 /**
  * @license lucide-react v1.25.0 - ISC
  *
@@ -1513,9 +1519,7 @@ function ha3dReadSetting(t, a, s) {
   }
 }
 function ha3dWriteSetting(t, a) {
-  try {
-    window.localStorage.setItem(t, a);
-  } catch {}
+  ha3dSaveSetting(t, a); // ha3d-self: 0.2.2 写本机并同步到后端
 }
 const ha3dLowEndQuality = () => {
   // ha3d-self: B6 没保存过画质时按设备能力选默认值：≤2 核或 ≤2 GB → 省电，≤4 → 流畅
@@ -2580,9 +2584,7 @@ function ni({
     c.useEffect(() => {
       vt(Ut(t.id));
     }, [t.id]),
-    c.useEffect(() => {
-      Ln(t.id, se);
-    }, [se]),
+    ha3dUseSyncedSetting(pa(t.id), JSON.stringify(se)), // ha3d-self: 0.2.2 顶部概览数据同步到后端
     c.useEffect(() => {
       v !== "all" && !t.floors.some((n) => n.id === v) && U("all");
     }, [v, t.floors]),
@@ -2604,16 +2606,30 @@ function ni({
         window.localStorage.setItem(la, M);
       } catch {}
     }, [M]),
-    c.useEffect(() => {
-      try {
-        window.localStorage.setItem(ca, o);
-      } catch {}
-    }, [o]),
-    c.useEffect(() => {
-      try {
-        window.localStorage.setItem(da, String(ue));
-      } catch {}
-    }, [ue]));
+    ha3dUseSyncedSetting(ca, o), // ha3d-self: 0.2.2 风格、天气预报开关同步到后端（画质仍只存本机）
+    ha3dUseSyncedSetting(da, String(ue)));
+  // ha3d-self: 0.2.2 其他设备改了设置（后端 ws 推送）时重新读取本机缓存
+  c.useEffect(
+    () =>
+      ha3dOnRemoteSettings((n) => {
+        (n.includes(ca) && k(En()),
+          n.includes(da) && va(Fn()),
+          n.includes(pa(t.id)) && vt(Ut(t.id)),
+          n.includes(ha3dEnvironmentSyncKey) &&
+            ha3dSetSync(
+              ha3dReadSetting(ha3dEnvironmentSyncKey, !0, (l) => l !== "false"),
+            ),
+          n.includes(ha3dWeatherEntityKey) &&
+            ha3dSetWeatherId(ha3dReadSetting(ha3dWeatherEntityKey, "", (l) => l)),
+          n.includes(ha3dPetKey) &&
+            ha3dSetPetKind(
+              ha3dReadSetting(ha3dPetKey, "none", (l) =>
+                ha3dPetOptions.some((C) => C.value === l) ? l : "none",
+              ),
+            ));
+      }),
+    [t.id],
+  );
   // ha3d-self: F3 没有 sun.sun 时按本机时钟近似，每分钟刷新一次
   c.useEffect(() => {
     if (!ha3dSync || ha3dSun) return;

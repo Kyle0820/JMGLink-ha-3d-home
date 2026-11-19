@@ -9,6 +9,7 @@ import { loadEnvFiles } from "./config/envFile.js";
 import { HaConfigStore } from "./config/haConfigStore.js";
 import { loadRuntimeConfig } from "./config/runtime.js";
 import { staticAssetOptions } from "./config/staticAssets.js";
+import { UiSettingsStore, registerUiSettingsRoutes } from "./config/uiSettingsStore.js"; // ha3d-self: 0.2.2
 import { HomeAssistantClient } from "./ha/HomeAssistantClient.js";
 import { ProjectStore } from "./projects/ProjectStore.js";
 import { registerHaRoutes } from "./routes/haRoutes.js";
@@ -49,6 +50,8 @@ app.log.info({
     },
 }, "Runtime configuration loaded");
 const projectStore = await ProjectStore.create(config.dataDir);
+// ha3d-self: 0.2.2 首页设置（跨设备同步）保存在 <dataDir>/ui-settings.json
+const uiSettingsStore = await UiSettingsStore.create(config.dataDir);
 function collectBoundEntityIds(project) {
     const ids = new Set();
     for (const floor of project.floors) {
@@ -97,6 +100,7 @@ app.setErrorHandler((error, request, reply) => {
 await app.register(cors, { origin: true });
 await registerHaRoutes(app, ha, projectStore, haConfigStore, gateway);
 await registerProjectRoutes(app, projectStore, gateway);
+await registerUiSettingsRoutes(app, uiSettingsStore, gateway); // ha3d-self: 0.2.2
 app.get("/api/health", async () => ({ ok: true, mode: config.mode, timestamp: new Date().toISOString() }));
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const webDist = path.resolve(__dirname, "../../web/dist");

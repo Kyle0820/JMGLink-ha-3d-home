@@ -108,3 +108,26 @@ test("JSON body 仍按内置解析器处理", async () => {
   assert.equal(response.status, 201, response.body);
   assert.equal(JSON.parse(response.body).project.name, "http 测试项目");
 });
+// 0.2.2 首页设置跨设备同步：GET/PUT /api/ui-settings，写入 <dataDir>/ui-settings.json
+const putSettings = (values) => {
+  const body = JSON.stringify({ values });
+  return request("PUT", "/api/ui-settings", { headers: { "content-type": "application/json", "content-length": String(Buffer.byteLength(body)) }, body });
+};
+test("ui-settings：初始为空，PUT 合并写入并落盘，null 删除", async () => {
+  const initial = JSON.parse((await request("GET", "/api/ui-settings")).body);
+  assert.deepEqual(initial.values, {});
+  const first = await putSettings({ "ha3d.home.sceneVisualStyle": "cream", "ha3d.home.pet": "dog" });
+  assert.equal(first.status, 200, first.body);
+  assert.deepEqual(JSON.parse(first.body).changed.sort(), ["ha3d.home.pet", "ha3d.home.sceneVisualStyle"]);
+  const second = JSON.parse((await putSettings({ "ha3d.home.pet": null, "ha3d.home.sceneVisualStyle": "cream" })).body);
+  assert.deepEqual(second.changed, ["ha3d.home.pet"]);
+  assert.deepEqual(second.values, { "ha3d.home.sceneVisualStyle": "cream" });
+  const file = JSON.parse(await readFile(path.join(tempDir, "data", "ui-settings.json"), "utf8"));
+  assert.equal(file.version, 1);
+  assert.deepEqual(file.values, { "ha3d.home.sceneVisualStyle": "cream" });
+});
+test("ui-settings：非法键名、非字符串值返回 400", async () => {
+  assert.equal((await putSettings({ "other.key": "x" })).status, 400);
+  assert.equal((await putSettings({ "ha3d.home.pet": 1 })).status, 400);
+  assert.equal((await putSettings("x")).status, 400);
+});

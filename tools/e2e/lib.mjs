@@ -117,8 +117,29 @@ export async function waitForScene(page, { timeout = 30_000, settleMs = 2500, re
   await sleep(settleMs);
 }
 
-/** 先写 localStorage（ha3d.home.*），再打开 /?ha3dDebug=1，等待画布稳定。 */
-export async function gotoHome(page, { style, quality, prefs = {}, settleMs = 2500, query = "" } = {}) {
+/** 0.2.2 起首页设置保存在后端（/api/ui-settings）：读取全部，或把全部键删掉。 */
+export const uiSettings = {
+  async get() {
+    return (await (await fetch(`${state.stack.appUrl}/api/ui-settings`)).json()).values;
+  },
+  async put(values) {
+    const response = await fetch(`${state.stack.appUrl}/api/ui-settings`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ values }) });
+    if (!response.ok) throw new Error(`ui-settings PUT 失败：${response.status}`);
+    return (await response.json()).values;
+  },
+  async clear() {
+    const values = await uiSettings.get();
+    if (Object.keys(values).length) await uiSettings.put(Object.fromEntries(Object.keys(values).map((key) => [key, null])));
+  },
+};
+
+/**
+ * 先写 localStorage（ha3d.home.*），再打开 /?ha3dDebug=1，等待画布稳定。
+ * 默认先清空后端保存的首页设置，页面启动时会把这里写的 localStorage 迁移到后端，和 0.2.1 以前「只看本机」的行为一致；
+ * keepServerSettings: true 时保留后端设置（跨设备同步测试用）。
+ */
+export async function gotoHome(page, { style, quality, prefs = {}, settleMs = 2500, query = "", keepServerSettings = false } = {}) {
+  if (!keepServerSettings && state.stack) await uiSettings.clear();
   await page.goto("/api/health");
   const values = { ...prefs };
   if (style) values["ha3d.home.sceneVisualStyle"] = style;

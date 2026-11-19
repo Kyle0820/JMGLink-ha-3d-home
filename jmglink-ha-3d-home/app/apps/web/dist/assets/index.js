@@ -14,6 +14,14 @@ const __vite__mapDeps = (
 // ha3d-self: B6 hls.js 只在播放摄像头时由 AppSelect.js 动态加载，去掉首屏的副作用导入和预加载
 import { c as fe, R as he, a as l } from "./react.js";
 import { j as i, _ as ie, c as pe } from "./three.js";
+// ha3d-self: 0.2.2 首页设置跨设备同步（后端 ./api/ui-settings + ws ui.settings_updated）
+import {
+    ha3dApplyRemoteSettings,
+    ha3dInitSettings,
+    ha3dOnRemoteSettings,
+    ha3dRefreshSettings,
+    ha3dSaveSetting,
+} from "./ha3dSettingsSync.js";
 (function () {
   const e = document.createElement("link").relList;
   if (e && e.supports && e.supports("modulepreload")) return;
@@ -1114,7 +1122,8 @@ const M = fe((t, e) => ({
   status: "loading",
   async load() {
     try {
-      const [s, a, r, n] = await Promise.all([Be(), ne(), W(), He()]),
+      // ha3d-self: 0.2.2 同时拉取后端保存的首页设置，首页挂载前写进本机缓存（失败时照常使用本机设置）
+      const [s, a, r, n] = await Promise.all([Be(), ne(), W(), He(), ha3dInitSettings()]),
         d = O(n);
       (t({
         project: s,
@@ -1163,6 +1172,7 @@ const M = fe((t, e) => ({
                 .then((x) => t({ areas: x }))
                 .catch(() => {}));
           }
+          o.type === "ui.settings_updated" && ha3dApplyRemoteSettings(o.payload); // ha3d-self: 0.2.2
           if (
             (o.type === "project.updated" && t({ project: o.payload }),
             o.type === "ha.status")
@@ -1193,7 +1203,11 @@ const M = fe((t, e) => ({
             });
           }
         },
-        (o) => t({ gatewayConnected: o }),
+        (o) => {
+          (t({ gatewayConnected: o }),
+            // ha3d-self: 0.2.2 ws（重新）连上后补拉一次设置，断线期间其他设备的修改不会漏掉
+            o && void ha3dRefreshSettings());
+        },
       );
     } catch (s) {
       t({ status: "error", error: s instanceof Error ? s.message : String(s) });
@@ -1206,9 +1220,7 @@ const M = fe((t, e) => ({
   deviceClickMode: ha3dReadDeviceClickMode(),
   setDeviceClickMode(s) {
     const a = s === "toggle" ? "toggle" : "detail";
-    try {
-      window.localStorage.setItem(ha3dDeviceClickModeKey, a);
-    } catch {}
+    ha3dSaveSetting(ha3dDeviceClickModeKey, a); // ha3d-self: 0.2.2 写本机并同步到后端
     t({ deviceClickMode: a });
   },
   async act(s) {
@@ -1264,6 +1276,11 @@ const M = fe((t, e) => ({
     t({ project: a });
   },
 }));
+// ha3d-self: 0.2.2 其他设备改了「点击设备」模式时更新 store
+ha3dOnRemoteSettings((t) => {
+  t.includes(ha3dDeviceClickModeKey) &&
+    M.setState({ deviceClickMode: ha3dReadDeviceClickMode() });
+});
 let te,
   se = 0;
 const ot = 120;
