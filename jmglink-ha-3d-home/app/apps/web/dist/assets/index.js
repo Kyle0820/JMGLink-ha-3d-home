@@ -22,6 +22,8 @@ import {
     ha3dRefreshSettings,
     ha3dSaveSetting,
 } from "./ha3dSettingsSync.js";
+// ha3d-self: 0.2.3 麦克风按钮支持语音输入（浏览器语音识别，或录音交给 HA Assist 识别）
+import { ha3dStartVoice } from "./ha3dVoice.js";
 (function () {
   const e = document.createElement("link").relList;
   if (e && e.supports && e.supports("modulepreload")) return;
@@ -520,11 +522,15 @@ function tt() {
     [s, a] = l.useState(!1),
     [r, n] = l.useState(!1),
     [d, f] = l.useState(!1),
-    [h, m] = l.useState("按住说话"),
+    // ha3d-self: 0.2.3 h 是语音状态 / 不能用的原因，显示在输入框上方（原来只写不显示，失败时界面没有任何反应）
+    [h, m] = l.useState(""),
     [p, u] = l.useState(""),
     [o, w] = l.useState([]),
     [g, x] = l.useState([]),
     [k, A] = l.useState(""),
+    // ha3d-self: 0.2.3 录音已结束、正在等 HA 识别
+    [ha3dStt, ha3dSetStt] = l.useState(!1),
+    ha3dWasActive = l.useRef(!1),
     B = l.useRef(null),
     I = l.useRef(0),
     T = l.useRef([]);
@@ -569,39 +575,32 @@ function tt() {
     N = l.useRef(0),
     R = l.useRef(),
     b = l.useRef(!1),
+    // ha3d-self: 0.2.3 开始语音输入：展开面板，识别中的文字显示在输入框里，识别完直接提交给 conversation；
+    // 不能用（http 访问、没有权限、浏览器不支持）时在面板里显示原因
     L = () => {
-      const c = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!c) {
-        m("浏览器不支持语音识别");
-        return;
-      }
-      const y = new c();
-      ((y.lang = "zh-CN"),
-        (y.continuous = !1),
-        (y.interimResults = !1),
-        (y.onstart = () => {
-          (e(!0), m("正在聆听…"));
-        }),
-        (y.onend = () => e(!1)),
-        (y.onerror = () => {
-          (e(!1), m("识别失败，请重试"));
-        }),
-        (y.onresult = async (v) => {
-          var C, $, q, K;
-          const S =
-            (K =
-              (q =
-                ($ = (C = v.results) == null ? void 0 : C[0]) == null
-                  ? void 0
-                  : $[0]) == null
-                ? void 0
-                : q.transcript) == null
-              ? void 0
-              : K.trim();
-          S && J(S);
-        }),
-        (E.current = y),
-        y.start());
+      if (E.current) return;
+      (n(!0), m(""));
+      let c = !1;
+      const y = ha3dStartVoice({
+        pipelineId: k,
+        onListening: (v) => {
+          (e(!0), m(v === "ha" ? "正在聆听…（Home Assistant 识别），说完会自动停止" : "正在聆听…，说完会自动停止"));
+        },
+        onInterim: (v) => u(v),
+        onTranscribing: () => {
+          (e(!1), ha3dSetStt(!0), m("正在识别…"));
+        },
+        onText: (v) => {
+          (m(""), u(""), J(v));
+        },
+        onError: (v) => {
+          (u(""), m(v));
+        },
+        onEnd: () => {
+          ((c = !0), E.current === y && (E.current = void 0), e(!1), ha3dSetStt(!1));
+        },
+      });
+      c || (E.current = y);
     },
     j = () => {
       var c;
@@ -616,14 +615,18 @@ function tt() {
       }, 2e4);
       T.current.push(S);
     },
+    // ha3d-self: 0.2.3 麦克风按钮：轻触 = 开始说话（正在听时轻触 = 停止，面板开着且空闲时轻触 = 收起）；长按仍是按住说话、松开停止。
+    // 轻触在 click 里处理（iOS 只在 click/touchend 这类用户手势里允许启动语音识别和录音），pointer 事件只处理长按和「轻触停止」
     ce = (c) => {
       c.button !== 0 ||
         s ||
+        ha3dStt ||
         (c.currentTarget.setPointerCapture(c.pointerId),
         (N.current = Date.now()),
         (b.current = !1),
+        (ha3dWasActive.current = !!E.current),
         (R.current = window.setTimeout(() => {
-          N.current && L();
+          N.current && !ha3dWasActive.current && L();
         }, 320)));
     },
     G = (c) => {
@@ -635,16 +638,14 @@ function tt() {
       ((N.current = 0),
         R.current !== void 0 &&
           (window.clearTimeout(R.current), (R.current = void 0)),
-        j(),
-        (b.current = !0),
-        y < 320 && !s && n((v) => !v));
+        (y >= 320 || ha3dWasActive.current) && (j(), (b.current = !0)));
     },
     le = () => {
       if (b.current) {
         b.current = !1;
         return;
       }
-      s || n((c) => !c);
+      s || ha3dStt || (E.current ? j() : r ? n(!1) : L());
     };
   l.useEffect(() => {
     const c = B.current;
@@ -656,10 +657,10 @@ function tt() {
         (u(""), H("user", y), a(!0));
         try {
           const v = await Ue(y, k);
-          (H("assistant", v), m(v));
+          (H("assistant", v), m("")); // ha3d-self: 0.2.3 回复只进对话记录，状态行清空
         } catch (v) {
           const S = v instanceof Error ? v.message : "助手请求失败";
-          (H("assistant", S), m(S));
+          (H("assistant", S), m(""));
         } finally {
           a(!1);
         }
@@ -669,7 +670,7 @@ function tt() {
       (A(c), window.localStorage.setItem("ha3d.voice.pipeline", c), f(!1));
     },
     D = g.find((c) => c.id === k),
-    ue = t ? "listening" : s ? "waiting" : "";
+    ue = t ? "listening" : s || ha3dStt ? "waiting" : "";
   return i.jsxs("div", {
     className: "voice-assistant-wrap",
     children: [
@@ -693,6 +694,15 @@ function tt() {
                 )
               : null,
           }),
+          // ha3d-self: 0.2.3 语音状态 / 不能用的原因
+          r &&
+            h &&
+            i.jsx("p", {
+              className: "voice-status",
+              role: "status",
+              "aria-live": "polite",
+              children: h,
+            }),
           r &&
             i.jsxs("div", {
               className: "voice-tools-row",
@@ -747,9 +757,19 @@ function tt() {
                       "aria-label": "输入语音助手指令",
                       value: p,
                       onChange: (c) => u(c.target.value),
-                      placeholder: "键入指令…",
+                      placeholder: t ? "正在聆听…" : "键入指令…",
                       disabled: s,
                       autoFocus: !0,
+                    }),
+                    // ha3d-self: 0.2.3 面板里的麦克风：再说一次 / 停止
+                    i.jsx("button", {
+                      type: "button",
+                      className: `voice-input-mic ${t ? "active" : ""}`,
+                      "aria-label": t ? "停止语音输入" : "语音输入",
+                      title: t ? "停止语音输入" : "语音输入",
+                      disabled: s || ha3dStt,
+                      onClick: () => (E.current ? j() : L()),
+                      children: t ? i.jsx(Te, { size: 15 }) : i.jsx(Re, { size: 15 }),
                     }),
                     i.jsx("button", {
                       type: "submit",
@@ -769,18 +789,25 @@ function tt() {
         onPointerUp: G,
         onPointerLeave: G,
         onClick: le,
+        // ha3d-self: 0.2.3 轻触即开始说话
         title: s
           ? "等待助手回复"
-          : t
-            ? "正在聆听"
-            : r
-              ? "收起输入"
-              : "轻触输入，长按说话",
+          : ha3dStt
+            ? "正在识别"
+            : t
+              ? "正在聆听，轻触停止"
+              : r
+                ? "收起输入"
+                : "轻触说话，长按按住说话",
         "aria-label": s
           ? "等待助手回复"
-          : r
-            ? "收起输入"
-            : "轻触输入，长按说话",
+          : ha3dStt
+            ? "正在识别"
+            : t
+              ? "正在聆听，轻触停止"
+              : r
+                ? "收起输入"
+                : "轻触说话，长按按住说话",
         children: [
           t ? i.jsx(Te, { size: 20 }) : i.jsx(Re, { size: 20 }),
           i.jsx("span", { children: s ? "" : "按住说话" }),

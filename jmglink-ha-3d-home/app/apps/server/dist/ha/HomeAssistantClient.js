@@ -640,6 +640,63 @@ export class HomeAssistantClient extends EventEmitter {
             throw err;
         });
     }
+    // ===== ha3d-self: 0.2.3 语音输入：把浏览器录好的 16 位单声道 PCM 交给 Assist 管线做语音识别（只跑 stt 阶段） =====
+    // HA WebSocket API：assist_pipeline/run（start_stage/end_stage 都是 stt），run-start 事件给出 stt_binary_handler_id，
+    // 之后发二进制帧「1 字节 handler id + 音频」，只有 1 字节的帧表示音频结束；stt-end 事件的 stt_output.text 就是识别结果。
+    async runAssistStt(input) {
+        if (!this.socket || !this.websocketReady)
+            throw createHttpError("Home Assistant WebSocket 未连接", 503);
+        const socket = this.socket;
+        const startedAt = Date.now();
+        console.log("[ha][assist_pipeline][stt] start", { pipelineId: input.pipelineId, bytes: input.audio.length, sampleRate: input.sampleRate });
+        return new Promise((resolve, reject) => {
+            let settled = false;
+            let commandId;
+            const finish = (error, text) => {
+                if (settled)
+                    return;
+                settled = true;
+                const pending = commandId === undefined ? undefined : this.pendingCommands.get(commandId);
+                if (pending) {
+                    clearTimeout(pending.timer);
+                    this.pendingCommands.delete(commandId);
+                }
+                console.log("[ha][assist_pipeline][stt] done", { durationMs: Date.now() - startedAt, ok: !error, error: error?.message, chars: text?.length });
+                if (error)
+                    reject(error);
+                else
+                    resolve(text);
+            };
+            const onEvent = (message) => {
+                if (typeof message.id === "number")
+                    commandId = message.id;
+                const event = message.event ?? {};
+                const data = event.data ?? {};
+                if (event.type === "run-start") {
+                    const handler = data.runner_data?.stt_binary_handler_id;
+                    if (typeof handler !== "number")
+                        return finish(createHttpError("Home Assistant 没有返回音频通道，这个语音助手可能没有配置语音识别（STT）", 422));
+                    const prefix = Buffer.from([handler]);
+                    for (let offset = 0; offset < input.audio.length; offset += 8192)
+                        socket.send(Buffer.concat([prefix, input.audio.subarray(offset, offset + 8192)]));
+                    socket.send(prefix);
+                    return;
+                }
+                if (event.type === "stt-end")
+                    return finish(undefined, String(data.stt_output?.text ?? "").trim());
+                if (event.type === "error")
+                    return finish(createHttpError(`Home Assistant 语音识别失败：${data.message ?? data.code ?? "未知错误"}`, 422));
+                if (event.type === "run-end")
+                    return finish(createHttpError("Home Assistant 语音识别没有返回结果", 422));
+            };
+            this.sendCommandWithEvents(socket, "assist_pipeline/run", {
+                start_stage: "stt",
+                end_stage: "stt",
+                input: { sample_rate: input.sampleRate },
+                ...(input.pipelineId ? { pipeline: input.pipelineId } : {}),
+            }, onEvent, 30_000).catch((error) => finish(error));
+        });
+    }
     requireCameraEntity(entityId) {
         const entity = this.entities.get(entityId);
         if (!entity)

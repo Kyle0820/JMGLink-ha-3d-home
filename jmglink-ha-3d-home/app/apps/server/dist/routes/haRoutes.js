@@ -86,6 +86,12 @@ const conversationBodySchema = {
     type: "object", required: ["text"], additionalProperties: false,
     properties: { text: { type: "string", minLength: 1, maxLength: 2000 }, language: { type: "string", maxLength: 16 }, conversation_id: { type: "string", maxLength: 128 }, device_id: { type: "string", maxLength: 128 }, pipeline_id: { type: "string", maxLength: 128 } },
 };
+// ha3d-self: 0.2.3 语音识别上传：最长约 30 秒的 16 kHz 16 位单声道 PCM
+const ha3dSttMaxBytes = 16000 * 2 * 30;
+const assistSttQuerySchema = {
+    type: "object", additionalProperties: false,
+    properties: { pipeline_id: { type: "string", maxLength: 128 }, sample_rate: { type: "integer", enum: [16000] } },
+};
 const cameraPathPrefixes = ["/api/camera_proxy/", "/api/camera_proxy_stream/", "/api/hls/", "/api/stream/", "/media/"];
 function errorStatus(error, fallback = 502) {
     return typeof error === "object" && error && "statusCode" in error && typeof error.statusCode === "number"
@@ -213,6 +219,22 @@ export async function registerHaRoutes(app, ha, store, haConfigStore, gateway) {
         }
         catch (error) {
             return reply.code(errorStatus(error)).send({ error: errorMessage(error, "Conversation request failed") });
+        }
+    });
+    // ===== ha3d-self: 0.2.3 语音输入：浏览器没有可用的语音识别时，录音（16 位单声道 PCM，Content-Type: audio/pcm）交给 HA Assist 管线识别 =====
+    app.addContentTypeParser("audio/pcm", { parseAs: "buffer", bodyLimit: ha3dSttMaxBytes }, (_request, body, done) => done(null, body));
+    app.post("/api/ha/assist-stt", { bodyLimit: ha3dSttMaxBytes, schema: { querystring: assistSttQuerySchema } }, async (request, reply) => {
+        if (!ha.getStatus().configured)
+            return reply.code(503).send({ error: "Home Assistant 未配置" });
+        const audio = request.body;
+        if (!Buffer.isBuffer(audio) || audio.length < 3200 || audio.length % 2 !== 0)
+            return reply.code(400).send({ error: "录音太短或格式不对" });
+        const pipelineId = request.query.pipeline_id && request.query.pipeline_id !== "default" ? request.query.pipeline_id : undefined;
+        try {
+            return { text: await ha.runAssistStt({ audio, sampleRate: request.query.sample_rate ?? 16000, pipelineId }) };
+        }
+        catch (error) {
+            return reply.code(errorStatus(error)).send({ error: errorMessage(error, "语音识别失败") });
         }
     });
     app.post("/api/ha/reconnect", async (_request, reply) => {

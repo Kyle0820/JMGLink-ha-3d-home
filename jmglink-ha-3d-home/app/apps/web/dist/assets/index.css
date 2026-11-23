@@ -13081,6 +13081,16 @@ input[type="range"]::-webkit-slider-thumb {
 .visual-style-cream .voice-input input::placeholder {
   color: #42362a85;
 }
+/* ha3d-self: 0.2.3 奶油风格的语音状态行和面板麦克风 */
+.visual-style-cream .voice-status {
+  background: #fffbf5b3;
+  color: #352c23;
+  text-shadow: none;
+}
+.visual-style-cream .voice-input button.voice-input-mic:not(.active) {
+  background: #52412e26;
+  color: #352c23;
+}
 .scene-mode-security .home-scene:after {
   background:
     linear-gradient(
@@ -14809,6 +14819,25 @@ input[type="range"]::-webkit-slider-thumb {
 .voice-input button:disabled {
   opacity: 0.45;
   cursor: default;
+}
+/* ha3d-self: 0.2.3 面板里的麦克风按钮、语音状态行（不能用的原因也显示在这里） */
+.voice-input button.voice-input-mic {
+  background: #ffffff2e;
+}
+.voice-input button.voice-input-mic.active {
+  background: #ff5f7ae6;
+}
+.voice-status {
+  margin: 0 0 6px;
+  padding: 5px 7px;
+  border-radius: 8px;
+  background: #0a18324d;
+  color: #fffffff2;
+  font-size: 11px;
+  line-height: 1.45;
+  text-align: left;
+  word-break: break-word;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 @keyframes voice-message-in {
   0% {

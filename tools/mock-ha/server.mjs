@@ -258,6 +258,7 @@ export function createMockHa({ project, token = "dev-token", log = console.log }
     return changed;
   };
 
+  let sttText = "打开客厅灯";
   const recordCall = (via, domain, service, data) => {
     calls.push({ time: now(), via, domain, service, data });
   };
@@ -298,6 +299,12 @@ export function createMockHa({ project, token = "dev-token", log = console.log }
           return sendJson(response, 200, { ok: true, entityCount: states.size });
         }
         if (request.method === "GET" && pathname === "/mock/states") return sendJson(response, 200, { states: [...states.values()] });
+        // assist_pipeline/run 的 stt 阶段返回的识别文字
+        if (request.method === "POST" && pathname === "/mock/stt") {
+          const body = await readBody(request);
+          sttText = typeof body.text === "string" ? body.text : sttText;
+          return sendJson(response, 200, { text: sttText });
+        }
         return sendJson(response, 404, { error: "Not found" });
       }
       if (!pathname.startsWith("/api/")) return sendJson(response, 404, { error: "Not found" });
@@ -368,7 +375,26 @@ export function createMockHa({ project, token = "dev-token", log = console.log }
       subscribers.delete(socket);
       log("[mock-ha] ws closed");
     });
-    socket.on("message", (raw) => {
+    // assist_pipeline/run 的 stt 阶段：handler id → { id, bytes, sampleRate, pipeline }
+    const sttRuns = new Map();
+    socket.on("message", (raw, isBinary) => {
+      if (isBinary) {
+        const buffer = Buffer.from(raw);
+        const run = sttRuns.get(buffer[0]);
+        if (!run) return;
+        if (buffer.length > 1) return void (run.bytes += buffer.length - 1);
+        // 只有 handler id 的帧 = 音频结束
+        sttRuns.delete(buffer[0]);
+        recordCall("ws", "assist_pipeline", "stt", { bytes: run.bytes, sample_rate: run.sampleRate, pipeline: run.pipeline ?? null });
+        const event = (type, data = {}) => socket.send(JSON.stringify({ id: run.id, type: "event", event: { type, data, timestamp: new Date().toISOString() } }));
+        if (run.bytes < run.sampleRate * 2 * 0.3) event("error", { code: "stt-no-text-recognized", message: "No text recognized" });
+        else {
+          event("stt-vad-start", { timestamp: 0 });
+          event("stt-vad-end", { timestamp: Math.round((run.bytes / 2 / run.sampleRate) * 1000) });
+          event("stt-end", { stt_output: { text: sttText } });
+        }
+        return event("run-end", null);
+      }
       let message;
       try {
         message = JSON.parse(raw.toString());
@@ -415,6 +441,13 @@ export function createMockHa({ project, token = "dev-token", log = console.log }
         }
         case "assist_pipeline/pipeline/list":
           return reply([]);
+        case "assist_pipeline/run": {
+          if (message.start_stage !== "stt") return reply(null, false, { code: "not_supported", message: "mock 只支持 stt 阶段" });
+          const handler = (sttRuns.size % 200) + 1;
+          sttRuns.set(handler, { id: message.id, bytes: 0, sampleRate: message.input?.sample_rate ?? 16000, pipeline: message.pipeline });
+          reply(null);
+          return socket.send(JSON.stringify({ id: message.id, type: "event", event: { type: "run-start", data: { pipeline: message.pipeline ?? "mock-preferred", language: "zh-CN", runner_data: { stt_binary_handler_id: handler, timeout: 300 } } } }));
+        }
         case "ping":
           return socket.send(JSON.stringify({ id: message.id, type: "pong" }));
         default:

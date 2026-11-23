@@ -24,11 +24,14 @@ function xt() {
 // 离实体墙段（墙去掉门洞）≥ 0.2 m、不在家具旋转矩形（外扩 0.12 m）内才可走。
 // 目标点：70% 留在当前房间，否则在按门连通关系 BFS 可达的房间里选；房间内拒绝采样（离墙 ≥ 0.25 m、不在家具内）。
 // 路线依次经过门中心，每一段在栅格上 BFS 再拉直。速度按 useFrame 的 delta 计算，限帧时速度不变。
+// firstRest / rest：出现后、每走到一个目标点后坐下停留的秒数范围 [最短, 最长]，在范围内均匀随机
 const ha3dPetSpecs = {
-  cat: { speed: 0.35, size: 1, legH: 0.11, color: "#e8923e", belly: "#fbe3c4", dark: "#9a521c" },
+  cat: { speed: 0.35, size: 1, legH: 0.11, color: "#e8923e", belly: "#fbe3c4", dark: "#9a521c", firstRest: [1, 3], rest: [2, 6] },
   // ha3d-self: 0.2.2 小狗改成白色（耳朵略带米白，和头部区分），黑色眼睛和鼻头
-  dog: { speed: 0.5, size: 1.42, legH: 0.12, color: "#f7f7f4", belly: "#ffffff", dark: "#e6e0d4", eye: "#111111" },
+  // ha3d-self: 0.2.3 小狗走得太频繁：到点后停留从 2–6 秒改成 25–45 秒，出现后先停 4–8 秒（原来 1–3 秒）
+  dog: { speed: 0.5, size: 1.42, legH: 0.12, color: "#f7f7f4", belly: "#ffffff", dark: "#e6e0d4", eye: "#111111", firstRest: [4, 8], rest: [25, 45] },
 };
+const ha3dPetRestTime = ([t, s]) => t + Math.random() * (s - t);
 function ha3dInPolygon(t, s, o) {
   let r = !1;
   for (let n = 0, a = o.length - 1; n < o.length; a = n++) {
@@ -281,7 +284,7 @@ function ha3dPet({ floor: t, kind: s }) {
         .sort((p, q) => d.walk.filter((G) => G === q).length - d.walk.filter((G) => G === p).length);
       for (const p of g) {
         const q = ha3dPetSample(d, p);
-        if (q) return { room: p, pos: q, heading: Math.random() * Math.PI * 2, path: [], next: p, wait: 1 + Math.random() * 2, phase: 0, sit: 1 };
+        if (q) return { room: p, pos: q, heading: Math.random() * Math.PI * 2, path: [], next: p, wait: ha3dPetRestTime(o.firstRest), phase: 0, sit: 1 };
       }
       return null;
     }, [d]),
@@ -305,7 +308,7 @@ function ha3dPet({ floor: t, kind: s }) {
             (C <= O
               ? ((l.pos = [L, I]),
                 l.path.shift(),
-                l.path.length || ((l.wait = 2 + Math.random() * 4), (l.room = l.next)))
+                l.path.length || ((l.wait = ha3dPetRestTime(o.rest)), (l.room = l.next)))
               : (l.pos = [l.pos[0] + ($ / C) * O, l.pos[1] + (m / C) * O]),
             C > 1e-3)
           ) {

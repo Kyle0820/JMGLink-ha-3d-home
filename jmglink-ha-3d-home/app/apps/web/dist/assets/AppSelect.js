@@ -5085,12 +5085,10 @@ function pa({
     $ = (t.width * 0.96) / I.length,
     p = t.entityId ? Yt(i) : !0,
     m = p ? L * (r ? 0.68 : 0.58) : 0,
-    // ha3d-self: 0.2.2 首页里绑定了门磁且打开的门扇改成白色（原来自发光叠了薄荷绿 #9cf0ca，看起来是绿色）
-    ha3dOpenLeaf = !!(r && t.entityId && p),
+    // ha3d-self: 0.2.3 绑定了门磁的门扇打开时不再单独设颜色（0.2.1 及以前是薄荷绿、0.2.2 是白色），
+    // 颜色、自发光、描边都和关门时一样，开关状态只看门扇角度
     // 门扇实色：玻璃风格偏冷灰蓝、奶油风格暖木色；入户门为深色金属
-    C = ha3dOpenLeaf
-      ? "#f7f8fa"
-      : ha3dEntrance
+    C = ha3dEntrance
       ? ha3dWarm
         ? "#6f5847"
         : "#4b5563"
@@ -5099,7 +5097,7 @@ function pa({
           ? "#a87c52"
           : "#64788f"
         : "#b78b61",
-    O = ha3dOpenLeaf ? "#ffffff" : v,
+    O = v,
     ha3dLeafDepth = ha3dEntrance ? 0.07 : 0.045,
     ha3dLeafZ = L * (ha3dEntrance ? 0.04 : 0.03),
     ha3dTrim = ha3dWarm ? "#d8c3a0" : "#d1d5db";
@@ -5132,13 +5130,13 @@ function pa({
                     opacity: 1,
                     depthWrite: !0,
                     emissive: r ? O : "#000000",
-                    emissiveIntensity: r ? (p && t.entityId ? 0.14 : 0.03) : 0,
+                    emissiveIntensity: r ? 0.03 : 0, // ha3d-self: 0.2.3 开门不再加亮（原来 0.14）
                   }),
                   r &&
                     e.jsx(ee, {
-                      color: p && t.entityId ? "#ffffff" : v,
+                      color: v, // ha3d-self: 0.2.3 开门的描边和关门一样（原来白色、不透明度 0.2）
                       threshold: 18,
-                      opacity: p && t.entityId ? 0.2 : 0.12,
+                      opacity: 0.12,
                       transparent: !0,
                     }),
                 ],
@@ -11827,42 +11825,66 @@ const ha3dEnvCounts = {
     high: { stars: 200, clouds: 16 },
   },
   ha3dEnvTextures = {};
+// ha3d-self: 0.2.3 太阳、月亮、云的贴图改为直接生成像素（ImageData，256×256），和 0.2.2 的灯光晕同一个做法。
+// 原来用 2D canvas 径向渐变：canvas 按预乘 alpha 存 8 位，上传 WebGL 时再反预乘，低 alpha 处每个通道的舍入误差
+// 被放大成颜色偏差（太阳外圈是暖色、月亮光晕整圈 alpha ≤ 0.34，偏差更大），各平台 canvas 光栅化（抖动、色彩空间）也不同，
+// 手机上就成了太阳、月亮周围的彩色小点。现在每个纹素的 RGB、alpha 按色标直接算出来，同一半径上颜色完全一致。
+// 色标沿用原来的值（半径 0–1，[r, g, b, a]），段内线性插值；月牙按覆盖率做抗锯齿后叠到光晕上（原来 128 px 里半径 30、挖掉的圆心偏 (16, -10) 半径 27）。
+const ha3dEnvStops = {
+  sun: [
+    [0, [255, 253, 240, 1]],
+    [0.2, [255, 240, 190, 1]],
+    [0.27, [255, 214, 130, 0.5]],
+    [1, [255, 196, 110, 0]],
+  ],
+  moon: [
+    [0, [214, 226, 255, 0.34]],
+    [0.25, [214, 226, 255, 0.34]],
+    [1, [214, 226, 255, 0]],
+  ],
+  cloud: [
+    [0, [255, 255, 255, 0.85]],
+    [0.45, [255, 255, 255, 0.4]],
+    [1, [255, 255, 255, 0]],
+  ],
+};
+function ha3dEnvStopColor(t, s) {
+  if (s >= 1) return [t[t.length - 1][1][0], t[t.length - 1][1][1], t[t.length - 1][1][2], 0];
+  for (let o = 1; o < t.length; o += 1)
+    if (s <= t[o][0]) {
+      const [r, n] = t[o - 1],
+        [a, i] = t[o],
+        d = (s - r) / (a - r);
+      return n.map((l, c) => l + (i[c] - l) * d);
+    }
+  return t[t.length - 1][1];
+}
 function ha3dEnvTexture(t) {
   if (ha3dEnvTextures[t]) return ha3dEnvTextures[t];
-  const s = document.createElement("canvas");
-  s.width = s.height = 128;
-  const o = s.getContext("2d");
-  if (!o) return null;
-  const r = o.createRadialGradient(64, 64, 0, 64, 64, 64),
-    n = (a, i) => r.addColorStop(a, i);
-  t === "sun"
-    ? (n(0, "rgba(255,253,240,1)"),
-      n(0.2, "rgba(255,240,190,1)"),
-      n(0.27, "rgba(255,214,130,0.5)"),
-      n(1, "rgba(255,196,110,0)"))
-    : t === "moon"
-      ? (n(0.25, "rgba(214,226,255,0.34)"), n(1, "rgba(214,226,255,0)"))
-      : (n(0, "rgba(255,255,255,0.85)"),
-        n(0.45, "rgba(255,255,255,0.4)"),
-        n(1, "rgba(255,255,255,0)"));
-  ((o.fillStyle = r), o.fillRect(0, 0, 128, 128));
-  if (t === "moon") {
-    // 月牙：在另一张画布上画圆再挖掉一块，叠到光晕上
-    const a = document.createElement("canvas");
-    a.width = a.height = 128;
-    const i = a.getContext("2d");
-    i &&
-      ((i.fillStyle = "#f4f1e3"),
-      i.beginPath(),
-      i.arc(64, 64, 30, 0, Math.PI * 2),
-      i.fill(),
-      (i.globalCompositeOperation = "destination-out"),
-      i.beginPath(),
-      i.arc(80, 54, 27, 0, Math.PI * 2),
-      i.fill(),
-      o.drawImage(a, 0, 0));
-  }
-  const a = new wr(s);
+  if (typeof ImageData > "u") return null;
+  const s = 256,
+    o = s / 128,
+    r = new Uint8ClampedArray(s * s * 4),
+    n = ha3dEnvStops[t] ?? ha3dEnvStops.cloud;
+  for (let a = 0; a < s; a += 1)
+    for (let i = 0; i < s; i += 1) {
+      const d = i + 0.5,
+        l = a + 0.5;
+      let [c, h, u, f] = ha3dEnvStopColor(n, Math.hypot(d - s / 2, l - s / 2) / (s / 2));
+      if (t === "moon") {
+        // 月牙覆盖率 = 圆盘 × (1 − 挖掉的圆)，边缘 1 个纹素宽的线性过渡；颜色 #f4f1e3，source-over 叠在光晕上
+        const j = X.clamp(30 * o - Math.hypot(d - 64 * o, l - 64 * o) + 0.5, 0, 1),
+          v = X.clamp(27 * o - Math.hypot(d - 80 * o, l - 54 * o) + 0.5, 0, 1),
+          y = j * (1 - v);
+        if (y > 0) {
+          const x = y + f * (1 - y);
+          ((c = (244 * y + c * f * (1 - y)) / x), (h = (241 * y + h * f * (1 - y)) / x), (u = (227 * y + u * f * (1 - y)) / x), (f = x));
+        }
+      }
+      const p = (a * s + i) * 4;
+      ((r[p] = c), (r[p + 1] = h), (r[p + 2] = u), (r[p + 3] = Math.round(f * 255)));
+    }
+  const a = new wr(new ImageData(r, s, s));
   return ((a.colorSpace = ds), (ha3dEnvTextures[t] = a));
 }
 function ha3dSkySprite({ key: t, ...s }, o, r) {

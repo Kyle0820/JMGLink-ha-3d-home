@@ -80,6 +80,7 @@ async function doorReport(page) {
       depthWrite: m.depthWrite,
       color: m.color ? `#${m.color.getHexString()}` : undefined,
       emissive: m.emissive ? `#${m.emissive.getHexString()}` : undefined,
+      emissiveIntensity: m.emissiveIntensity,
     });
     const centerOf = (root) => {
       let box = null;
@@ -106,6 +107,7 @@ async function doorReport(page) {
         if (!m) return;
         if (m.type === "LineMaterial" || c.isLineSegments) {
           edges += 1;
+          if (o.name === "ha3d-door-leaf") (rec.leafEdgeMaterials ??= []).push({ color: m.color ? `#${m.color.getHexString()}` : undefined, opacity: Number(m.opacity.toFixed(3)) });
           return;
         }
         if (c.isMesh) materials.push(info(m));
@@ -371,17 +373,21 @@ export default async function models(ctx) {
         const focused = await ctx.focusOn(page, center, view.distance, view.direction);
         const file = await ctx.shot(page, `B1-door-${style}-${door.id}-${stateName}`);
         const doorNow = (await doorReport(page)).find((item) => item.openingId === door.id);
-        record[stateName] = { screenshot: path.basename(file.path), focused, spread: round(lumaSpread(file.buffer)), frames: doorNow?.frames, leafEdges: doorNow?.leafEdges, frameEdges: doorNow?.frameEdges, leafRotations: doorNow?.leafRotations, leafMaterial: doorNow?.leafMaterials?.[0] };
-        // 0.2.2：打开的门扇是白色（原来自发光叠了薄荷绿 #9cf0ca），画面里门扇中心偏白、不偏绿
-        if (stateName === "open" && doorNow?.leafCenters?.[0]) {
+        record[stateName] = { screenshot: path.basename(file.path), focused, spread: round(lumaSpread(file.buffer)), frames: doorNow?.frames, leafEdges: doorNow?.leafEdges, frameEdges: doorNow?.frameEdges, leafRotations: doorNow?.leafRotations, leafMaterial: doorNow?.leafMaterials?.[0], leafEdgeMaterial: doorNow?.leafEdgeMaterials?.[0] };
+        if (doorNow?.leafCenters?.[0]) {
           const point = await ctx.projectToScreen(page, doorNow.leafCenters[0]);
-          const rgb = point?.onCanvas ? sampleRgb(file.buffer, point.x, point.y, 6) : undefined;
-          record.open.leafRgb = rgb;
-          const material = record.open.leafMaterial;
+          record[stateName].leafRgb = point?.onCanvas ? sampleRgb(file.buffer, point.x, point.y, 6) : undefined;
+        }
+        // 0.2.3：打开的门扇不再单独设颜色（0.2.1 薄荷绿、0.2.2 白色），材质颜色、自发光、描边都和关门时一样
+        if (stateName === "open") {
+          const a = record.closed.leafMaterial,
+            b = record.open.leafMaterial,
+            ea = record.closed.leafEdgeMaterial,
+            eb = record.open.leafEdgeMaterial;
           check(
-            `门扇[${style}] ${door.id} 打开时是白色：材质 #f7f8fa、自发光 #ffffff，画面里 G 不比 R/B 高出 8 以上`,
-            material?.color === "#f7f8fa" && material?.emissive === "#ffffff" && (!rgb || rgb[1] - Math.max(rgb[0], rgb[2]) < 8),
-            { material, rgb },
+            `门扇[${style}] ${door.id} 打开和关闭的颜色一致：材质颜色、自发光颜色和强度、描边颜色和不透明度都相同`,
+            a && b && a.color === b.color && a.emissive === b.emissive && a.emissiveIntensity === b.emissiveIntensity && JSON.stringify(ea) === JSON.stringify(eb),
+            { closed: { material: a, edge: ea, rgb: record.closed.leafRgb }, open: { material: b, edge: eb, rgb: record.open.leafRgb } },
           );
         }
         // 纯色画面的亮度标准差约 0–2；FEAT-005 起主光源跟随太阳方位，开门特写里门扇和墙的明暗更接近（APT 有两张降到 6–8），阈值取 5
@@ -623,3 +629,6 @@ export default async function models(ctx) {
     F5: out.F5,
   };
 }
+
+// fixes023 复用门的读取和机位
+export { doorReport, clearDoorView, doorView, sampleRgb };
