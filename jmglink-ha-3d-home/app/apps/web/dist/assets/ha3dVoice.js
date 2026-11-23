@@ -37,19 +37,20 @@ export function ha3dVoiceSupport() {
   if (!engine) reason = secure ? "这个浏览器不支持语音输入（没有语音识别，也不能录音）。请换用 Safari 或 Chrome，或在下面键入指令。" : ha3dInsecureHint();
   return { secure, recognition, record, engine, reason };
 }
+// 失败后面板还开着，这时轻触右下角的大麦克风是收起面板，所以重试提示指向输入框右侧的小麦克风
 function ha3dRecognitionError(code, secure, canFallback) {
   if (code === "aborted") return "";
   if ((code === "not-allowed" || code === "service-not-allowed") && !secure) return ha3dInsecureHint();
   if (code === "not-allowed" || code === "service-not-allowed" || code === "language-not-supported") {
     if (canFallback) {
       ha3dPreferHa = true;
-      return "浏览器的语音识别不能用（可能是麦克风或语音识别权限没开、iPhone 上 Siri 没打开，或 HA App 内置浏览器不支持），已改用 Home Assistant 语音识别，请再点一次麦克风。";
+      return "浏览器的语音识别不能用（可能是麦克风或语音识别权限没开、iPhone 上 Siri 没打开，或 HA App 内置浏览器不支持），已改用 Home Assistant 语音识别，请点输入框右侧的麦克风再说一次。";
     }
     return code === "language-not-supported"
       ? "浏览器的语音识别不支持中文，请在下面键入指令。"
       : "语音识别被拒绝：请在浏览器或系统设置里允许这个网站使用麦克风和语音识别（iPhone 上还需要打开 Siri 与听写），然后再试。";
   }
-  if (code === "no-speech") return "没有听到说话，请再点一次麦克风重试。";
+  if (code === "no-speech") return "没有听到说话，请点输入框右侧的麦克风重试。";
   if (code === "audio-capture") return "没有找到可用的麦克风。";
   if (code === "network") return "语音识别服务连不上（网络错误），请稍后重试，或在下面键入指令。";
   return `语音识别失败（${code || "未知错误"}），请重试或在下面键入指令。`;
@@ -186,7 +187,7 @@ function ha3dStartRecording({ pipelineId, onListening, onInterim, onTranscribing
     }
     if (!wasRecording) return end();
     if (!heard || total < ha3dSttRate * 0.3) {
-      onError("没有听到说话，请再点一次麦克风重试。");
+      onError("没有听到说话，请点输入框右侧的麦克风重试。");
       return end();
     }
     const pcm = new Int16Array(total);
@@ -200,7 +201,7 @@ function ha3dStartRecording({ pipelineId, onListening, onInterim, onTranscribing
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.error || data.message || `语音识别请求失败：${response.status}`);
       const text = String(data.text || "").trim();
-      text ? onText(text) : onError("Home Assistant 没有识别出文字，请再说一次。");
+      text ? onText(text) : onError("Home Assistant 没有识别出文字，请点输入框右侧的麦克风再说一次。");
     } catch (error) {
       onError(`Home Assistant 语音识别失败：${error instanceof Error ? error.message : String(error)}`);
     }

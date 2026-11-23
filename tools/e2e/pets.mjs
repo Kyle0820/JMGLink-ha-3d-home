@@ -166,9 +166,11 @@ export default async function pets(ctx) {
     await ctx.focusCamera(page, (await readPet(page)).world, 3.2, { direction: [0.6, 0.95, 0.75] });
     await ctx.shot(page, `F6-${kind}-closeup`);
     // 点击宠物所在位置：不会选中任何设备（宠物不可点击）。点击会穿过宠物打到后面的东西，
-    // 所以等宠物走到身后（屏幕上）没有设备的位置再点，最多等 20 秒（宠物到一个点会停 2–6 秒，停在空调前面时 8 秒不一定够）
+    // 所以等宠物走到身后（屏幕上）没有设备的位置再点。小猫到一个点停 2–6 秒，最多等 20 秒；
+    // 小狗从 0.2.3 起停 25–45 秒，停在设备前面时要等它走开，最多等 60 秒
     let after;
-    for (let attempt = 0; attempt < 20; attempt += 1) {
+    const maxWait = kind === "dog" ? 60 : 20;
+    for (let attempt = 0; attempt < maxWait; attempt += 1) {
       after = await readPet(page);
       after.deviceBehind = await page.evaluate(({ x, y }) => {
         const s = window.__ha3dDebug.get();

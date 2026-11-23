@@ -80,6 +80,7 @@ async function voiceState(page) {
       panelOpen: Boolean(document.querySelector(".voice-feed.tools-open")),
       status: document.querySelector(".voice-status")?.textContent ?? null,
       input: document.querySelector(".voice-input input")?.value ?? null,
+      inputFocused: Boolean(document.activeElement?.matches?.(".voice-input input")),
       messages: [...document.querySelectorAll(".voice-message")].map((item) => ({ role: item.classList.contains("user") ? "user" : "assistant", text: item.textContent })),
       fake: window.__ha3dFakeRec ?? null,
     };
@@ -135,6 +136,7 @@ export default async function fixes023(ctx) {
       out.voice.browser = { initial, listening, interim, done, conversation: calls.map((call) => call.data), errors: page.ha3dErrors };
       ok("V1 浏览器语音识别：轻触麦克风就开始识别（start 调用 1 次，lang=zh-CN），聆听时按钮是 listening 状态", listening.fake?.starts === 1 && listening.fake?.lang === "zh-CN" && listening.fabClass?.includes("listening"), { fake: listening.fake, fabClass: listening.fabClass, status: listening.status });
       ok("V1 识别中的文字显示在输入框里", interim.input === "打开客", { input: interim.input, status: interim.status });
+      ok("V1 开始说话时输入框没有获得焦点（iPhone 上不会弹出软键盘）", listening.panelOpen && !listening.inputFocused && !interim.inputFocused, { listening: listening.inputFocused, interim: interim.inputFocused });
       ok("V1 最终文字「打开客厅灯」提交给 conversation，对话记录里有用户和助手两条", calls.length === 1 && calls[0].data.text === "打开客厅灯" && done.messages.some((m) => m.role === "user" && m.text === "打开客厅灯"), { calls: calls.map((call) => call.data), messages: done.messages });
       ok("V1 没有 pageerror", page.ha3dErrors.length === 0, page.ha3dErrors);
       await page.context().close();
@@ -161,22 +163,21 @@ export default async function fixes023(ctx) {
       await page.context().close();
     }
 
-    // V5 浏览器语音识别被拒绝（service-not-allowed，例如 HA App 没有语音识别权限）：提示并改用 HA 识别，再点一次就能用
+    // V5 浏览器语音识别被拒绝（service-not-allowed，例如 HA App 没有语音识别权限）：提示并改用 HA 识别，按提示点输入框右侧的麦克风就能用
     {
       const page = await newVoicePage(ctx.browser, { init: [[fakeRecognition, "service-not-allowed"], [fakeMicrophone, "ok"]] });
       const before = (await ctx.mock.calls()).length;
       await tapFab(page);
       const refused = await waitVoice(page, (s) => Boolean(s.status) && !s.fabClass?.includes("listening") && s.fake?.starts === 1, 4000);
       await ctx.shot(page, "V5-recognition-refused");
-      await tapFab(page); // 面板开着且空闲：先收起
-      await page.waitForTimeout(300);
-      await tapFab(page);
+      // 提示指向输入框右侧的麦克风（面板开着时大麦克风是收起），按提示点一次就开始
+      await page.locator(".voice-input-mic").tap();
       const done = await waitVoice(page, (s) => s.messages.some((m) => m.role === "assistant" && m.text.includes("打开客厅灯")), 14000);
       await ctx.shot(page, "V5-fallback-ha-done");
       const all = await ctx.mock.calls();
       out.voice.fallback = { refused, done, stt: sttCalls(all, before).map((call) => call.data), conversation: conversationCalls(all, before).map((call) => call.data) };
-      ok("V5 浏览器语音识别被拒绝时显示原因，并说明已改用 Home Assistant 识别", (refused.status ?? "").includes("已改用 Home Assistant 语音识别"), { status: refused.status });
-      ok("V5 再点一次麦克风走 HA 识别（浏览器识别不再调用），文字提交给 conversation", done.fake?.starts === 1 && out.voice.fallback.stt.length === 1 && out.voice.fallback.conversation.some((call) => call.text === "打开客厅灯"), out.voice.fallback);
+      ok("V5 浏览器语音识别被拒绝时显示原因，说明已改用 Home Assistant 识别，并指向输入框右侧的麦克风", (refused.status ?? "").includes("已改用 Home Assistant 语音识别") && (refused.status ?? "").includes("输入框右侧的麦克风"), { status: refused.status });
+      ok("V5 按提示点一次输入框右侧的麦克风就走 HA 识别（浏览器识别不再调用），文字提交给 conversation", done.fake?.starts === 1 && out.voice.fallback.stt.length === 1 && out.voice.fallback.conversation.some((call) => call.text === "打开客厅灯"), out.voice.fallback);
       await page.context().close();
     }
 
@@ -194,6 +195,7 @@ export default async function fixes023(ctx) {
       await ctx.shot(page, `V3-${key}`);
       out.voice[key] = state;
       ok(`V3 http 访问（${label}）：isSecureContext=false、没有 mediaDevices，点麦克风后面板里提示需要 HTTPS`, state.secure === false && !state.hasMediaDevices && state.panelOpen && (state.status ?? "").includes("HTTPS"), { secure: state.secure, hasMediaDevices: state.hasMediaDevices, status: state.status });
+      ok(`V3 http 访问（${label}）：语音用不了时输入框自动获得焦点，可以直接键入；没有 pageerror`, state.inputFocused && page.ha3dErrors.length === 0, { inputFocused: state.inputFocused, errors: page.ha3dErrors });
       await page.context().close();
     }
 

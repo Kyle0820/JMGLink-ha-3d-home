@@ -530,6 +530,9 @@ function tt() {
     [k, A] = l.useState(""),
     // ha3d-self: 0.2.3 录音已结束、正在等 HA 识别
     [ha3dStt, ha3dSetStt] = l.useState(!1),
+    // ha3d-self: 0.2.3 语音不能用（http 访问、浏览器不支持）时才自动聚焦输入框方便键入；
+    // 开始说话时不聚焦，否则 iPhone 上会弹出软键盘挡住画面
+    [ha3dTypeFocus, ha3dSetTypeFocus] = l.useState(!1),
     ha3dWasActive = l.useRef(!1),
     B = l.useRef(null),
     I = l.useRef(0),
@@ -580,8 +583,9 @@ function tt() {
     L = () => {
       if (E.current) return;
       (n(!0), m(""));
-      let c = !1;
-      const y = ha3dStartVoice({
+      let c = !1,
+        y; // 不能用时 onEnd 在 ha3dStartVoice 返回前同步调用，y 不能是 const（暂时性死区会抛 ReferenceError）
+      y = ha3dStartVoice({
         pipelineId: k,
         onListening: (v) => {
           (e(!0), m(v === "ha" ? "正在聆听…（Home Assistant 识别），说完会自动停止" : "正在聆听…，说完会自动停止"));
@@ -600,7 +604,8 @@ function tt() {
           ((c = !0), E.current === y && (E.current = void 0), e(!1), ha3dSetStt(!1));
         },
       });
-      c || (E.current = y);
+      // 同步结束 = 没有开始收音（环境不支持），这时让输入框获得焦点
+      c ? ha3dSetTypeFocus(!0) : ((E.current = y), ha3dSetTypeFocus(!1));
     },
     j = () => {
       var c;
@@ -759,7 +764,7 @@ function tt() {
                       onChange: (c) => u(c.target.value),
                       placeholder: t ? "正在聆听…" : "键入指令…",
                       disabled: s,
-                      autoFocus: !0,
+                      autoFocus: ha3dTypeFocus, // ha3d-self: 0.2.3 原来总是 autoFocus
                     }),
                     // ha3d-self: 0.2.3 面板里的麦克风：再说一次 / 停止
                     i.jsx("button", {
