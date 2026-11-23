@@ -69,13 +69,16 @@
 | `ha3d-env-layer`、`ha3d-env-sun`、`ha3d-env-moon`、`ha3d-env-stars`、`ha3d-env-clouds` | 环境层（跟随相机）和太阳、月亮、星空、云层 |
 | `ha3d-weather-rain`、`ha3d-weather-snow`、`ha3d-weather-wind`、`ha3d-weather-fog`、`ha3d-weather-lightning` | 上游已有的天气粒子 |
 | `ha3d-pet`（`userData.petKind`、`userData.floorId`） | 宠物，位置是楼层局部坐标（等于平面坐标） |
+| `ha3d-appliance-body`（`userData.appliance`：`washer` / `dryer` / `dishwasher` / `sock_washer` / `shower`，`userData.upper`：是否叠放上层） | 家电样式的模型根节点；叠放上层在模型内部抬高 `ha3dApplianceStackHeight` |
+| `ha3d-appliance-drum`、`ha3d-appliance-indicator` | 洗衣机/烘干机/洗袜机转动的内筒，家电运行指示灯（off 时 `emissiveIntensity` 为 0） |
+| `ha3d-shower-water` | 花洒水流，只在出水时挂载 |
 
-不参与点击的装饰对象（光晕、环境层、宠物）把 `raycast` 设为空函数。
+不参与点击的装饰对象（光晕、环境层、宠物、花洒水流）把 `raycast` 设为空函数。
 
 ### 渲染与性能
 
 - 场景默认按需渲染（`frameloop="demand"`）。有持续动画（天气不是晴、多云、夜晚星空、宠物、自动旋转）时，balanced/high 用 `always`；eco/smooth 由 `ha3dFrameTicker` 按 20/30 fps 定时渲染，标签页隐藏时暂停。新增的持续动画只在 `useFrame` 里按 `delta` 推进，不要每帧 `invalidate()`，并把它加进 `t0` 里的持续动画判断。
-- 设备自带的逐帧动画（出风 `ce`、传感器脉冲环 `Na`）在 eco/smooth 下不直接 `invalidate()`，而是经 `ha3dDeviceAnimInvalidate` 按 20/30 fps 排队（同一画布共用一个定时器），所以只有设备在动时也限帧，拖动、缩放视角由 OrbitControls 驱动、不受影响。新增的设备逐帧动画也走这个函数。
+- 设备自带的逐帧动画（出风 `ce`、传感器脉冲环 `Na`、家电内筒 `ha3dApplianceSpin`、花洒水流 `ha3dShowerWater`）在 eco/smooth 下不直接 `invalidate()`，而是经 `ha3dDeviceAnimInvalidate` 按 20/30 fps 排队（同一画布共用一个定时器），所以只有设备在动时也限帧，拖动、缩放视角由 OrbitControls 驱动、不受影响。新增的设备逐帧动画也走这个函数。
 - 直接开关模式下，设备 `onClick` 先用 `ha3dIsDragClick`（R3F 的 `event.delta` > 6 px）排除拖动视角后的松手。
 - 触屏手势（`ha3dDoubleTapPan`）：画布容器上非 passive 的 `touchstart`/`touchmove` 对两指以上的触摸、以及双击的第二次按下调用 `preventDefault`，iOS/iPadOS 和 HA App 的原生手势（双指滑动返回、双击按住的放大镜）拿不到这串触摸；第二次按下没拖动就松手时由它补发一次 `dblclick`。单指单击不拦截，`click` 仍由浏览器生成。
 - eco 画质下 `ee`（drei Edges 的包装）不渲染描边。
@@ -104,7 +107,7 @@ npm ci --prefix tools
 - 本地启动：`node tools/dev/start-local.mjs --project <项目.json>` 先启动 mock HA（`:18123`），再以 standalone 模式启动应用（`:18099`），数据目录默认 `/tmp/ha3d-dev`（在仓库之外）。
 - 单元测试：`npm --prefix tools run test:unit`
 - 前端模块图静态检查（esbuild，抓语法错误和不存在的导入名）：`npm --prefix tools run check:web`
-- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。套件：`smoke export models editor interaction cream environment pets perf touch fixes022 fixes023`（`fixes023`：0.2.3 的麦克风语音输入（假的语音识别和麦克风，含 http 访问、没有权限时的提示）、开门颜色和关门一致、小狗停留时间，`HA3D_FIXES023_BASELINE=1` 时只记录不断言，`HA3D_FIXES023_ONLY=voice,door,dog` 只跑其中几段）（`fixes022`：0.2.2 的白色小狗、页面工具菜单拖动后仍显示、两个浏览器上下文的设置同步；`HA3D_FIXES022_BASELINE=1` 时只记录不断言）（`touch`：iPad 视口 + CDP 触摸，`HA3D_TOUCH_BASELINE=1` 时只记录不断言）（`baseline` 只在改动前采集基线时用）。`perf` 会和 `<证据目录>/baseline/…/baseline.json` 对比（也可用 `HA3D_BASELINE_JSON` 指定），并用 `docker image inspect` 记录 `ha3d:arm64`、`ha3d:amd64` 和上游 0.1.6 镜像的大小（docker 不可用时跳过这一项）。
+- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。套件：`smoke export models editor interaction cream environment pets perf touch fixes022 fixes023 appliances`（`appliances`：家电样式：两种风格下渲染、运行/停止状态不同、叠放对齐、省电限帧、编辑器模型选项）（`fixes023`：0.2.3 的麦克风语音输入（假的语音识别和麦克风，含 http 访问、没有权限时的提示）、开门颜色和关门一致、小狗停留时间，`HA3D_FIXES023_BASELINE=1` 时只记录不断言，`HA3D_FIXES023_ONLY=voice,door,dog` 只跑其中几段）（`fixes022`：0.2.2 的白色小狗、页面工具菜单拖动后仍显示、两个浏览器上下文的设置同步；`HA3D_FIXES022_BASELINE=1` 时只记录不断言）（`touch`：iPad 视口 + CDP 触摸，`HA3D_TOUCH_BASELINE=1` 时只记录不断言）（`baseline` 只在改动前采集基线时用）。`perf` 会和 `<证据目录>/baseline/…/baseline.json` 对比（也可用 `HA3D_BASELINE_JSON` 指定），并用 `docker image inspect` 记录 `ha3d:arm64`、`ha3d:amd64` 和上游 0.1.6 镜像的大小（docker 不可用时跳过这一项）。
 
 只想快速看后端是否正常：
 

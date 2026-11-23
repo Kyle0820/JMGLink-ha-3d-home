@@ -888,6 +888,63 @@ const ms = [
       placement: "floor",
       defaultHeight: 0.04,
     },
+    // ha3d-self: 家电样式（binary_sensor：on = 运行中 / 出水；「叠放上层」画在下层机器的高度上）
+    {
+      id: "binary_sensor.washer",
+      kind: "binary_sensor",
+      label: "洗衣机",
+      description: "滚筒洗衣机，运行时内筒转动、面板灯亮",
+      placement: "floor",
+      defaultHeight: 0,
+    },
+    {
+      id: "binary_sensor.washer_upper",
+      kind: "binary_sensor",
+      label: "洗衣机（叠放上层）",
+      description: "放在烘干机正上方（平面图同一位置、同一朝向）",
+      placement: "floor",
+      defaultHeight: 0,
+    },
+    {
+      id: "binary_sensor.dryer",
+      kind: "binary_sensor",
+      label: "烘干机",
+      description: "滚筒烘干机，运行时内筒转动、内部暖光、面板灯亮",
+      placement: "floor",
+      defaultHeight: 0,
+    },
+    {
+      id: "binary_sensor.dryer_upper",
+      kind: "binary_sensor",
+      label: "烘干机（叠放上层）",
+      description: "放在洗衣机正上方（平面图同一位置、同一朝向）",
+      placement: "floor",
+      defaultHeight: 0,
+    },
+    {
+      id: "binary_sensor.dishwasher",
+      kind: "binary_sensor",
+      label: "洗碗机",
+      description: "嵌入式洗碗机，运行时面板灯亮",
+      placement: "floor",
+      defaultHeight: 0,
+    },
+    {
+      id: "binary_sensor.sock_washer",
+      kind: "binary_sensor",
+      label: "洗袜机",
+      description: "台面小型洗袜机，运行时内桶转动、指示灯亮",
+      placement: "surface",
+      defaultHeight: 0.85,
+    },
+    {
+      id: "binary_sensor.shower",
+      kind: "binary_sensor",
+      label: "花洒",
+      description: "墙面花洒，出水时显示水流",
+      placement: "wall",
+      defaultHeight: 2,
+    },
     {
       id: "camera.wall",
       kind: "camera",
@@ -5517,6 +5574,121 @@ function ts({ active: t, amplitude: s = 0.18, speed: o = 1.2, children: r }) {
     e.jsx("group", { ref: a, children: r })
   );
 }
+// ===== ha3d-self: 家电样式 动画 =====
+// 内筒转动和花洒水滴只按 delta 推进，帧经 ha3dDeviceAnimInvalidate 请求（省电/流畅下限帧）；
+// 不用 es/Oe()，因为 Oe() 每帧都会让阴影重算。停止后速度衰减到 0 就不再请求帧。
+function ha3dApplianceSpin({ active: t, axis: s = "z", speed: o = 5, children: r }) {
+  const n = M.useRef(null),
+    a = M.useRef(0),
+    i = be((c) => c.invalidate),
+    d = M.useContext(ha3dQualityContext),
+    l = xt();
+  return (
+    M.useEffect(() => {
+      t && i();
+    }, [t, i]),
+    te((c, h) => {
+      if (!n.current || document.hidden) return;
+      const u = Math.min(h, 0.05);
+      if (
+        ((a.current = X.damp(a.current, t && !l ? o : 0, t ? 3 : 2, u)),
+        Math.abs(a.current) < 0.015)
+      ) {
+        a.current = 0;
+        return;
+      }
+      ((n.current.rotation[s] += u * a.current),
+        ha3dDeviceAnimInvalidate(i, d));
+    }),
+    e.jsx("group", { ref: n, name: "ha3d-appliance-drum", children: r })
+  );
+}
+function ha3dShowerWater({ length: t = 1, cream: s = !1 }) {
+  const o = M.useRef(null),
+    r = M.useRef(0),
+    n = be((u) => u.invalidate),
+    a = M.useContext(ha3dQualityContext),
+    i = xt(),
+    d = s ? "#8cc4e6" : "#9fd8ff",
+    l = M.useMemo(
+      () =>
+        Array.from({ length: 9 }, (u, f) => {
+          const j = f === 0 ? 0 : 0.07 * (f % 2 ? 1 : 0.55),
+            v = (f / 9) * Math.PI * 2;
+          return [Math.cos(v) * j, Math.sin(v) * j, v];
+        }),
+      [],
+    ),
+    c = M.useMemo(
+      () =>
+        Array.from({ length: 18 }, (u, f) => {
+          const j = l[f % 9];
+          return [j[0], j[1], j[2], ((f * 0.37) % 1) * t];
+        }),
+      [l, t],
+    ),
+    h = (u) =>
+      e.jsx("meshBasicMaterial", {
+        color: d,
+        transparent: !0,
+        opacity: u,
+        depthWrite: !1,
+        toneMapped: !1,
+      });
+  return (
+    M.useEffect(() => {
+      n();
+    }, [n]),
+    te((u, f) => {
+      if (!o.current || document.hidden || i) return;
+      r.current += Math.min(f, 0.05);
+      (o.current.children.forEach((j, v) => {
+        const y = c[v],
+          x = (y[3] + r.current * 1.6) % t,
+          b = x / t;
+        j.position.set(y[0] * (1 + b * 0.6), -x, y[1] * (1 + b * 0.6));
+      }),
+        ha3dDeviceAnimInvalidate(n, a));
+    }),
+    e.jsxs("group", {
+      name: "ha3d-shower-water",
+      children: [
+        l.map(([u, f, j]) =>
+          e.jsxs(
+            "mesh",
+            {
+              position: [u * 1.3, -t / 2, f * 1.3],
+              rotation: [(-f * 0.6) / t, 0, (u * 0.6) / t],
+              raycast: ha3dNoRaycast,
+              children: [
+                e.jsx("cylinderGeometry", { args: [0.003, 0.003, t, 4] }),
+                h(0.35),
+              ],
+            },
+            j,
+          ),
+        ),
+        e.jsx("group", {
+          ref: o,
+          children: c.map(([u, f, , j], v) =>
+            e.jsxs(
+              "mesh",
+              {
+                position: [u, -j, f],
+                raycast: ha3dNoRaycast,
+                children: [
+                  e.jsx("sphereGeometry", { args: [0.008, 6, 4] }),
+                  h(0.7),
+                ],
+              },
+              v,
+            ),
+          ),
+        }),
+      ],
+    })
+  );
+}
 function ja(t, s = 8) {
   const [o, r] = M.useState(t),
     n = M.useRef(t),
@@ -7028,6 +7200,18 @@ function La({ span: t, height: s, depth: o, children: r }) {
     children: r,
   });
 }
+// ===== ha3d-self: 家电样式 =====
+// 「叠放上层」样式在模型内部抬高下层机身的高度，两台设备放在平面图同一位置、同一朝向即可上下对齐。
+const ha3dApplianceModelIds = new Set([
+    "binary_sensor.washer",
+    "binary_sensor.washer_upper",
+    "binary_sensor.dryer",
+    "binary_sensor.dryer_upper",
+    "binary_sensor.dishwasher",
+    "binary_sensor.sock_washer",
+    "binary_sensor.shower",
+  ]),
+  ha3dApplianceStackHeight = 0.76;
 function $a(t) {
   const s = oe();
   return e.jsxs("group", {
@@ -7038,6 +7222,7 @@ function $a(t) {
         "binary_sensor.motion",
         "switch.computer", // ha3d-self: 电脑模型自带细节，不叠加开关面板的指示条
       ].includes(t.modelId) &&
+        !ha3dApplianceModelIds.has(t.modelId) && // ha3d-self: 家电模型自带运行指示灯
         e.jsx(Bn, {
           modelId: t.modelId,
           unavailable: t.unavailable,
@@ -8344,6 +8529,436 @@ function Ta({
           }),
       ],
     });
+  // ===== ha3d-self: 家电样式（正面朝 +z，原点在地面中心；花洒原点在墙面安装点） =====
+  if (ha3dApplianceModelIds.has(s)) {
+    const g = d === "on" && !a,
+      _ = s.endsWith("_upper"),
+      k = s
+        .replace("binary_sensor.", "")
+        .replace("_upper", ""),
+      E = (q, N = 0.42, R = 0.05) =>
+        e.jsx("meshPhysicalMaterial", {
+          color: q,
+          roughness: N,
+          metalness: R,
+          clearcoat: 0.2,
+          clearcoatRoughness: 0.6,
+          transparent: a,
+          opacity: x,
+        }),
+      P = (q) =>
+        h &&
+        e.jsx(ee, {
+          color: $.color,
+          threshold: $.threshold,
+          opacity: q ?? $.opacity,
+          transparent: !0,
+        }),
+      W = (q, N, R, Z, { key: ie, ...ae } = {}) =>
+        e.jsxs(
+          "mesh",
+          { position: R, ...ae, children: [e.jsx(q, { args: N }), Z] },
+          ie,
+        ),
+      D = (q, N, R = 0.012) =>
+        e.jsxs("mesh", {
+          name: "ha3d-appliance-indicator",
+          position: N,
+          children: [
+            e.jsx("sphereGeometry", { args: [R, 12, 8] }),
+            e.jsx("meshStandardMaterial", {
+              color: g ? q : "#4b5563",
+              emissive: g ? q : "#000000",
+              emissiveIntensity: g ? 1.2 : 0,
+              roughness: 0.3,
+              metalness: 0,
+              transparent: a,
+              opacity: x,
+            }),
+          ],
+        }),
+      A = (q) =>
+        e.jsx("group", {
+          name: "ha3d-appliance-body",
+          userData: { appliance: k, upper: _ },
+          position: [0, _ ? ha3dApplianceStackHeight : 0, 0],
+          children: q,
+        });
+    if (k === "washer" || k === "dryer") {
+      const q = k === "dryer",
+        N = q ? (y ? "#e8dccb" : "#e2e6eb") : y ? "#f3ece0" : "#eef2f4",
+        R = T(N, y ? "#8a7d6e" : "#6b7785", 0.22),
+        Z = q ? "#47515c" : y ? "#d9ccb8" : "#c9d1d9",
+        ie = q ? "#ffb35c" : "#5ee0a0";
+      return A([
+        e.jsxs(
+          B,
+          {
+            position: [0, 0.38, 0],
+            args: [0.54, 0.76, 0.52],
+            radius: 0.03,
+            smoothness: 4,
+            castShadow: !0,
+            receiveShadow: !0,
+            children: [E(N, 0.38, 0.04), P()],
+          },
+          "body",
+        ),
+        W(
+          "boxGeometry",
+          [0.5, 0.04, 0.01],
+          [0, 0.03, 0.262],
+          E(T(N, "#3a434d", 0.35)),
+          { key: "plinth" },
+        ),
+        W("boxGeometry", [0.5, 0.09, 0.01], [0, 0.68, 0.262], E(R, 0.5, 0.02), {
+          key: "strip",
+        }),
+        q
+          ? e.jsxs(
+              e.Fragment,
+              {
+                children: [
+                  W(
+                    "cylinderGeometry",
+                    [0.035, 0.035, 0.016, 28],
+                    [-0.15, 0.68, 0.272],
+                    E(Z, 0.3, 0.4),
+                    { rotation: [Math.PI / 2, 0, 0] },
+                  ),
+                  [0, 1, 2, 3, 4].map((ae) =>
+                    e.jsx(
+                      "group",
+                      {
+                        children: W(
+                          "boxGeometry",
+                          [0.012, 0.05, 0.004],
+                          [0.0 + ae * 0.028, 0.68, 0.269],
+                          E("#3a434d", 0.6, 0),
+                        ),
+                      },
+                      ae,
+                    ),
+                  ),
+                ],
+              },
+              "controls",
+            )
+          : e.jsxs(
+              e.Fragment,
+              {
+                children: [
+                  W(
+                    "boxGeometry",
+                    [0.14, 0.05, 0.012],
+                    [-0.17, 0.68, 0.268],
+                    E(T(N, "#ffffff", 0.4), 0.4, 0.02),
+                  ),
+                  W(
+                    "cylinderGeometry",
+                    [0.025, 0.025, 0.015, 24],
+                    [0.06, 0.68, 0.27],
+                    E(Z, 0.3, 0.5),
+                    { rotation: [Math.PI / 2, 0, 0] },
+                  ),
+                ],
+              },
+              "controls",
+            ),
+        e.jsx(
+          "group",
+          { children: D(ie, [q ? 0.2 : 0.16, 0.68, 0.27]) },
+          "indicator",
+        ),
+        W("torusGeometry", [0.165, 0.018, 12, 40], [0, 0.34, 0.27], E(Z, 0.25, 0.6), {
+          key: "ring",
+          castShadow: !0,
+        }),
+        e.jsx(
+          "group",
+          {
+            position: [0, 0.34, 0.263],
+            children: e.jsx(ha3dApplianceSpin, {
+              active: g,
+              axis: "z",
+              speed: q ? 3.5 : 5,
+              children: q
+                ? [
+                    W(
+                      "circleGeometry",
+                      [0.15, 32],
+                      [0, 0, 0],
+                      e.jsx("meshStandardMaterial", {
+                        color: "#4b5866",
+                        emissive: g ? "#ffb35c" : "#000000",
+                        emissiveIntensity: g ? 0.6 : 0,
+                        roughness: 0.6,
+                        metalness: 0.2,
+                      }),
+                      { key: "disk" },
+                    ),
+                    ...[-0.08, -0.04, 0, 0.04, 0.08].map((ae) =>
+                      W(
+                        "boxGeometry",
+                        [0.2 - Math.abs(ae) * 1.2, 0.008, 0.004],
+                        [0, ae, 0.003],
+                        E("#68737f", 0.5, 0.3),
+                        { key: ae },
+                      ),
+                    ),
+                    W(
+                      "sphereGeometry",
+                      [0.035, 12, 8],
+                      [0.07, -0.08, 0.008],
+                      E("#c98b6b", 0.8, 0),
+                      { key: "cloth", scale: [1.3, 0.8, 0.3] },
+                    ),
+                  ]
+                : [
+                    W(
+                      "circleGeometry",
+                      [0.15, 32],
+                      [0, 0, 0],
+                      E("#4b5866", 0.6, 0.2),
+                      { key: "disk" },
+                    ),
+                    ...[0, 1, 2].map((ae) =>
+                      W(
+                        "boxGeometry",
+                        [0.02, 0.05, 0.006],
+                        [
+                          Math.sin((ae * Math.PI * 2) / 3) * 0.12,
+                          Math.cos((ae * Math.PI * 2) / 3) * 0.12,
+                          0.003,
+                        ],
+                        E("#8c97a3", 0.4, 0.4),
+                        {
+                          key: `lifter-${ae}`,
+                          rotation: [0, 0, (-ae * Math.PI * 2) / 3],
+                        },
+                      ),
+                    ),
+                    ...[
+                      [0.05, -0.07, "#6f9fd8", 0.04],
+                      [-0.06, -0.05, "#e8a0a8", 0.032],
+                      [0.0, -0.1, "#f1d27a", 0.026],
+                    ].map(([ae, ne, re, le], ke) =>
+                      W(
+                        "sphereGeometry",
+                        [le, 12, 8],
+                        [ae, ne, 0.008],
+                        E(re, 0.8, 0),
+                        { key: `cloth-${ke}`, scale: [1.3, 0.8, 0.3] },
+                      ),
+                    ),
+                  ],
+            }),
+          },
+          "drum",
+        ),
+        W(
+          "circleGeometry",
+          [0.15, 32],
+          [0, 0.34, 0.275],
+          e.jsx("meshPhysicalMaterial", {
+            color: q ? "#3c4650" : "#9fc4dc",
+            roughness: 0.08,
+            metalness: 0,
+            transparent: !0,
+            opacity: (q ? 0.42 : 0.35) * x,
+            depthWrite: !1,
+          }),
+          { key: "glass" },
+        ),
+      ]);
+    }
+    if (k === "dishwasher") {
+      const q = y ? "#efe6d8" : "#d9dee3",
+        N = y ? 0.1 : 0.45,
+        R = T(q, y ? "#8a7d6e" : "#5b6573", 0.25);
+      return A([
+        e.jsxs(
+          B,
+          {
+            position: [0, 0.4, 0],
+            args: [0.54, 0.68, 0.52],
+            radius: 0.02,
+            smoothness: 4,
+            castShadow: !0,
+            receiveShadow: !0,
+            children: [E(q, 0.32, N), P()],
+          },
+          "body",
+        ),
+        W(
+          "boxGeometry",
+          [0.5, 0.06, 0.46],
+          [0, 0.03, -0.02],
+          E(T(q, "#2b3139", 0.6), 0.7, 0),
+          { key: "toe" },
+        ),
+        e.jsxs(
+          B,
+          {
+            position: [0, 0.35, 0.262],
+            args: [0.52, 0.54, 0.012],
+            radius: 0.004,
+            smoothness: 2,
+            children: [E(T(q, "#ffffff", 0.18), 0.28, N), P(0.5)],
+          },
+          "panel",
+        ),
+        W(
+          "cylinderGeometry",
+          [0.01, 0.01, 0.36, 14],
+          [0, 0.6, 0.29],
+          E(y ? "#b9a891" : "#aeb6bf", 0.2, 0.7),
+          { key: "handle", rotation: [0, 0, Math.PI / 2] },
+        ),
+        ...[-0.17, 0.17].map((ae) =>
+          W(
+            "boxGeometry",
+            [0.014, 0.014, 0.026],
+            [ae, 0.6, 0.276],
+            E(y ? "#b9a891" : "#aeb6bf", 0.2, 0.7),
+            { key: `post-${ae}` },
+          ),
+        ),
+        W("boxGeometry", [0.52, 0.08, 0.01], [0, 0.7, 0.262], E(R, 0.5, 0.1), {
+          key: "strip",
+        }),
+        e.jsx(
+          "group",
+          { children: D("#5aa9ff", [0.18, 0.7, 0.27]) },
+          "indicator",
+        ),
+      ]);
+    }
+    if (k === "sock_washer") {
+      const q = y ? "#f3ece0" : "#eef2f4";
+      return A([
+        e.jsxs(
+          "mesh",
+          {
+            position: [0, 0.1, 0],
+            castShadow: !0,
+            children: [
+              e.jsx("cylinderGeometry", { args: [0.1, 0.11, 0.2, 32] }),
+              E(q, 0.38, 0.04),
+              P(),
+            ],
+          },
+          "base",
+        ),
+        W(
+          "sphereGeometry",
+          [0.095, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2],
+          [0, 0.2, 0],
+          e.jsx("meshPhysicalMaterial", {
+            color: "#cfe6f5",
+            roughness: 0.08,
+            metalness: 0,
+            transparent: !0,
+            opacity: 0.3 * x,
+            depthWrite: !1,
+          }),
+          { key: "dome", scale: [1, 0.6, 1] },
+        ),
+        e.jsx(
+          "group",
+          {
+            position: [0, 0.203, 0],
+            children: e.jsx(ha3dApplianceSpin, {
+              active: g,
+              axis: "y",
+              speed: 6,
+              children: [
+                W(
+                  "cylinderGeometry",
+                  [0.082, 0.082, 0.006, 28],
+                  [0, 0, 0],
+                  E(T(q, "#7aa5c8", 0.5), 0.5, 0.1),
+                  { key: "tub" },
+                ),
+                W(
+                  "boxGeometry",
+                  [0.06, 0.016, 0.022],
+                  [0.03, 0.011, 0.02],
+                  E("#e57373", 0.8, 0),
+                  { key: "sock-a", rotation: [0, 0.6, 0] },
+                ),
+                W(
+                  "boxGeometry",
+                  [0.05, 0.016, 0.022],
+                  [-0.03, 0.011, -0.025],
+                  E("#64b5f6", 0.8, 0),
+                  { key: "sock-b", rotation: [0, -0.4, 0] },
+                ),
+              ],
+            }),
+          },
+          "tub",
+        ),
+        e.jsx(
+          "group",
+          { children: D("#5ee0a0", [0, 0.12, 0.106], 0.01) },
+          "indicator",
+        ),
+      ]);
+    }
+    const q = y ? "#d8c9b4" : "#c8d0d8";
+    return A([
+      W("cylinderGeometry", [0.04, 0.04, 0.02, 24], [0, 0, 0.01], E(q, 0.25, 0.6), {
+        key: "plate",
+        rotation: [Math.PI / 2, 0, 0],
+      }),
+      W(
+        "cylinderGeometry",
+        [0.012, 0.012, 0.31, 12],
+        [0, -0.008, 0.165],
+        E(q, 0.25, 0.6),
+        { key: "arm", rotation: [Math.PI / 2 + 0.05, 0, 0] },
+      ),
+      e.jsxs(
+        "mesh",
+        {
+          position: [0, -0.02, 0.32],
+          castShadow: !0,
+          children: [
+            e.jsx("cylinderGeometry", { args: [0.1, 0.11, 0.03, 32] }),
+            E(q, 0.22, 0.6),
+            P(),
+          ],
+        },
+        "head",
+      ),
+      ...[0, 1, 2, 3, 4, 5, 6].map((ae) => {
+        const ne = ae === 0 ? 0 : 0.06,
+          re = (ae / 6) * Math.PI * 2;
+        return W(
+          "circleGeometry",
+          [0.008, 10],
+          [Math.cos(re) * ne, -0.036, 0.32 + Math.sin(re) * ne],
+          e.jsx("meshBasicMaterial", {
+            color: g ? "#bfe6ff" : "#7d8894",
+            transparent: a,
+            opacity: x,
+            toneMapped: !1,
+          }),
+          { key: `nozzle-${ae}`, rotation: [Math.PI / 2, 0, 0] },
+        );
+      }),
+      g &&
+        e.jsx(
+          "group",
+          {
+            position: [0, -0.04, 0.32],
+            children: e.jsx(ha3dShowerWater, { length: 1.3, cream: y }),
+          },
+          "water",
+        ),
+    ]);
+  }
   if (t === "binary_sensor")
     return e.jsxs("group", {
       children: [
@@ -9295,6 +9910,14 @@ function Ia(t, s) {
                 : 0.54;
 }
 function Ys(t) {
+  // ha3d-self: 家电样式的点击范围（叠放上层抬高到上层机身中心）
+  if (t === "binary_sensor.washer" || t === "binary_sensor.dryer")
+    return { radius: 0.42, y: 0.38 };
+  if (t === "binary_sensor.washer_upper" || t === "binary_sensor.dryer_upper")
+    return { radius: 0.42, y: 0.38 + ha3dApplianceStackHeight };
+  if (t === "binary_sensor.dishwasher") return { radius: 0.42, y: 0.37 };
+  if (t === "binary_sensor.sock_washer") return { radius: 0.2, y: 0.12 };
+  if (t === "binary_sensor.shower") return { radius: 0.3, y: -0.02 };
   return t === "light.wall_sconce"
     ? { radius: 0.3, y: 0 }
     : t === "light.ceiling_panel"
@@ -9644,6 +10267,7 @@ const Ra = M.memo(function ({
           }),
         }),
         ue &&
+          !ha3dApplianceModelIds.has(L.id) && // ha3d-self: 家电有自己的运行指示灯，不画地面下的脉冲环
           e.jsx(Na, {
             active: p ? m.active : s.kind === "binary_sensor" && x,
             unavailable: y || v === "unknown" || !o,

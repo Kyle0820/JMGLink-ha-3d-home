@@ -1851,6 +1851,82 @@ function He(s, a) {
   }
   return o;
 }
+// ===== ha3d-self: 家电样式平面图标（洗衣机、烘干机、洗碗机、洗袜机、花洒；不是家电时返回 null） =====
+function ha3dApplianceGlyph(s) {
+  const a = s.replace("binary_sensor.", ""),
+    o = a.endsWith("_upper"),
+    h = a.replace("_upper", ""),
+    f = () =>
+      t.jsx("rect", {
+        x: "-0.14",
+        y: "-0.14",
+        width: "0.28",
+        height: "0.28",
+        rx: "0.03",
+        className: "device-glyph-core",
+      }),
+    v = o &&
+      t.jsx("path", {
+        d: "M -0.14 -0.2 H 0.14",
+        className: "device-glyph-stroke",
+      });
+  return !s.startsWith("binary_sensor.")
+    ? null
+    : h === "washer"
+      ? t.jsxs("g", {
+          children: [
+            f(),
+            t.jsx("circle", {
+              cy: "0.02",
+              r: "0.075",
+              className: "device-glyph-stroke glyph-on-fill",
+            }),
+            v,
+          ],
+        })
+      : h === "dryer"
+        ? t.jsxs("g", {
+            children: [
+              f(),
+              t.jsx("circle", {
+                cy: "0.03",
+                r: "0.06",
+                className: "device-glyph-stroke glyph-on-fill",
+              }),
+              t.jsx("path", {
+                d: "M -0.07 -0.09 H -0.03 M -0.02 -0.09 H 0.02 M 0.03 -0.09 H 0.07",
+                className: "device-glyph-stroke glyph-on-fill",
+              }),
+              v,
+            ],
+          })
+        : h === "dishwasher"
+          ? t.jsxs("g", {
+              children: [
+                f(),
+                t.jsx("path", {
+                  d: "M -0.1 -0.09 H 0.1 M -0.1 -0.02 H 0.1 M -0.1 0.06 H 0.1",
+                  className: "device-glyph-stroke glyph-on-fill",
+                }),
+              ],
+            })
+          : h === "sock_washer"
+            ? t.jsxs("g", {
+                children: [
+                  t.jsx("circle", { r: "0.1", className: "device-glyph-core" }),
+                  t.jsx("circle", {
+                    r: "0.05",
+                    className: "device-glyph-stroke glyph-on-fill",
+                  }),
+                ],
+              })
+            : h === "shower"
+              ? t.jsx("path", {
+                  d: "M -0.11 -0.08 H 0.11 M -0.07 -0.02 V 0.1 M 0 -0.02 V 0.13 M 0.07 -0.02 V 0.1",
+                  className: "device-glyph-stroke",
+                })
+              : null;
+}
 function ji({ device: s, entity: a }) {
   const o = Ls(s, a),
     h = Pi(o.id);
@@ -2297,6 +2373,9 @@ function ji({ device: s, entity: a }) {
                                                           className:
                                                             "device-glyph-core",
                                                         })
+                                                      : // ha3d-self: 家电样式平面图标（叠放上层多一条顶边横线）
+                                                        ha3dApplianceGlyph(o.id)
+                                                        ? ha3dApplianceGlyph(o.id)
                                                       : o.id ===
                                                           "binary_sensor.motion"
                                                         ? t.jsx("path", {
