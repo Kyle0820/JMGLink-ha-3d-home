@@ -18,6 +18,15 @@ test("doorStyle：门保留 double / entrance，其他取值变成 single", () =
   assert.equal(normalizeOpening({ id: "w1", type: "window", wallId: "w", doorStyle: "entrance" }).doorStyle, "single");
 });
 
+test("0.2.5 lockEntityId：门保留 lock.*，其他域、窗户和没写时都没有这个值；门磁 entityId 不受影响", () => {
+  const door = normalizeOpening({ id: "d1", type: "door", wallId: "w", entityId: "binary_sensor.entry_contact", lockEntityId: "lock.entry_door" });
+  assert.equal(door.lockEntityId, "lock.entry_door");
+  assert.equal(door.entityId, "binary_sensor.entry_contact");
+  assert.equal(normalizeOpening({ id: "d2", type: "door", wallId: "w", lockEntityId: "binary_sensor.x" }).lockEntityId, undefined);
+  assert.equal(normalizeOpening({ id: "d3", type: "door", wallId: "w" }).lockEntityId, undefined);
+  assert.equal(normalizeOpening({ id: "w1", type: "window", wallId: "w", lockEntityId: "lock.x" }).lockEntityId, undefined);
+  assert.equal("lockEntityId" in JSON.parse(JSON.stringify(normalizeOpening({ id: "d4", type: "door", wallId: "w" }))), false);
+});
 test("新家具 kind 保留，并使用默认尺寸", () => {
   const expected = {
     fridge: { width: 0.7, depth: 0.68, height: 1.8 },

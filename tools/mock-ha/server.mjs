@@ -22,7 +22,10 @@ export function collectProjectEntityIds(project) {
   };
   for (const floor of project?.floors ?? []) {
     for (const device of floor.devices ?? []) add(device.entityId);
-    for (const opening of floor.openings ?? []) add(opening.entityId);
+    for (const opening of floor.openings ?? []) {
+      add(opening.entityId);
+      add(opening.lockEntityId);
+    }
     for (const room of floor.rooms ?? []) {
       for (const groups of Object.values(room.bindings ?? {})) {
         for (const binding of Object.values(groups ?? {})) for (const id of binding?.entityIds ?? []) add(id);

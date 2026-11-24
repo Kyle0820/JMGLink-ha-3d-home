@@ -1329,7 +1329,13 @@ const Wc = x.lazy(() =>
     "moisture",
     "safety",
     "problem",
+    // ha3d-self: 0.2.5 家电运行状态（洗衣机、烘干机、洗碗机、洗袜机的模板实体都是 device_class: running），
+    // 原来不在这个列表里，设备库把它们当成「系统/辅助实体」隐藏了
+    "running",
   ]),
+  // ha3d-self: 0.2.5 没有 device_class 的二值传感器，名字或实体 ID 像家电（0.2.4 的家电样式）时也放进设备库
+  ha3dApplianceNamePattern =
+    /(洗衣|烘干|干衣|洗碗|洗袜|花洒|washer|washing|dryer|dishwasher|shower)/i,
   vt = {
     sofa: { label: "沙发", width: 2.2, depth: 0.9, height: 0.68 },
     bed: { label: "床", width: 1.8, depth: 2, height: 0.42 },
@@ -1568,7 +1574,7 @@ function gd(s) {
 }
 function jd(s) {
   const a = Zr(s);
-  return !!(a && id.has(a));
+  return !!((a && id.has(a)) || ha3dApplianceNamePattern.test(Mn(s))); // ha3d-self: 0.2.5 家电
 }
 function yd(s) {
   if (!s) return !1;
@@ -2976,6 +2982,15 @@ function Pd({
           }),
       [a],
     ),
+    // ha3d-self: 0.2.5 门锁绑定的候选：所有 lock.* 实体（状态未知、离线的也列出）
+    ha3dLockOptions = x.useMemo(
+      () =>
+        Object.values(a)
+          .filter((e) => e.domain === "lock")
+          .sort((e, n) => e.name.localeCompare(n.name, "zh-Hans")),
+      [a],
+    ),
+    ha3dDoorLock = H != null && H.lockEntityId ? a[H.lockEntityId] : void 0,
     na = Pn.length - ve.length,
     Dn = x.useMemo(() => {
       const e = new Map();
@@ -8069,6 +8084,66 @@ function Pd({
                                       children:
                                         "可绑定 binary_sensor 门磁/窗磁，让 2D 与 3D 门扇跟随开关状态显示。",
                                     }),
+                              ],
+                            }),
+                            // ===== ha3d-self: 0.2.5 门锁绑定（和门磁分开，两个可以同时绑） =====
+                            t.jsxs("div", {
+                              className:
+                                "property-section door-sensor-property door-lock-property",
+                              children: [
+                                t.jsx("h3", { children: "门锁绑定" }),
+                                t.jsxs("label", {
+                                  children: [
+                                    t.jsx("span", { children: "门锁" }),
+                                    t.jsxs(Pt, {
+                                      value: H.lockEntityId ?? "",
+                                      "aria-label": "门锁实体",
+                                      onChange: (e) =>
+                                        P((n) => ({
+                                          ...n,
+                                          openings: n.openings.map((i) =>
+                                            i.id === H.id
+                                              ? {
+                                                  ...i,
+                                                  lockEntityId:
+                                                    e.target.value || void 0,
+                                                }
+                                              : i,
+                                          ),
+                                        })),
+                                      children: [
+                                        t.jsx("option", {
+                                          value: "",
+                                          children: "不绑定",
+                                        }),
+                                        ha3dLockOptions.map((e) =>
+                                          t.jsxs(
+                                            "option",
+                                            {
+                                              value: e.entityId,
+                                              children: [
+                                                e.name,
+                                                " · ",
+                                                e.entityId,
+                                                " · ",
+                                                Ft(e),
+                                              ],
+                                            },
+                                            e.entityId,
+                                          ),
+                                        ),
+                                      ],
+                                    }),
+                                  ],
+                                }),
+                                t.jsx("p", {
+                                  className: "field-hint",
+                                  children: ha3dDoorLock
+                                    ? `当前状态：${Ft(ha3dDoorLock)}。3D 门扇把手上方的锁牌显示上锁状态（绿色已上锁、琥珀色未上锁、灰色未知），只显示不控制；门扇开合仍跟随门磁。`
+                                    : ha3dLockOptions.length
+                                      ? "可绑定 lock 门锁，3D 门扇上会显示是否上锁；只显示状态，不会在 3D 里开锁。"
+                                      : "Home Assistant 里没有 lock 实体。",
+                                }),
                               ],
                             }),
                           ],

@@ -1209,6 +1209,17 @@ function ys(t, s = t ? Gt(t) : "custom") {
                 s === "binary_sensor"
               ? /(门|窗|door|window|contact|opening)/i.test(o)
                 ? "binary_sensor.door"
+                : // ha3d-self: 0.2.5 名字像家电时默认推荐家电样式（洗袜、洗碗要排在洗衣前面）
+                  /(洗袜|sock)/i.test(o)
+                  ? "binary_sensor.sock_washer"
+                  : /(洗碗|dishwasher)/i.test(o)
+                    ? "binary_sensor.dishwasher"
+                    : /(烘干|干衣|dryer)/i.test(o)
+                      ? "binary_sensor.dryer"
+                      : /(洗衣|washer|washing)/i.test(o)
+                        ? "binary_sensor.washer"
+                        : /(花洒|shower)/i.test(o)
+                          ? "binary_sensor.shower"
                 : /(存在|人在|presence|occupancy|毫米波|millimeter|mmwave|fp1|fp2|fp310)/i.test(
                       o,
                     )
@@ -2152,6 +2163,7 @@ const pn = {
     temperature: "温度",
     voltage: "电压",
     window: "窗磁",
+    running: "运行状态", // ha3d-self: 0.2.5 家电
   },
   mn = {
     on: "已开启",
@@ -2176,6 +2188,12 @@ const pn = {
     error: "异常",
     home: "在家",
     not_home: "离家",
+    // ha3d-self: 0.2.5 门锁状态（入户门可以绑定门锁）
+    locked: "已上锁",
+    unlocked: "未上锁",
+    locking: "正在上锁",
+    unlocking: "正在开锁",
+    jammed: "锁卡住",
   },
   xn = {
     alarm_control_panel: ps,
@@ -4954,6 +4972,7 @@ function pa({
   theme: n,
   presentationMode: a,
   entity: i,
+  lockEntity: ha3dLockEntity, // ha3d-self: 0.2.5 门上绑定的门锁
 }) {
   const d = t.offset - s / 2,
     l = oe(),
@@ -5135,7 +5154,90 @@ function pa({
           }),
       ],
     });
-  if (!t.hasLeaf) return e.jsx(e.Fragment, { children: S });
+  // ===== ha3d-self: 0.2.5 门锁状态灯 =====
+  // 门绑定了门锁（lockEntityId）时，在把手上方两面各贴一块小锁牌：已上锁绿灯、未上锁琥珀色、锁卡住红色、
+  // 正在上锁/开锁蓝色、未知或离线灰色（锁梁也跟着抬起）。只显示状态，不能点，3D 里没有开锁操作；
+  // 门扇开合仍只看门磁（entityId），未上锁不代表门开着。
+  const ha3dLockState = ha3dLockEntity ? he(ha3dLockEntity) : null,
+    ha3dLockOpen = ["unlocked", "open", "opening", "unlocking"].includes(ha3dLockState),
+    ha3dLockColor =
+      ha3dLockState === "locked"
+        ? "#22c55e"
+        : ha3dLockState === "unlocked" || ha3dLockState === "open"
+          ? "#f59e0b"
+          : ha3dLockState === "jammed"
+            ? "#ef4444"
+            : ["locking", "unlocking", "opening"].includes(ha3dLockState)
+              ? "#60a5fa"
+              : "#9ca3af",
+    ha3dLockBadge = (ha3dX, ha3dY, ha3dZ0, ha3dFaceZ) =>
+      ha3dLockEntity
+        ? e.jsx("group", {
+            name: "ha3d-door-lock",
+            userData: {
+              openingId: t.id,
+              lockEntityId: t.lockEntityId,
+              lockState: ha3dLockState,
+              lockColor: ha3dLockColor,
+            },
+            position: [ha3dX, ha3dY, ha3dZ0],
+            children: [-1, 1].map((k) =>
+              e.jsxs(
+                "group",
+                {
+                  position: [0, 0, k * ha3dFaceZ],
+                  rotation: [0, k === 1 ? 0 : Math.PI, 0],
+                  children: [
+                    e.jsxs("mesh", {
+                      raycast: ha3dNoRaycast,
+                      position: [0, 0, 0.004],
+                      children: [
+                        e.jsx("boxGeometry", { args: [0.075, 0.11, 0.008] }),
+                        e.jsx("meshStandardMaterial", {
+                          color: "#1f2937",
+                          metalness: 0.4,
+                          roughness: 0.35,
+                        }),
+                      ],
+                    }),
+                    // 锁梁：上锁时扣下，未上锁时抬起并转开
+                    e.jsxs("mesh", {
+                      raycast: ha3dNoRaycast,
+                      position: [ha3dLockOpen ? 0.006 : 0, ha3dLockOpen ? 0.024 : 0.016, 0.0095],
+                      rotation: [0, 0, ha3dLockOpen ? 0.5 : 0],
+                      children: [
+                        e.jsx("torusGeometry", { args: [0.016, 0.004, 8, 20, Math.PI] }),
+                        e.jsx("meshBasicMaterial", { color: ha3dLockColor, toneMapped: !1 }),
+                      ],
+                    }),
+                    e.jsxs("mesh", {
+                      name: "ha3d-door-lock-light",
+                      raycast: ha3dNoRaycast,
+                      position: [0, -0.012, 0.0095],
+                      children: [
+                        e.jsx("planeGeometry", { args: [0.044, 0.036] }),
+                        e.jsx("meshBasicMaterial", { color: ha3dLockColor, toneMapped: !1 }),
+                      ],
+                    }),
+                  ],
+                },
+                k,
+              ),
+            ),
+          })
+        : null;
+  if (!t.hasLeaf)
+    return e.jsxs(e.Fragment, {
+      children: [
+        S,
+        ha3dLockBadge(
+          d + (t.hinge === "start" ? 1 : -1) * (t.width / 2 - b / 2),
+          t.height * 0.56,
+          0,
+          w / 2,
+        ),
+      ],
+    });
   const G = t.hinge === "start" ? -1 : 1,
     L = t.swing === "inward" ? 1 : -1,
     I = t.doorStyle === "double" ? [-1, 1] : [G],
@@ -5292,6 +5394,14 @@ function pa({
                       }),
                     ],
                   }),
+              // ha3d-self: 0.2.5 门锁状态灯（双开门只贴在第一扇上），在把手上方
+              g === I[0] &&
+                ha3dLockBadge(
+                  -g * $ * 0.83,
+                  t.height * (ha3dEntrance ? 0.56 : 0.62),
+                  ha3dLeafZ,
+                  ha3dLeafDepth / 2,
+                ),
             ],
           },
           g,
@@ -5477,6 +5587,7 @@ const ga = M.memo(function ({
                 theme: i,
                 presentationMode: d,
                 entity: g.entityId ? c[g.entityId] : void 0,
+                lockEntity: g.lockEntityId ? c[g.lockEntityId] : void 0, // ha3d-self: 0.2.5
               }),
             },
             g.id,
@@ -5508,7 +5619,10 @@ const ga = M.memo(function ({
   });
 function xa(t) {
   const s = M.useMemo(
-      () => t.openings.flatMap((r) => (r.entityId ? [r.entityId] : [])),
+      () =>
+        t.openings.flatMap((r) =>
+          [r.entityId, r.lockEntityId].filter(Boolean), // ha3d-self: 0.2.5 门锁
+        ),
       [t.openings],
     ),
     o = Fo(t.entities, s);
@@ -7230,8 +7344,153 @@ function $a(t) {
           color: t.highlightColor,
           visualStyle: s,
         }),
+      // ha3d-self: 0.2.5 电视开着时屏幕显示宠物大头照（贴在 Bn 的屏幕前面）
+      t.modelId === "media_player.tv" &&
+        e.jsx(ha3dTvScreen, {
+          on: !t.unavailable && ha3dTvOnStates.has(t.state),
+        }),
     ],
   });
+}
+// ===== ha3d-self: 0.2.5 电视画面：宠物大头照 =====
+// 电视（media_player.tv 样式）开着时屏幕上显示宠物大头照：3D 设置里选了小猫就是小猫，选了小狗或没选宠物都是小狗
+// （白色、黑眼睛，和 0.2.2 的 3D 小狗一致）。照片是本地用 2D canvas 画的卡通头像（不透明，没有预乘 alpha 的问题），
+// 不下载图片。宠物设置由场景组件写进 ha3dTvPet，电视屏幕订阅它。
+const ha3dTvPet = { kind: "none", listeners: new Set() },
+  ha3dSetTvPet = (t) => {
+    ha3dTvPet.kind !== t &&
+      ((ha3dTvPet.kind = t), ha3dTvPet.listeners.forEach((s) => s()));
+  },
+  ha3dSubscribeTvPet = (t) => (
+    ha3dTvPet.listeners.add(t), () => ha3dTvPet.listeners.delete(t)
+  ),
+  ha3dGetTvPet = () => ha3dTvPet.kind,
+  // 电视开着的状态（idle 是开机在主页、没有播放）
+  ha3dTvOnStates = new Set(["on", "playing", "paused", "idle", "buffering"]),
+  ha3dTvTextures = {};
+function ha3dTvPortraitTexture(t) {
+  if (ha3dTvTextures[t]) return ha3dTvTextures[t];
+  if (typeof document > "u") return null;
+  const s = document.createElement("canvas");
+  ((s.width = 512), (s.height = 256));
+  const o = s.getContext("2d");
+  if (!o) return null;
+  const r = (l, c, h, u, f, j, v) => {
+      (o.beginPath(),
+        o.ellipse(l, c, h, u, f, 0, Math.PI * 2),
+        (o.fillStyle = j),
+        o.fill(),
+        v && ((o.strokeStyle = v), (o.lineWidth = 3), o.stroke()));
+    },
+    n = o.createLinearGradient(0, 0, 0, 256);
+  t === "cat"
+    ? (n.addColorStop(0, "#ffe4c7"), n.addColorStop(1, "#fff6ea"))
+    : (n.addColorStop(0, "#9fd3ff"), n.addColorStop(1, "#e0f2fe"));
+  ((o.fillStyle = n), o.fillRect(0, 0, 512, 256));
+  // 地面和远处的小装饰，让画面像一张照片
+  (r(256, 300, 330, 90, 0, t === "cat" ? "#f3cfa3" : "#b7e4a8"),
+    r(70, 60, 26, 26, 0, t === "cat" ? "#ffd59e" : "#fff7c2"));
+  if (t === "cat") {
+    // 橘猫（颜色同 3D 小猫）
+    const l = "#e8923e",
+      c = "#9a521c",
+      h = "#fbe3c4";
+    for (const u of [-1, 1]) {
+      (o.beginPath(),
+        o.moveTo(256 + u * 76, 118),
+        o.lineTo(256 + u * 62, 38),
+        o.lineTo(256 + u * 18, 84),
+        o.closePath(),
+        (o.fillStyle = l),
+        o.fill(),
+        (o.strokeStyle = c),
+        (o.lineWidth = 3),
+        o.stroke(),
+        o.beginPath(),
+        o.moveTo(256 + u * 64, 104),
+        o.lineTo(256 + u * 58, 58),
+        o.lineTo(256 + u * 32, 86),
+        o.closePath(),
+        (o.fillStyle = "#f9b4c8"),
+        o.fill());
+    }
+    (r(256, 146, 90, 74, 0, l, c),
+      (o.strokeStyle = c),
+      (o.lineWidth = 6),
+      (o.lineCap = "round"));
+    for (const u of [-22, 0, 22])
+      (o.beginPath(),
+        o.moveTo(256 + u, 78),
+        o.lineTo(256 + u * 0.8, 102),
+        o.stroke());
+    (r(236, 180, 28, 21, 0, h), r(276, 180, 28, 21, 0, h));
+    for (const u of [-1, 1])
+      (r(256 + u * 34, 134, 15, 12, 0, "#84cc16", "#1f2937"),
+        r(256 + u * 34, 134, 4.5, 10.5, 0, "#111111"),
+        r(256 + u * 30, 130, 3, 3, 0, "#ffffff"));
+    (o.beginPath(),
+      o.moveTo(246, 162),
+      o.lineTo(266, 162),
+      o.lineTo(256, 173),
+      o.closePath(),
+      (o.fillStyle = "#f472b6"),
+      o.fill(),
+      (o.strokeStyle = "#5b3a1a"),
+      (o.lineWidth = 2.5));
+    for (const u of [-1, 1])
+      for (const f of [-8, 2, 12])
+        (o.beginPath(),
+          o.moveTo(256 + u * 40, 178 + f * 0.4),
+          o.lineTo(256 + u * 104, 170 + f * 1.3),
+          o.stroke());
+    (o.beginPath(),
+      o.moveTo(256, 173),
+      o.quadraticCurveTo(250, 186, 240, 184),
+      o.moveTo(256, 173),
+      o.quadraticCurveTo(262, 186, 272, 184),
+      o.stroke());
+  } else {
+    // 白色小狗（黑眼睛、黑鼻头，耳朵略带米白，同 3D 小狗）
+    for (const u of [-1, 1]) r(256 + u * 78, 128, 30, 60, u * 0.32, "#e6e0d4", "#cfc7b8");
+    (r(256, 140, 84, 76, 0, "#f7f7f4", "#d6d3cc"),
+      r(256, 182, 48, 34, 0, "#ffffff", "#e5e1d8"));
+    for (const u of [-1, 1])
+      (r(256 + u * 32, 128, 11, 12, 0, "#111111"),
+        r(256 + u * 32 - 3, 124, 3.5, 3.5, 0, "#ffffff"),
+        r(256 + u * 54, 168, 13, 8, 0, "#fbcfe8"));
+    (r(256, 166, 16, 11, 0, "#111111"),
+      r(251, 162, 4, 2.5, 0, "#6b7280"),
+      r(256, 204, 10, 12, 0, "#f472b6"),
+      (o.strokeStyle = "#111111"),
+      (o.lineWidth = 3),
+      (o.lineCap = "round"),
+      o.beginPath(),
+      o.moveTo(256, 177),
+      o.lineTo(256, 188),
+      o.moveTo(256, 188),
+      o.quadraticCurveTo(246, 198, 236, 192),
+      o.moveTo(256, 188),
+      o.quadraticCurveTo(266, 198, 276, 192),
+      o.stroke());
+  }
+  const a = new wr(s);
+  return ((a.colorSpace = ds), (ha3dTvTextures[t] = a));
+}
+function ha3dTvScreen({ on: t }) {
+  const s = M.useSyncExternalStore(ha3dSubscribeTvPet, ha3dGetTvPet) === "cat" ? "cat" : "dog",
+    o = M.useMemo(() => (t ? ha3dTvPortraitTexture(s) : null), [t, s]);
+  return t && o
+    ? e.jsxs("mesh", {
+        name: "ha3d-tv-screen",
+        userData: { petPortrait: s },
+        raycast: ha3dNoRaycast,
+        position: [0, 0.123, 0.0395],
+        children: [
+          e.jsx("planeGeometry", { args: [0.49, 0.25] }),
+          e.jsx("meshBasicMaterial", { map: o, toneMapped: !1 }),
+        ],
+      })
+    : null;
 }
 function Ta({
   kind: t,
@@ -12927,6 +13186,7 @@ const t0 = M.memo(function ({
       Me = (m || fe) && !ha3dLimitFps ? "always" : "demand",
       ha3dLight = ha3dEnvOn ? ha3dEnvironmentLight(ha3dEnv) : null,
       ha3dLightScale = ha3dLight ? ha3dLight.scale : 1;
+    M.useEffect(() => ha3dSetTvPet(ha3dPetKind), [ha3dPetKind]); // ha3d-self: 0.2.5 电视大头照跟随宠物设置
     return e.jsxs(
       xr,
       {

@@ -93,6 +93,8 @@ export function normalizeOpening(value) {
         id: text(source.id, `opening-${Date.now()}`),
         type,
         entityId: typeof source.entityId === "string" && source.entityId.includes(".") ? source.entityId : undefined,
+        // ha3d-self: 0.2.5 门可以另外绑定一个门锁（lock.*），和门磁（entityId）互不影响；没绑定时不写这个键
+        lockEntityId: type === "door" && typeof source.lockEntityId === "string" && /^lock\.[^.\s]+$/.test(source.lockEntityId.trim()) ? source.lockEntityId.trim() : undefined,
         wallId: text(source.wallId, ""),
         offset: finite(source.offset, 0, 0),
         width: finite(source.width, type === "door" ? 0.9 : 1.2, 0.1, 20),

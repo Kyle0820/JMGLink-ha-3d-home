@@ -56,6 +56,8 @@
 
 昼夜和太阳位置优先用 `sun.sun` 的 `elevation`、`azimuth`、`rising`（后端对 `sun`、`weather` 两个域始终推送 `state_changed`），没有时按本机时钟近似。
 
+### 门锁绑定（0.2.5）
+门（opening，`type: "door"`）可选字段 `lockEntityId`（只接受 `lock.*`，其他取值在 schema 的 `normalizeOpening` 里丢弃，没绑定时不写这个键），和门磁 `entityId` 互不影响。后端 `collectBoundEntityIds`、首页 `HomeView.js` 的实体订阅都包含它，所以只绑在门上、没有作为设备放置的门锁也会实时更新。
 ### 3D 对象命名（`ha3d-*`）
 
 新增或修改的 3D 对象都设置了 `name`（部分还有 `userData`），e2e 通过 `?ha3dDebug=1` 时暴露的 `window.__ha3dDebug.get()`（R3F 状态）按名字查找。新增对象请沿用 `ha3d-<功能>-<部件>` 的命名：
@@ -72,8 +74,10 @@
 | `ha3d-appliance-body`（`userData.appliance`：`washer` / `dryer` / `dishwasher` / `sock_washer` / `shower`，`userData.upper`：是否叠放上层） | 家电样式的模型根节点；叠放上层在模型内部抬高 `ha3dApplianceStackHeight` |
 | `ha3d-appliance-drum`、`ha3d-appliance-indicator` | 洗衣机/烘干机/洗袜机转动的内筒，家电运行指示灯（off 时 `emissiveIntensity` 为 0） |
 | `ha3d-shower-water` | 花洒水流，只在出水时挂载 |
+| `ha3d-tv-screen`（`userData.petPortrait`：`dog` / `cat`） | 电视（`media_player.tv`）开着时屏幕上的宠物大头照，贴图用 2D canvas 画，跟随 3D 设置的宠物（没选时是小狗） |
+| `ha3d-door-lock`（`userData.lockEntityId`、`lockState`、`lockColor`）、`ha3d-door-lock-light` | 门绑定门锁（opening 的 `lockEntityId`）时门扇上的锁牌和状态灯，只显示、不可点 |
 
-不参与点击的装饰对象（光晕、环境层、宠物、花洒水流）把 `raycast` 设为空函数。
+不参与点击的装饰对象（光晕、环境层、宠物、花洒水流、电视画面、门锁牌）把 `raycast` 设为空函数。
 
 ### 渲染与性能
 
@@ -107,7 +111,7 @@ npm ci --prefix tools
 - 本地启动：`node tools/dev/start-local.mjs --project <项目.json>` 先启动 mock HA（`:18123`），再以 standalone 模式启动应用（`:18099`），数据目录默认 `/tmp/ha3d-dev`（在仓库之外）。
 - 单元测试：`npm --prefix tools run test:unit`
 - 前端模块图静态检查（esbuild，抓语法错误和不存在的导入名）：`npm --prefix tools run check:web`
-- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。套件：`smoke export models editor interaction cream environment pets perf touch fixes022 fixes023 appliances`（`appliances`：家电样式：两种风格下渲染、运行/停止状态不同、叠放对齐、省电限帧、编辑器模型选项）（`fixes023`：0.2.3 的麦克风语音输入（假的语音识别和麦克风，含 http 访问、没有权限时的提示）、开门颜色和关门一致、小狗停留时间，`HA3D_FIXES023_BASELINE=1` 时只记录不断言，`HA3D_FIXES023_ONLY=voice,door,dog` 只跑其中几段）（`fixes022`：0.2.2 的白色小狗、页面工具菜单拖动后仍显示、两个浏览器上下文的设置同步；`HA3D_FIXES022_BASELINE=1` 时只记录不断言）（`touch`：iPad 视口 + CDP 触摸，`HA3D_TOUCH_BASELINE=1` 时只记录不断言）（`baseline` 只在改动前采集基线时用）。`perf` 会和 `<证据目录>/baseline/…/baseline.json` 对比（也可用 `HA3D_BASELINE_JSON` 指定），并用 `docker image inspect` 记录 `ha3d:arm64`、`ha3d:amd64` 和上游 0.1.6 镜像的大小（docker 不可用时跳过这一项）。
+- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。套件：`smoke export models editor interaction cream environment pets perf touch fixes022 fixes023 appliances fixes025`（`fixes025`：0.2.5 的电视宠物大头照、入户门绑定门锁、状态未知的家电实体在设备库里可选可放；`HA3D_FIXES025_BASELINE=1` 时只记录不断言，`HA3D_FIXES025_ONLY=tv,lock,library` 只跑其中几段）（`appliances`：家电样式：两种风格下渲染、运行/停止状态不同、叠放对齐、省电限帧、编辑器模型选项）（`fixes023`：0.2.3 的麦克风语音输入（假的语音识别和麦克风，含 http 访问、没有权限时的提示）、开门颜色和关门一致、小狗停留时间，`HA3D_FIXES023_BASELINE=1` 时只记录不断言，`HA3D_FIXES023_ONLY=voice,door,dog` 只跑其中几段）（`fixes022`：0.2.2 的白色小狗、页面工具菜单拖动后仍显示、两个浏览器上下文的设置同步；`HA3D_FIXES022_BASELINE=1` 时只记录不断言）（`touch`：iPad 视口 + CDP 触摸，`HA3D_TOUCH_BASELINE=1` 时只记录不断言）（`baseline` 只在改动前采集基线时用）。`perf` 会和 `<证据目录>/baseline/…/baseline.json` 对比（也可用 `HA3D_BASELINE_JSON` 指定），并用 `docker image inspect` 记录 `ha3d:arm64`、`ha3d:amd64` 和上游 0.1.6 镜像的大小（docker 不可用时跳过这一项）。
 
 只想快速看后端是否正常：
 

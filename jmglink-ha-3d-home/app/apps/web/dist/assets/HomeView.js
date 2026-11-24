@@ -56,9 +56,9 @@ import { a as c } from "./react.js";
 import { j as e } from "./three.js";
 // ha3d-self: 0.2.2 首页设置跨设备同步
 import {
-  ha3dOnRemoteSettings,
-  ha3dSaveSetting,
-  ha3dUseSyncedSetting,
+    ha3dOnRemoteSettings,
+    ha3dSaveSetting,
+    ha3dUseSyncedSetting,
 } from "./ha3dSettingsSync.js";
 /**
  * @license lucide-react v1.25.0 - ISC
@@ -2491,7 +2491,9 @@ function ni({
         ...new Set(
           me.floors.flatMap((n) => [
             ...n.devices.map((l) => l.entityId),
-            ...n.openings.flatMap((l) => (l.entityId ? [l.entityId] : [])),
+            ...n.openings.flatMap((l) =>
+              [l.entityId, l.lockEntityId].filter(Boolean), // ha3d-self: 0.2.5 门锁
+            ),
             ...n.rooms.flatMap((l) => Yt(l)),
           ]),
         ),

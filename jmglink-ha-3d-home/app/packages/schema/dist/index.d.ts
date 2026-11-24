@@ -57,6 +57,8 @@ export type Opening = {
     id: string;
     type: "door" | "window";
     entityId?: string;
+    /** ha3d-self: 0.2.5 门绑定的门锁（lock.*），只用于显示上锁状态 */
+    lockEntityId?: string;
     wallId: string;
     offset: number;
     width: number;
