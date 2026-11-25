@@ -297,7 +297,8 @@ export default async function appliances(ctx) {
         .first();
       await marker.dispatchEvent("click");
       await page.waitForTimeout(700);
-      out.editor.modelOptions = await page.locator(".device-model-property .device-model-grid button strong").allInnerTexts();
+      // 0.2.5 起推荐样式的 strong 里带「推荐」标记（<em>），比较前去掉（同 fixes025）
+      out.editor.modelOptions = (await page.locator(".device-model-property .device-model-grid button strong").allInnerTexts()).map((text) => text.replace("推荐", "").trim());
       check("编辑器：binary_sensor 的模型样式里有 7 个家电样式", LABELS.every((label) => out.editor.modelOptions.includes(label)), out.editor.modelOptions);
       await ctx.shot(page, "editor-model-options");
       await page.evaluate(() => {

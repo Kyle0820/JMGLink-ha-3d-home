@@ -9084,6 +9084,17 @@ input[type="range"]::-webkit-slider-thumb {
   color: var(--muted);
   font-size: 10px;
 }
+/* ha3d-self: 1.1.0 房间状态汇总：第一行温湿度加粗、颜色同标题，其余行沿用卡片小字 */
+.ha3d-room-summary {
+  display: grid;
+  gap: 2px;
+  margin-top: 2px;
+}
+.room-focus-card .ha3d-room-summary-env {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 750;
+}
 .room-focus-card button {
   width: 32px;
   height: 32px;
@@ -10291,6 +10302,9 @@ input[type="range"]::-webkit-slider-thumb {
 .theme-night .room-focus-card small,
 .theme-night .room-focus-card span {
   color: #aeb3bd;
+}
+.theme-night .room-focus-card .ha3d-room-summary-env {
+  color: #eef1f5; /* ha3d-self: 1.1.0 房间状态汇总 */
 }
 .theme-night .room-focus-card button {
   color: #d9dce1;
@@ -11703,6 +11717,9 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .room-focus-card strong {
   color: #fff;
+}
+.room-focus-card .ha3d-room-summary-env {
+  color: #fff; /* ha3d-self: 1.1.0 房间状态汇总 */
 }
 .room-focus-card button {
   color: #eaf0ffdb;
@@ -17242,6 +17259,11 @@ input[type="range"]::-webkit-slider-thumb {
     .slider-row strong
   ) {
   color: var(--cream-ink);
+}
+/* ha3d-self: 1.1.0 房间状态汇总：奶油风格下温湿度行同标题颜色（盖过上面 :is(... span) 的 500 字重） */
+.home-workspace.visual-style-cream .room-focus-card .ha3d-room-summary-env {
+  color: var(--cream-ink);
+  font-weight: 750;
 }
 .home-workspace.visual-style-cream .climate-readout-row strong {
   font-size: 1.125rem;

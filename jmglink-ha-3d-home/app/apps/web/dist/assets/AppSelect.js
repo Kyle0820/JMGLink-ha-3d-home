@@ -5157,7 +5157,7 @@ function pa({
   // ===== ha3d-self: 0.2.5 门锁状态灯 =====
   // 门绑定了门锁（lockEntityId）时，在把手上方两面各贴一块小锁牌：已上锁绿灯、未上锁琥珀色、锁卡住红色、
   // 正在上锁/开锁蓝色、未知或离线灰色（锁梁也跟着抬起）。只显示状态，不能点，3D 里没有开锁操作；
-  // 门扇开合仍只看门磁（entityId），未上锁不代表门开着。
+  // 门扇开合看门磁（entityId）；没绑门磁、只绑门锁时，门锁 unlocked 开门，其他状态（含未知、离线）关门（ha3d-self: 1.1.0）。
   const ha3dLockState = ha3dLockEntity ? he(ha3dLockEntity) : null,
     ha3dLockOpen = ["unlocked", "open", "opening", "unlocking"].includes(ha3dLockState),
     ha3dLockColor =
@@ -5242,7 +5242,7 @@ function pa({
     L = t.swing === "inward" ? 1 : -1,
     I = t.doorStyle === "double" ? [-1, 1] : [G],
     $ = (t.width * 0.96) / I.length,
-    p = t.entityId ? Yt(i) : !0,
+    p = t.entityId ? Yt(i) : t.lockEntityId ? ha3dLockState === "unlocked" : !0, // ha3d-self: 1.1.0 没绑门磁、只绑门锁时，未上锁开门，其他状态关门
     m = p ? L * (r ? 0.68 : 0.58) : 0,
     // ha3d-self: 0.2.3 绑定了门磁的门扇打开时不再单独设颜色（0.2.1 及以前是薄荷绿、0.2.2 是白色），
     // 颜色、自发光、描边都和关门时一样，开关状态只看门扇角度
@@ -8791,6 +8791,9 @@ function Ta({
   // ===== ha3d-self: 家电样式（正面朝 +z，原点在地面中心；花洒原点在墙面安装点） =====
   if (ha3dApplianceModelIds.has(s)) {
     const g = d === "on" && !a,
+      // ha3d-self: 1.1.0 unknown（触发式模板传感器重启后还没触发）不算离线，画成不透明；unavailable、实体不存在仍是半透明
+      ha3dDim = a && !(f && he(f) === "unknown"),
+      ha3dOpacity = ha3dDim ? 0.5 : 1,
       _ = s.endsWith("_upper"),
       k = s
         .replace("binary_sensor.", "")
@@ -8802,8 +8805,8 @@ function Ta({
           metalness: R,
           clearcoat: 0.2,
           clearcoatRoughness: 0.6,
-          transparent: a,
-          opacity: x,
+          transparent: ha3dDim,
+          opacity: ha3dOpacity,
         }),
       P = (q) =>
         h &&
@@ -8831,8 +8834,8 @@ function Ta({
               emissiveIntensity: g ? 1.2 : 0,
               roughness: 0.3,
               metalness: 0,
-              transparent: a,
-              opacity: x,
+              transparent: ha3dDim,
+              opacity: ha3dOpacity,
             }),
           ],
         }),
@@ -9024,7 +9027,7 @@ function Ta({
             roughness: 0.08,
             metalness: 0,
             transparent: !0,
-            opacity: (q ? 0.42 : 0.35) * x,
+            opacity: (q ? 0.42 : 0.35) * ha3dOpacity,
             depthWrite: !1,
           }),
           { key: "glass" },
@@ -9118,7 +9121,7 @@ function Ta({
             roughness: 0.08,
             metalness: 0,
             transparent: !0,
-            opacity: 0.3 * x,
+            opacity: 0.3 * ha3dOpacity,
             depthWrite: !1,
           }),
           { key: "dome", scale: [1, 0.6, 1] },
@@ -9200,8 +9203,8 @@ function Ta({
           [Math.cos(re) * ne, -0.036, 0.32 + Math.sin(re) * ne],
           e.jsx("meshBasicMaterial", {
             color: g ? "#bfe6ff" : "#7d8894",
-            transparent: a,
-            opacity: x,
+            transparent: ha3dDim,
+            opacity: ha3dOpacity,
             toneMapped: !1,
           }),
           { key: `nozzle-${ae}`, rotation: [Math.PI / 2, 0, 0] },
@@ -14719,6 +14722,8 @@ function r0({
   });
 }
 export {
+    nn as ha3dTemperatureOf, // ha3d-self: 1.1.0 房间状态汇总
+    an as ha3dHumidityOf, // ha3d-self: 1.1.0 房间状态汇总
     Co as $,
     r0 as A,
     Li as B,

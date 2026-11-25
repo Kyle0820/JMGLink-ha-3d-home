@@ -41,6 +41,8 @@ import {
     a7 as ts,
     R as us,
     X as ut,
+    ha3dTemperatureOf, // ha3d-self: 1.1.0 房间状态汇总
+    ha3dHumidityOf, // ha3d-self: 1.1.0 房间状态汇总
 } from "./AppSelect.js";
 import {
     u as Ie,
@@ -2418,6 +2420,70 @@ function ha3dSettingsPanel({
     ],
   });
 }
+// ===== ha3d-self: 1.1.0 房间状态汇总 =====
+// 房间里的实体 = 放在该房间的设备 ∪ 房间的全部绑定（按 entityId 去重）。第一行温湿度只看 sensor 域，
+// 多个传感器时温度、湿度各取最低值；后面按类别统计「开启数/总数」（房间里没有的类别不显示），最后是离线数（实体不存在或 unavailable）。
+const ha3dRoomSummaryCategories = [
+  { key: "light", label: "灯", match: (n) => n.domain === "light", on: (n, l) => l === "on" },
+  { key: "switch", label: "开关/插座", match: (n) => n.domain === "switch", on: (n, l) => l === "on" },
+  {
+    key: "climate",
+    label: "空调/风扇",
+    match: (n) => n.domain === "climate" || n.domain === "fan",
+    on: (n, l) => (n.domain === "fan" ? l === "on" : !["off", "unavailable", "unknown"].includes(l)),
+  },
+  {
+    key: "cover",
+    label: "窗帘",
+    match: (n) => n.domain === "cover",
+    on: (n, l) => l === "open" || l === "opening" || Number(n.attributes?.current_position) > 0,
+  },
+  {
+    key: "doorWindow",
+    label: "门窗",
+    match: (n) => n.domain === "binary_sensor" && ["door", "window", "opening", "garage_door"].includes(n.attributes?.device_class),
+    on: (n, l) => l === "on",
+  },
+  { key: "lock", label: "门锁", match: (n) => n.domain === "lock", on: (n, l) => l === "unlocked" || l === "open" },
+];
+function ha3dRoomSummary(room, floor, entities) {
+  const ids = [
+    ...new Set([
+      ...floor.devices.filter((n) => n.roomId === room.id && n.entityId).map((n) => n.entityId),
+      ...Yt(room),
+    ]),
+  ];
+  if (!ids.length) return { empty: !0, env: null, rows: [], offline: 0 };
+  const list = ids.map((n) => entities[n]).filter(Boolean),
+    stateOf = (n) => String(n.state ?? "").toLowerCase();
+  let temperature, temperatureUnit = "°C", humidity;
+  for (const n of list) {
+    if (n.domain !== "sensor") continue;
+    const l = ha3dTemperatureOf(n);
+    if (l !== void 0 && (temperature === void 0 || l < temperature)) {
+      temperature = l;
+      temperatureUnit = String(n.attributes?.unit_of_measurement ?? "").trim().toLowerCase() === "°f" ? "°F" : "°C";
+    }
+    const h = ha3dHumidityOf(n);
+    if (h !== void 0 && (humidity === void 0 || h < humidity)) humidity = h;
+  }
+  const env = [
+    temperature !== void 0 && `🌡 ${temperature.toFixed(1)}${temperatureUnit}`,
+    humidity !== void 0 && `💧 ${Math.round(humidity)}%`,
+  ].filter(Boolean);
+  const rows = ha3dRoomSummaryCategories.flatMap((n) => {
+    const l = list.filter(n.match);
+    if (!l.length) return [];
+    const on = l.filter((h) => n.on(h, stateOf(h))).length;
+    return [{ key: n.key, text: `${n.label} ${on}/${l.length} ${n.key === "lock" ? "未上锁" : "开"}` }];
+  });
+  return {
+    empty: !1,
+    env: env.length ? env.join(" · ") : null,
+    rows,
+    offline: ids.filter((n) => !entities[n] || stateOf(entities[n]) === "unavailable").length,
+  };
+}
 function ni({
   project: t,
   entities: a,
@@ -2657,14 +2723,7 @@ function ni({
       ae == null
         ? void 0
         : ae.rooms.find((n) => n.id === (Q == null ? void 0 : Q.roomId)),
-    Nt =
-      O && Q
-        ? ((ae == null
-            ? void 0
-            : ae.devices.filter(
-                (n) => n.roomId === Q.roomId && E[n.entityId],
-              )) ?? [])
-        : [],
+    ha3dRoomInfo = O && Q && ae && St ? ha3dRoomSummary(St, ae, E) : void 0, // ha3d-self: 1.1.0 替换原来的「N 个已绑定设备」
     Ae = F.length,
     $t = c.useMemo(
       () =>
@@ -3036,13 +3095,26 @@ function ni({
                   children: [
                     e.jsx("small", { children: ae == null ? void 0 : ae.name }),
                     e.jsx("strong", { children: St.name }),
-                    e.jsx("span", {
-                      children: O
-                        ? Nt.length
-                          ? `${Nt.length} 个已绑定设备`
-                          : "暂无已绑定设备"
-                        : "连接后显示设备数据",
-                    }),
+                    // ha3d-self: 1.1.0 房间状态汇总：温湿度、各类别开启数/总数、离线数
+                    ha3dRoomInfo
+                      ? e.jsx("div", {
+                          className: "ha3d-room-summary",
+                          children: ha3dRoomInfo.empty
+                            ? e.jsx("span", { children: "暂无设备" })
+                            : [
+                                ha3dRoomInfo.env &&
+                                  e.jsx("span", { className: "ha3d-room-summary-env", children: ha3dRoomInfo.env }, "env"),
+                                ...ha3dRoomInfo.rows.map((n) =>
+                                  e.jsx("span", { className: "ha3d-room-summary-row", "data-category": n.key, children: n.text }, n.key),
+                                ),
+                                e.jsx(
+                                  "span",
+                                  { className: "ha3d-room-summary-row ha3d-room-summary-offline", children: `离线 ${ha3dRoomInfo.offline}` },
+                                  "offline",
+                                ),
+                              ],
+                        })
+                      : e.jsx("span", { children: "连接后显示设备数据" }),
                   ],
                 }),
                 e.jsx("button", {
