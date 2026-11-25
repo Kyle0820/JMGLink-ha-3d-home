@@ -139,8 +139,9 @@ export const uiSettings = {
  * keepServerSettings: true 时保留后端设置（跨设备同步测试用）。
  */
 export async function gotoHome(page, { style, quality, prefs = {}, settleMs = 2500, query = "", keepServerSettings = false } = {}) {
-  if (!keepServerSettings && state.stack) await uiSettings.clear();
+  // 先离开首页再清后端设置：否则还开着的旧页面收到 ui.settings_updated 后回到默认值（例如 glass）并写回后端，新页面会读到它
   await page.goto("/api/health");
+  if (!keepServerSettings && state.stack) await uiSettings.clear();
   const values = { ...prefs };
   if (style) values["ha3d.home.sceneVisualStyle"] = style;
   if (quality) values["ha3d.home.sceneQuality"] = quality;
