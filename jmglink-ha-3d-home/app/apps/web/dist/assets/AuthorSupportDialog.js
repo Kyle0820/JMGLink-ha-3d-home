@@ -1,6 +1,6 @@
-import { j as a } from "./three.js";
 import { c as l, X as p } from "./index.js";
 import "./react.js";
+import { j as a } from "./three.js";
 // ha3d-self: B6 去掉 hls.js 副作用导入
 /**
  * @license lucide-react v1.25.0 - ISC
@@ -32,48 +32,10 @@ import "./react.js";
     ],
   ],
   g = l("mail", x);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const j = [
-    [
-      "rect",
-      { width: "5", height: "5", x: "3", y: "3", rx: "1", key: "1tu5fj" },
-    ],
-    [
-      "rect",
-      { width: "5", height: "5", x: "16", y: "3", rx: "1", key: "1v8r4q" },
-    ],
-    [
-      "rect",
-      { width: "5", height: "5", x: "3", y: "16", rx: "1", key: "1x03jg" },
-    ],
-    ["path", { d: "M21 16h-3a2 2 0 0 0-2 2v3", key: "177gqh" }],
-    ["path", { d: "M21 21v.01", key: "ents32" }],
-    ["path", { d: "M12 7v3a2 2 0 0 1-2 2H7", key: "8crl2c" }],
-    ["path", { d: "M3 12h.01", key: "nlz23k" }],
-    ["path", { d: "M12 3h.01", key: "n36tog" }],
-    ["path", { d: "M12 16v.01", key: "133mhm" }],
-    ["path", { d: "M16 12h1", key: "1slzba" }],
-    ["path", { d: "M21 12v.01", key: "1lwtk9" }],
-    ["path", { d: "M12 21v-1", key: "1880an" }],
-  ],
-  A = l("qr-code", j),
-  v = "" + new URL("afdianQr-ClA8sE2M.png", import.meta.url).href,
-  k = "" + new URL("bilibiliQr-DEZu03cm.png", import.meta.url).href,
-  f = "" + new URL("douyinQr-Dnnl8sQ4.png", import.meta.url).href,
-  y =
+// ha3d-self: 1.1.0 删除打赏和社媒二维码（含 qr-code 图标），只留文字链接
+const y =
     "data:image/webp;base64,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",
-  b = "" + new URL("xiaohongshuQr-B7L44kzL.png", import.meta.url).href,
-  i = {
-    afdianQr: v,
-    bilibiliQr: k,
-    douyinQr: f,
-    jmglinkLogo: y,
-    xiaohongshuQr: b,
-  },
+  i = { jmglinkLogo: y }, // ha3d-self: 1.1.0 删除打赏和社媒二维码，只留文字链接
   w = "" + new URL("ec-CXT8k6X9.png", import.meta.url).href,
   N = "" + new URL("sheng-wrAbX6pX.png", import.meta.url).href,
   L = "" + new URL("star-dash-MlyKIEhc.png", import.meta.url).href,
@@ -101,57 +63,11 @@ import "./react.js";
   d = "768851314@qq.com",
   Q = `mailto:${d}?subject=${encodeURIComponent("HA 3D Home 建议")}`,
   z = "https://www.jmglink.cn/",
-  Z = i.afdianQr,
+  // ha3d-self: 1.1.0 删除打赏和社媒二维码，只留文字链接（地址由原二维码解码；抖音码是抖音自有格式，解不出地址，不放）
   G = [
-    { id: "douyin", label: "抖音", src: i.douyinQr },
-    { id: "bilibili", label: "bilibili", src: i.bilibiliQr },
-    { id: "xiaohongshu", label: "小红书", src: i.xiaohongshuQr },
+    { id: "bilibili", label: "bilibili", href: "https://space.bilibili.com/18633846" },
+    { id: "xiaohongshu", label: "小红书", href: "http://xhslink.com/m/57VGDIxiacv" },
   ];
-function H() {
-  return a.jsxs("span", {
-    className: "author-support-main-qr-frame",
-    children: [
-      a.jsx("img", {
-        className: "author-support-qr",
-        src: Z,
-        alt: "为爱发电二维码",
-        loading: "lazy",
-        onError: (r) => {
-          var s;
-          ((r.currentTarget.hidden = !0),
-            (s = r.currentTarget.parentElement) == null ||
-              s.classList.add("missing"));
-        },
-      }),
-      a.jsx("span", { children: "待补" }),
-    ],
-  });
-}
-function I({ label: r, src: s }) {
-  return a.jsxs("div", {
-    className: "author-support-social-qr",
-    children: [
-      a.jsxs("span", {
-        className: "author-support-social-qr-frame",
-        children: [
-          a.jsx("img", {
-            src: s,
-            alt: `${r}二维码`,
-            loading: "lazy",
-            onError: (n) => {
-              var e;
-              ((n.currentTarget.hidden = !0),
-                (e = n.currentTarget.parentElement) == null ||
-                  e.classList.add("missing"));
-            },
-          }),
-          a.jsx("span", { children: "待补" }),
-        ],
-      }),
-      a.jsx("strong", { children: r }),
-    ],
-  });
-}
 function h({ supporter: r, className: s = "author-support-avatar" }) {
   return a.jsxs("span", {
     className: `${s} ${r.avatarSrc ? "" : "missing"}`,
@@ -310,19 +226,7 @@ function J({ onClose: r }) {
           a.jsxs("div", {
             className: "author-support-content",
             children: [
-              a.jsx("div", {
-                className: "author-support-left-column",
-                children: a.jsxs("div", {
-                  className: "author-support-qr-card",
-                  children: [
-                    a.jsx(H, {}),
-                    a.jsxs("strong", {
-                      children: [a.jsx(A, { size: 15 }), "为爱发电二维码"],
-                    }),
-                    a.jsx("p", { children: "扫码支持作者继续折腾" }),
-                  ],
-                }),
-              }),
+              // ha3d-self: 1.1.0 删除左列的打赏二维码
               a.jsxs("div", {
                 className: "author-support-info",
                 children: [
@@ -370,11 +274,22 @@ function J({ onClose: r }) {
                       }),
                     ],
                   }),
+                  // ha3d-self: 1.1.0 社媒二维码改为文字链接
                   a.jsx("div", {
                     className: "author-support-socials",
-                    "aria-label": "社媒二维码",
+                    "aria-label": "作者主页",
                     children: G.map((s) =>
-                      a.jsx(I, { label: s.label, src: s.src }, s.id),
+                      a.jsxs(
+                        "a",
+                        {
+                          className: "author-support-social-link",
+                          href: s.href,
+                          target: "_blank",
+                          rel: "noreferrer",
+                          children: [a.jsx(m, { size: 14 }), s.label],
+                        },
+                        s.id,
+                      ),
                     ),
                   }),
                 ],

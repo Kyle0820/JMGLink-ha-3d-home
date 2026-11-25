@@ -1,6 +1,7 @@
 // B6 精简与性能（plan.md 第 2 节 Q4、第 3 节 B6）：与 FEAT-002 的基线（<证据>/baseline/…/baseline.json）对比，
 // 写 <证据>/perf/perf.json 和 perf.md（前后对比表、镜像大小、删掉的代码）。
-// - 首页和编辑器加载都不请求 hls.js，首页 JS 字节数比基线少 ≥ 500 KB，默认不加载宠物代码；
+// - 首页和编辑器加载都不请求 hls.js，首页 JS 传输字节数比基线少 ≥ 500 KB（1.1.0 起比较 transferSize：基线未压缩，传输字节 ≈ 解码后字节；
+//   解码后字节继续记录），默认不加载宠物代码；
 // - 没有持续动画（晴天白天、无宠物、设备不在动）时，各画质稳定后 5 秒 0 帧；
 // - 只有设备动画（空调出风；传感器脉冲环）时 eco ≤ 22 fps、smooth ≤ 32 fps，同时拖动视角时不受这个限制；
 // - 有持续动画（下雨 + 宠物，空调出风也开着）时 eco ≤ 22 fps、smooth ≤ 32 fps（另在小视口下测一遍，那里软件渲染能跑得更快）；
@@ -194,10 +195,11 @@ export default async function perf(ctx) {
   {
     const page = await ctx.newPage({ startTime: NOON });
     await ctx.gotoHome(page, { prefs: { "ha3d.home.pet": null } });
-    const resources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => ({ name: entry.name, size: entry.decodedBodySize })));
+    const resources = await page.evaluate(() => performance.getEntriesByType("resource").map((entry) => ({ name: entry.name, size: entry.decodedBodySize, transfer: entry.transferSize })));
     const js = resources.filter((entry) => /\.js(\?|$)/.test(entry.name));
     out.homeJsBytes = js.reduce((sum, entry) => sum + entry.size, 0);
-    out.homeJsFiles = js.map((entry) => ({ file: new URL(entry.name).pathname, bytes: entry.size }));
+    out.homeJsTransferBytes = js.reduce((sum, entry) => sum + entry.transfer, 0); // ha3d-self: 1.1.0 压缩后比较传输字节
+    out.homeJsFiles = js.map((entry) => ({ file: new URL(entry.name).pathname, bytes: entry.size, transfer: entry.transfer }));
     out.homeRequestedHls = js.some((entry) => entry.name.includes("hls"));
     out.homeRequestedPet = js.some((entry) => entry.name.includes("ha3dPet"));
     await ctx.gotoEditor(page, { view: "2d", settleMs: 800 });
@@ -205,11 +207,16 @@ export default async function perf(ctx) {
     await page.waitForSelector("canvas", { timeout: 30_000 });
     await ctx.waitForScene(page, { requireDevices: false, settleMs: 1500 });
     out.editorRequestedHls = page.ha3dResponses.some((item) => item.url.includes("hls"));
-    const saved = before ? before.homeJsBytes - out.homeJsBytes : null;
+    const saved = before ? before.homeJsBytes - out.homeJsTransferBytes : null;
     out.homeJsSavedBytes = saved;
     check("B6 首页不请求 hls.js，也不加载宠物代码（默认无宠物）", !out.homeRequestedHls && !out.homeRequestedPet, out.homeJsFiles);
     check("B6 编辑器（2D 和 3D）不请求 hls.js", !out.editorRequestedHls, page.ha3dResponses.filter((item) => item.url.includes("hls")));
-    check("B6 首页 JS 字节数比基线少 ≥ 500 KB", saved !== null && saved >= 500 * KB, { before: before?.homeJsBytes, after: out.homeJsBytes, savedKB: saved === null ? null : Number((saved / KB).toFixed(1)) });
+    check("B6 首页 JS 传输字节数比基线少 ≥ 500 KB（基线未压缩，传输字节 ≈ 解码后字节）", saved !== null && saved >= 500 * KB, {
+      before: before?.homeJsBytes,
+      homeJsTransferBytes: out.homeJsTransferBytes,
+      homeJsBytes: out.homeJsBytes,
+      savedKB: saved === null ? null : Number((saved / KB).toFixed(1)),
+    });
     check("B6 首页没有 pageerror", page.ha3dErrors.length === 0, page.ha3dErrors.slice(0, 3));
     await page.context().close();
   }
@@ -370,7 +377,7 @@ export default async function perf(ctx) {
     "",
     "| 指标 | 基线 | 现在 | 达标 |",
     "| --- | --- | --- | --- |",
-    row("首页 JS 总字节（解码后）", kb(before?.homeJsBytes), `${kb(out.homeJsBytes)}（少 ${kb(out.homeJsSavedBytes)}）`, out.homeJsSavedBytes >= 500 * KB),
+    row("首页 JS 传输字节（基线未压缩）", kb(before?.homeJsBytes), `${kb(out.homeJsTransferBytes)}（少 ${kb(out.homeJsSavedBytes)}；解码后 ${kb(out.homeJsBytes)}）`, out.homeJsSavedBytes >= 500 * KB),
     row("首页请求 hls.js", yes(before?.homeRequestedHls), yes(out.homeRequestedHls), !out.homeRequestedHls),
     row("编辑器请求 hls.js", yes(before?.editorRequestedHls), yes(out.editorRequestedHls), !out.editorRequestedHls),
     row("首页加载宠物代码 ha3dPet.js（默认无宠物）", "—", yes(out.homeRequestedPet), !out.homeRequestedPet),
@@ -393,7 +400,7 @@ export default async function perf(ctx) {
     row("低端设备（2 核 / 2 GB）默认画质", before?.lowEndDefaultQuality, out.lowEnd.twoCores.quality, out.lowEnd.twoCores.quality === "eco"),
     row("4 核 / 4 GB 默认画质", "—", out.lowEnd.fourCores.quality, out.lowEnd.fourCores.quality === "smooth"),
     "",
-    "说明：「默认设备状态」的空闲帧数不是 0，是因为 mock 里空调默认制冷，出风动画在动（设备动画，不属于场景的持续动画）。省电（eco）、流畅（smooth）下，设备动画自己触发的重绘（空调、风扇等的出风，传感器的脉冲环）经 ha3dDeviceAnimInvalidate 限到 20 / 30 fps；均衡（balanced）、高（high）照旧每帧重绘，SwiftShader 下受软件渲染速度限制，真机上是屏幕刷新率。拖动、缩放视角时帧由 OrbitControls 驱动，不受这个限制，仍按屏幕刷新率渲染（见「同时拖动视角」几行）。整个户型下 smooth、balanced 在 SwiftShader 里本身只能跑 25–30 / 8 fps 左右，看不出 smooth 的 30 fps 上限，也看不出 balanced/high 不限帧，所以另把场景临时换成「同样的房间和墙，只留空调」测了四种画质（「只留空调的场景」几行，eco、smooth 拖动时 SwiftShader 在这里能跑到 60 fps 左右；balanced/high 的达标条件是只有出风时不低于同画质拖动时的 80%，即和软件渲染本身的上限一致、没有被限帧）。传感器脉冲环那几行是设备都停下后改一次传感器读数，测脉冲期间 2 秒的帧率。设备都停下后各画质 5 秒 0 帧。场景有持续动画（天气、云、星空、宠物、自动旋转）时，eco/smooth 由 ha3dFrameTicker 接管渲染（20/30 fps 上限，这期间拖动视角和设备动画也不超过上限），balanced/high 仍是 always。SwiftShader 在 1440×900 下本身跑不到 30 fps，所以另在 480×320 下测了一遍。",
+    "说明：首页 JS 一行比较的是传输字节（transferSize）：1.1.0 起直连时 JS 用 br/gzip 压缩传输，基线（上游 0.1.6）没有压缩，传输字节约等于解码后字节；解码后字节另行列出。「默认设备状态」的空闲帧数不是 0，是因为 mock 里空调默认制冷，出风动画在动（设备动画，不属于场景的持续动画）。省电（eco）、流畅（smooth）下，设备动画自己触发的重绘（空调、风扇等的出风，传感器的脉冲环）经 ha3dDeviceAnimInvalidate 限到 20 / 30 fps；均衡（balanced）、高（high）照旧每帧重绘，SwiftShader 下受软件渲染速度限制，真机上是屏幕刷新率。拖动、缩放视角时帧由 OrbitControls 驱动，不受这个限制，仍按屏幕刷新率渲染（见「同时拖动视角」几行）。整个户型下 smooth、balanced 在 SwiftShader 里本身只能跑 25–30 / 8 fps 左右，看不出 smooth 的 30 fps 上限，也看不出 balanced/high 不限帧，所以另把场景临时换成「同样的房间和墙，只留空调」测了四种画质（「只留空调的场景」几行，eco、smooth 拖动时 SwiftShader 在这里能跑到 60 fps 左右；balanced/high 的达标条件是只有出风时不低于同画质拖动时的 80%，即和软件渲染本身的上限一致、没有被限帧）。传感器脉冲环那几行是设备都停下后改一次传感器读数，测脉冲期间 2 秒的帧率。设备都停下后各画质 5 秒 0 帧。场景有持续动画（天气、云、星空、宠物、自动旋转）时，eco/smooth 由 ha3dFrameTicker 接管渲染（20/30 fps 上限，这期间拖动视角和设备动画也不超过上限），balanced/high 仍是 always。SwiftShader 在 1440×900 下本身跑不到 30 fps，所以另在 480×320 下测了一遍。",
     "",
     "## 镜像大小（docker image inspect 的 Size）",
     "",

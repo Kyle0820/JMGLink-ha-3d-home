@@ -1,12 +1,13 @@
 // BUG 7（导出 415）：用临时数据目录在 18198 端口启动 main.js，跑 plan.md 第 3 节 B7 的请求矩阵。
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import http from "node:http";
 import os from "node:os";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { brotliDecompressSync, gunzipSync } from "node:zlib";
 
 const appDir = fileURLToPath(new URL("../../jmglink-ha-3d-home/app/", import.meta.url));
 const fixturePath = fileURLToPath(new URL("../fixtures/demo-project.json", import.meta.url));
@@ -21,7 +22,10 @@ function request(method, pathname, { headers = {}, body, chunked = false } = {})
     const req = http.request({ method, hostname: "127.0.0.1", port, path: pathname, headers }, (res) => {
       const chunks = [];
       res.on("data", (chunk) => chunks.push(chunk));
-      res.on("end", () => resolve({ status: res.statusCode, headers: res.headers, body: Buffer.concat(chunks).toString("utf8") }));
+      res.on("end", () => {
+        const raw = Buffer.concat(chunks);
+        resolve({ status: res.statusCode, headers: res.headers, body: raw.toString("utf8"), raw });
+      });
     });
     req.on("error", reject);
     if (chunked) req.setHeader("transfer-encoding", "chunked");
@@ -130,4 +134,50 @@ test("ui-settings：非法键名、非字符串值返回 400", async () => {
   assert.equal((await putSettings({ "other.key": "x" })).status, 400);
   assert.equal((await putSettings({ "ha3d.home.pet": 1 })).status, 400);
   assert.equal((await putSettings("x")).status, 400);
+});
+// 1.1.0 静态资源和 API JSON 压缩（config/ha3dCompression.js）
+const webDir = path.join(appDir, "apps", "web", "dist");
+const threeFile = () => readFile(path.join(webDir, "assets", "three.js"));
+test("压缩：three.js 带 br → br，vary 含 accept-encoding，解压后等于原文件", async () => {
+  const response = await request("GET", "/assets/three.js", { headers: { "accept-encoding": "br" } });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers["content-encoding"], "br");
+  assert.match(response.headers.vary ?? "", /accept-encoding/i);
+  assert.equal(Number(response.headers["content-length"]), response.raw.length);
+  assert.ok(brotliDecompressSync(response.raw).equals(await threeFile()));
+});
+test("压缩：gzip, deflate → gzip；br;q=0, gzip → gzip", async () => {
+  for (const accept of ["gzip, deflate", "br;q=0, gzip"]) {
+    const response = await request("GET", "/assets/three.js", { headers: { "accept-encoding": accept } });
+    assert.equal(response.headers["content-encoding"], "gzip", accept);
+    assert.ok(gunzipSync(response.raw).equals(await threeFile()), accept);
+  }
+});
+test("压缩：不带 accept-encoding 时原样返回；带 ETag 的条件请求仍是 304", async () => {
+  const plain = await request("GET", "/assets/three.js");
+  assert.equal(plain.status, 200);
+  assert.equal(plain.headers["content-encoding"], undefined);
+  assert.ok(plain.raw.equals(await threeFile()));
+  const first = await request("GET", "/assets/three.js", { headers: { "accept-encoding": "br" } });
+  assert.ok(first.headers.etag);
+  const cached = await request("GET", "/assets/three.js", { headers: { "accept-encoding": "br", "if-none-match": first.headers.etag } });
+  assert.equal(cached.status, 304);
+});
+test("压缩：png 不压缩", async () => {
+  const response = await request("GET", "/assets/bao-DLSEpnIs.png", { headers: { "accept-encoding": "br" } });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers["content-encoding"], undefined);
+});
+test("压缩：API JSON 带 gzip → gzip，解压后是 JSON", async () => {
+  const response = await request("GET", "/api/projects/current", { headers: { "accept-encoding": "gzip" } });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers["content-encoding"], "gzip");
+  assert.equal(Number(response.headers["content-length"]), response.raw.length);
+  assert.equal(typeof JSON.parse(gunzipSync(response.raw).toString("utf8")).project.id, "string");
+});
+test("压缩：index.html 带 br → br", async () => {
+  const response = await request("GET", "/index.html", { headers: { "accept-encoding": "br" } });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers["content-encoding"], "br");
+  assert.ok(brotliDecompressSync(response.raw).equals(await readFile(path.join(webDir, "index.html"))));
 });

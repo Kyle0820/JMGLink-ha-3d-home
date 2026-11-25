@@ -6,6 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { WebSocketServer } from "ws";
 import { loadEnvFiles } from "./config/envFile.js";
+import { registerHa3dCompression } from "./config/ha3dCompression.js"; // ha3d-self: 1.1.0
 import { HaConfigStore } from "./config/haConfigStore.js";
 import { loadRuntimeConfig } from "./config/runtime.js";
 import { staticAssetOptions } from "./config/staticAssets.js";
@@ -24,6 +25,7 @@ if (config.mode !== "addon") {
         config.ha = haConfigStore.toRuntimeHa(storedHaConfig);
 }
 const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? "info" }, bodyLimit: 15 * 1024 * 1024 });
+registerHa3dCompression(app); // ha3d-self: 1.1.0
 // ha3d-self: HA ingress（aiohttp）转发无 body 的 POST 时会补上 Content-Type: application/octet-stream，
 // Fastify 默认对未知类型返回 415（导出、重连、重置、恢复备份都会失败）。空 body 放行，非空仍返回 415；
 // JSON 和 text/plain 走内置解析器，不受影响。
