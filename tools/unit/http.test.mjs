@@ -163,10 +163,11 @@ test("压缩：不带 accept-encoding 时原样返回；带 ETag 的条件请求
   const cached = await request("GET", "/assets/three.js", { headers: { "accept-encoding": "br", "if-none-match": first.headers.etag } });
   assert.equal(cached.status, 304);
 });
-test("压缩：png 不压缩", async () => {
-  const response = await request("GET", "/assets/bao-DLSEpnIs.png", { headers: { "accept-encoding": "br" } });
+test("压缩：非文本文件（zip）不压缩", async () => {
+  const response = await request("GET", "/ha3d-floorplan-json-skill.zip", { headers: { "accept-encoding": "br" } });
   assert.equal(response.status, 200);
   assert.equal(response.headers["content-encoding"], undefined);
+  assert.ok(response.raw.equals(await readFile(path.join(webDir, "ha3d-floorplan-json-skill.zip"))));
 });
 test("压缩：API JSON 带 gzip → gzip，解压后是 JSON", async () => {
   const response = await request("GET", "/api/projects/current", { headers: { "accept-encoding": "gzip" } });

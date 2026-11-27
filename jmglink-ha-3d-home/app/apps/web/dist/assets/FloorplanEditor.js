@@ -1,15 +1,4 @@
-const __vite__mapDeps = (
-  i,
-  m = __vite__mapDeps,
-  d = m.f ||
-    (m.f = [
-      "./AuthorSupportDialog.js",
-      "./three.js",
-      "./react.js",
-      "./index.js",
-      "./index.css",
-    ]),
-) => i.map((i) => d[i]);
+// ha3d-self: 1.2.0 删除作者弹窗（__vite__mapDeps 只给它用）
 import {
     y as $l,
     e as _e,
@@ -74,7 +63,7 @@ import {
     p as ti,
 } from "./index.js";
 import { a as x } from "./react.js";
-import { _ as jl, j as t } from "./three.js";
+import { j as t } from "./three.js"; // ha3d-self: 1.2.0 删除作者弹窗（不再用预加载助手）
 /**
  * @license lucide-react v1.25.0 - ISC
  *
@@ -237,21 +226,7 @@ import { _ as jl, j as t } from "./three.js";
     ],
   ],
   Jl = de("hand", Ql);
-/**
- * @license lucide-react v1.25.0 - ISC
- *
- * This source code is licensed under the ISC license.
- * See the LICENSE file in the root directory of this source tree.
- */ const ec = [
-    [
-      "path",
-      {
-        d: "M19.414 14.414C21 12.828 22 11.5 22 9.5a5.5 5.5 0 0 0-9.591-3.676.6.6 0 0 1-.818.001A5.5 5.5 0 0 0 2 9.5c0 2.3 1.5 4 3 5.5l5.535 5.362a2 2 0 0 0 2.879.052 2.12 2.12 0 0 0-.004-3 2.124 2.124 0 1 0 3-3 2.124 2.124 0 0 0 3.004 0 2 2 0 0 0 0-2.828l-1.881-1.882a2.41 2.41 0 0 0-3.409 0l-1.71 1.71a2 2 0 0 1-2.828 0 2 2 0 0 1 0-2.828l2.823-2.762",
-        key: "17lmqv",
-      },
-    ],
-  ],
-  tc = de("heart-handshake", ec);
+// ha3d-self: 1.2.0 删除作者弹窗（顶栏按钮图标）
 /**
  * @license lucide-react v1.25.0 - ISC
  *
@@ -1080,14 +1055,8 @@ function Kc(s, a) {
             ? { label: "HA 重连中", className: "loading" }
             : { label: "HA 未连接", className: "loading" };
 }
-const Wc = x.lazy(() =>
-    jl(
-      () => import("./AuthorSupportDialog.js"),
-      __vite__mapDeps([0, 1, 2, 3, 4]), // ha3d-self: B6 去掉 hls.js
-      import.meta.url,
-    ).then((s) => ({ default: s.AuthorSupportDialog })),
-  ),
-  Gt = 0.1,
+// ha3d-self: 1.2.0 删除作者弹窗（懒加载）
+const Gt = 0.1,
   Xc = 0.05,
   ri = 0.05,
   Yc = 1,
@@ -2777,7 +2746,7 @@ function Pd({
     [Cn, bo] = x.useState(!1),
     [js, We] = x.useState(() => typeof window > "u" || window.innerWidth > 960),
     [ys, Ys] = x.useState(!1),
-    [In, En] = x.useState(!1),
+    // ha3d-self: 1.2.0 删除作者弹窗（打开状态）
     [dt, ht] = x.useState(!1),
     [Rt, Wi] = x.useState(() => {
       var n, i;
@@ -4016,10 +3985,7 @@ function Pd({
   }
   x.useEffect(() => {
     const e = (r) => {
-        if (r.key === "Escape" && In) {
-          (r.preventDefault(), En(!1));
-          return;
-        }
+        // ha3d-self: 1.2.0 删除作者弹窗（Esc 关闭弹窗的分支）
         const l = r.target instanceof Element ? r.target : void 0;
         if (
           l instanceof HTMLElement &&
@@ -5588,20 +5554,7 @@ function Pd({
               }),
             ],
           }),
-          t.jsx("div", {
-            className: "editor-support-slot",
-            children: t.jsxs("button", {
-              className: "author-support-button",
-              onClick: () => En(!0),
-              "aria-haspopup": "dialog",
-              "aria-expanded": In,
-              title: "为爱发电",
-              children: [
-                t.jsx(tc, { size: 16 }),
-                t.jsx("span", { children: "为爱发电" }),
-              ],
-            }),
-          }),
+          // ha3d-self: 1.2.0 删除作者弹窗（顶栏入口）
           t.jsxs("div", {
             className: "editor-actions",
             children: [
@@ -9683,11 +9636,7 @@ function Pd({
             }),
         ],
       }),
-      In &&
-        t.jsx(x.Suspense, {
-          fallback: null,
-          children: t.jsx(Wc, { onClose: () => En(!1) }),
-        }),
+      // ha3d-self: 1.2.0 删除作者弹窗（入口、弹窗、懒加载）
       ys &&
         t.jsx("button", {
           className: "settings-backdrop",

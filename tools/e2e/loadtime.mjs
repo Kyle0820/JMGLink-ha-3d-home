@@ -1,4 +1,4 @@
-// 1.1.0 需求 2：首页加载体积和 3D 打开速度的前后对比，以及作者弹窗不再有二维码。
+// 1.1.0 需求 2：首页加载体积和 3D 打开速度的前后对比，以及编辑器里没有作者弹窗（1.2.0 起整个删除）。
 // 两种网络：local（不限速）和 lan20（CDP 限速 20/10 Mbps、40 ms），每种跑 HA3D_LOADTIME_RUNS 次（默认 3）取中位数。
 // 每次都是全新的浏览器上下文、禁用缓存：记录首页传输字节（导航 + 全部资源的 transferSize）、按类型的传输字节、
 // 3D 首帧时间（gl.info.render.frame ≥ 1）、设备出现时间（场景里有 userData.focusEntityId）、每个 JS/CSS 的 content-encoding。
@@ -122,29 +122,32 @@ function summarize(runs) {
     files: last.files,
     requestedHls: runs.some((run) => run.requestedHls),
     requestedQr: runs.some((run) => run.requestedQr),
+    requestedAuthor: [...new Set(runs.flatMap((run) => run.requests.filter((url) => AUTHOR_REQUEST.test(url))))],
     errors: runs.flatMap((run) => run.errors),
     samples: runs.map(({ firstFrameMs, devicesMs, transferBytes, byType }) => ({ firstFrameMs, devicesMs, transferBytes, byType })),
   };
 }
 
-/** 作者弹窗：二维码图片、文字链接，截图。 */
-async function authorDialog(ctx) {
+const AUTHOR_REQUEST = /AuthorSupportDialog\.js|bao-DLSEpnIs|dong-DgWfh9gf|ec-CXT8k6X9|mk-s3fnpTA8|niu-CqhQI55s|sheng-wrAbX6pX|star-dash-MlyKIEhc|star-v-C-491AVE|star-yi-g43xz0NV|tian-D1bs_UW3|tu-CIrL7ZWP/;
+/** 1.2.0 删除了作者弹窗：编辑器 2D、3D 里的作者入口元素和文案，首页和编辑器请求的作者弹窗模块和头像图片，截图。 */
+async function authorAbsent(ctx) {
   const page = await ctx.newPage({ startTime: NOON });
+  const read = () =>
+    page.evaluate(() => ({
+      elements: document.querySelectorAll('[class*="author-support"], .editor-support-slot').length,
+      text: ["为爱发电", "支持作者"].filter((word) => document.body.innerText.includes(word)),
+    }));
   await ctx.gotoEditor(page, { view: "2d", prefs: { "ha3d.home.pet": null } });
-  await page.locator(".author-support-button").click();
-  const dialog = page.locator(".author-support-dialog");
-  await dialog.waitFor({ state: "visible", timeout: 15_000 });
-  await ctx.sleep(800);
-  const report = await dialog.evaluate((element) => ({
-    images: [...element.querySelectorAll("img")].map((img) => {
-      const src = img.getAttribute("src") ?? "";
-      return src.startsWith("data:") ? `${src.slice(0, 32)}…` : src;
-    }),
-    links: [...element.querySelectorAll("a.author-support-social-link")].map((a) => ({ text: a.textContent.trim(), href: a.getAttribute("href") })),
-  }));
-  await ctx.shot(page, "author-dialog");
-  report.errors = [...page.ha3dErrors];
-  report.requests = page.ha3dResponses.map((item) => item.url);
+  const editor2d = await read();
+  await page.evaluate(() => {
+    window.__ha3dDebug = undefined;
+  });
+  await page.locator(".view-switch button", { hasText: "3D" }).click();
+  await page.waitForSelector("canvas", { timeout: 30_000 });
+  await ctx.waitForScene(page, { settleMs: 1500, requireDevices: false });
+  const editor3d = await read();
+  await ctx.shot(page, "editor-no-author");
+  const report = { editor2d, editor3d, requests: page.ha3dResponses.map((item) => item.url).filter((url) => AUTHOR_REQUEST.test(url)), errors: [...page.ha3dErrors] };
   await page.context().close();
   return report;
 }
@@ -187,8 +190,8 @@ export default async function loadtime(ctx) {
     const s = out.networks[network];
     ctx.log(`${network}：首页传输 ${fmtBytes(s.transferBytes)}（JS ${fmtBytes(s.jsTransferBytes)}），3D 首帧 ${fmtMs(s.firstFrameMs)}，设备出现 ${fmtMs(s.devicesMs)}`);
   }
-  out.authorDialog = await authorDialog(ctx);
-  ctx.log(`作者弹窗：图片 ${JSON.stringify(out.authorDialog.images)}，链接 ${JSON.stringify(out.authorDialog.links)}`);
+  out.authorAbsent = await authorAbsent(ctx);
+  ctx.log(`编辑器作者入口：2D ${JSON.stringify(out.authorAbsent.editor2d)}，3D ${JSON.stringify(out.authorAbsent.editor3d)}，作者资源请求 ${JSON.stringify(out.authorAbsent.requests)}`);
 
   if (BASELINE) {
     await ctx.writeJson(path.join(ctx.dir, "before.json"), out);
@@ -220,10 +223,15 @@ export default async function loadtime(ctx) {
     hls: local.requestedHls || lan20.requestedHls,
     qr: local.requestedQr || lan20.requestedQr,
   });
-  const dialog = out.authorDialog;
-  check("作者弹窗没有二维码图片", !dialog.images.some((src) => /Qr/.test(src ?? "")) && !dialog.requests.some((url) => /Qr-/.test(url)), dialog.images);
-  check("作者弹窗有 http(s) 文字链接", dialog.links.length > 0 && dialog.links.every((link) => /^https?:\/\//.test(link.href ?? "")), dialog.links);
-  const errors = [...local.errors, ...lan20.errors, ...dialog.errors];
+  const author = out.authorAbsent;
+  check(
+    "编辑器 2D、3D 里没有作者入口和弹窗",
+    [author.editor2d, author.editor3d].every((item) => item.elements === 0 && item.text.length === 0),
+    { editor2d: author.editor2d, editor3d: author.editor3d },
+  );
+  const authorRequests = [...author.requests, ...local.requestedAuthor, ...lan20.requestedAuthor];
+  check("首页和编辑器不请求作者弹窗模块和头像图片", authorRequests.length === 0, authorRequests);
+  const errors = [...local.errors, ...lan20.errors, ...author.errors];
   check("没有 pageerror", errors.length === 0, errors.slice(0, 3));
   return out;
 }
