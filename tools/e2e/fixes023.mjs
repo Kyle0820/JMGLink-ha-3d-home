@@ -12,7 +12,7 @@ const round = (value, digits = 3) => Number(Number(value).toFixed(digits));
 
 // 假的 Web Speech API：start() 后 50 ms onstart；mode=ok 时 0.6 s 给出中间结果「打开客」、1.6 s 给出最终结果「打开客厅灯」后结束；
 // mode 是错误码时 0.3 s 后 onerror + onend。window.__ha3dFakeRec 记录调用次数。
-function fakeRecognition(mode) {
+export function fakeRecognition(mode) {
   window.__ha3dFakeRec = { mode, starts: 0, stops: 0, lang: null };
   const list = (text, isFinal) => Object.assign([Object.assign([{ transcript: text, confidence: 0.9 }], { isFinal })], {});
   class Ha3dFakeRecognition {

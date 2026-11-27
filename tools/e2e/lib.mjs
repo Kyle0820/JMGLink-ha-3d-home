@@ -390,6 +390,99 @@ export async function sceneUserSelect(page) {
   });
 }
 
+/**
+ * 1.2.0：首页 4 天天气预报条（.home-weather-forecast）各元素的计算样式，键是元素（root、list、item<i>、item<i>.day/icon/iconSvg/strong/small/smallSvg），
+ * 不存在的元素不出现。先等预报条里非无限循环的动画结束（最多 8 s）。和 diffComputedStyle 一起比较玻璃和奶油风格。
+ */
+export async function forecastComputedStyle(page) {
+  return page.evaluate(async () => {
+    const root = document.querySelector(".home-weather-forecast");
+    if (root) {
+      const running = document
+        .getAnimations()
+        .filter((animation) => {
+          const target = animation.effect?.target;
+          const timing = animation.effect?.getComputedTiming?.();
+          return target instanceof Element && root.contains(target) && timing && Number.isFinite(timing.iterations) && animation.playState !== "finished";
+        })
+        .map((animation) => animation.finished.catch(() => undefined));
+      await Promise.race([Promise.all(running), new Promise((resolve) => setTimeout(resolve, 8000))]);
+    }
+    const props = [
+      "display",
+      "position",
+      "top",
+      "left",
+      "width",
+      "height",
+      "padding-top",
+      "padding-right",
+      "padding-bottom",
+      "padding-left",
+      "gap",
+      ...["top", "right", "bottom", "left"].flatMap((side) => [`border-${side}-width`, `border-${side}-style`, `border-${side}-color`]),
+      "border-top-left-radius",
+      "border-top-right-radius",
+      "border-bottom-right-radius",
+      "border-bottom-left-radius",
+      "background-color",
+      "background-image",
+      "box-shadow",
+      "text-shadow",
+      "color",
+      "opacity",
+      "filter",
+      "backdrop-filter",
+      "-webkit-backdrop-filter",
+      "font-family",
+      "font-size",
+      "font-weight",
+      "font-variant-numeric",
+      "line-height",
+      "letter-spacing",
+      "white-space",
+      "z-index",
+      "pointer-events",
+      "stroke",
+      "stroke-width",
+      "fill",
+    ];
+    const read = (el) => {
+      const style = getComputedStyle(el);
+      return Object.fromEntries(props.map((prop) => [prop, style.getPropertyValue(prop)]));
+    };
+    const out = {};
+    if (!root) return out;
+    out.root = read(root);
+    const list = root.querySelector(".weather-forecast-list");
+    if (list) out.list = read(list);
+    const parts = { day: ".forecast-day", icon: ".forecast-icon", iconSvg: ".forecast-icon svg", strong: "strong", small: "small", smallSvg: "small svg" };
+    root.querySelectorAll(".weather-forecast-item").forEach((item, index) => {
+      out[`item${index}`] = read(item);
+      for (const [key, selector] of Object.entries(parts)) {
+        const el = item.querySelector(selector);
+        if (el) out[`item${index}.${key}`] = read(el);
+      }
+    });
+    return out;
+  });
+}
+
+/** 比较两份 forecastComputedStyle 的结果：[{ element, prop, a, b }]；某一侧缺少元素时 prop 为 "<missing>"。 */
+export function diffComputedStyle(a = {}, b = {}) {
+  const diffs = [];
+  for (const element of new Set([...Object.keys(a), ...Object.keys(b)])) {
+    if (!a[element] || !b[element]) {
+      diffs.push({ element, prop: "<missing>", a: Boolean(a[element]), b: Boolean(b[element]) });
+      continue;
+    }
+    for (const prop of new Set([...Object.keys(a[element]), ...Object.keys(b[element])])) {
+      if (a[element][prop] !== b[element][prop]) diffs.push({ element, prop, a: a[element][prop], b: b[element][prop] });
+    }
+  }
+  return diffs;
+}
+
 /** 触屏长按：CDP touchStart，按住 ms 毫秒后 touchEnd；返回按住期间和松开后 getSelection() 的文字（页面要用 touch: true 创建）。 */
 export async function touchLongPress(page, point, ms = 1200) {
   const read = () => page.evaluate(() => window.getSelection()?.toString() ?? "");
