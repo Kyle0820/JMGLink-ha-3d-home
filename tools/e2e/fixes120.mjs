@@ -287,9 +287,13 @@ export default async function fixes120(ctx) {
         page.on("pageerror", (error) => errors.push(String(error)));
         await ctx.gotoHome(page, { style, quality: "eco", prefs: { "ha3d.home.voiceEnabled": "true", "ha3d.home.pet": null }, settleMs: 1500 });
         if (await page.locator(".voice-fab").count()) await page.locator(".voice-fab").tap();
+        // 状态行（「正在聆听…」）只在识别过程中出现，回复后消失，所以在聆听时先读一次
+        await page.waitForSelector(".voice-status", { timeout: 3000 }).catch(() => undefined);
+        const listening = await voiceStyles(page);
         await page.waitForFunction(() => [...document.querySelectorAll(".voice-message:not(.user)")].some((el) => el.textContent.includes("收到：打开客厅灯")), undefined, { timeout: 10_000 }).catch(() => undefined);
         await page.waitForTimeout(600);
         const read = (out.voice[style] = await voiceStyles(page));
+        read.status = read.status ?? listening.status;
         read.screenshot = await shotAround(ctx, page, ".voice-assistant-wrap", `voice-${style}`);
         read.full = path.basename((await ctx.shot(page, `voice-${style}-full`)).path);
         read.errors = errors.slice(0, 3);

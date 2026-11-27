@@ -16669,3 +16669,24 @@ body.ha3d-visual-cream :is(.binding-room-list button em, .binding-capability-tab
     sans-serif;
   font-variant-numeric: normal;
 }
+/* ===== ha3d-self: 1.2.0 奶油风格语音面板文字改黑色 =====
+   .voice-assistant-wrap 由 index.js 渲染在 .app-shell 下、不在 .home-workspace 里，前面 .visual-style-cream .voice-* 的规则匹配不到，
+   所以和 B5 一样用 .mode-home:has(.visual-style-cream)。深色底的助手下拉列表 .voice-picker-menu 不改 */
+.mode-home:has(.visual-style-cream)
+  :is(
+    .voice-message p,
+    .voice-status,
+    .voice-picker-trigger,
+    .voice-input input
+  ) {
+  color: #000;
+  text-shadow: none;
+}
+.mode-home:has(.visual-style-cream) .voice-input input::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+.mode-home:has(.visual-style-cream)
+  .voice-input
+  button.voice-input-mic:not(.active) {
+  color: #000;
+}
