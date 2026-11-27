@@ -233,7 +233,6 @@ docker compose up -d
 
 ***
 
-## JMGLink 官网 【作者主营产品，需要大家支持\~】
 
 JMGLink 可用于远程访问 Home Assistant APP 以及其他内网应用，欢迎试用。
 

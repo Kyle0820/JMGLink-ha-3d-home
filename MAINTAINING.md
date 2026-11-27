@@ -24,7 +24,7 @@
 `app/` 下的文件就是源码，没有前端构建步骤，改完直接生效。
 
 - 后端：直接改 `app/apps/server/dist/**/*.js`。
-- 前端：`app/apps/web/dist/assets/` 里的 `index.js`、`AppSelect.js`、`HomeView.js`、`FloorplanEditor.js`、`AuthorSupportDialog.js`、`index.css`、`HomeView.css` 是用 prettier 格式化过的业务代码，直接改。`three.js`、`react.js`、`hls.js` 是第三方库，保持压缩内容，不要改（`three.js` 开头对 hls.js 的副作用导入已删除）。
+- 前端：`app/apps/web/dist/assets/` 里的 `index.js`、`AppSelect.js`、`HomeView.js`、`FloorplanEditor.js`、`index.css`、`HomeView.css` 是用 prettier 格式化过的业务代码，直接改。`three.js`、`react.js`、`hls.js` 是第三方库，保持压缩内容，不要改（`three.js` 开头对 hls.js 的副作用导入已删除）。
 - `ha3dSettingsSync.js` 是本仓库新增的模块（首页设置跨设备同步），由 `index.js` 和 `HomeView.js` 静态导入。
 - `ha3dVoice.js` 是本仓库新增的模块（0.2.3 麦克风语音输入），由 `index.js` 静态导入：先用浏览器自带的语音识别（`webkitSpeechRecognition`），没有或被拒绝时录音（16 kHz 16 位单声道 PCM），`POST ./api/ha/assist-stt?pipeline_id=…&sample_rate=16000`（`Content-Type: audio/pcm`，最长 30 秒）交给后端，后端用 HA 的 `assist_pipeline/run`（只跑 stt 阶段，二进制帧 = 1 字节 handler id + 音频）识别，返回 `{ text }`；识别出的文字和键入的指令一样提交给 `./api/ha/conversation`。非安全上下文（http://局域网地址）里浏览器既没有麦克风也不能用语音识别，直接在面板里提示需要 HTTPS。
 - `ha3dPet.js` 是本仓库新增的按需加载模块（宠物），只在 3D 设置里选了小猫或小狗时由 `AppSelect.js` 动态导入；它直接从 `react.js`、`three.js` 导入用到的别名。
@@ -39,7 +39,7 @@
 | 同步 | 键（省略 `ha3d.home.` 前缀） |
 | --- | --- |
 | 同步 | `sceneVisualStyle`、`weatherForecastVisible`、`overviewDataSettings.<项目 id>`、`deviceClickMode`、`environmentSync`、`weatherEntityId`、`pet` |
-| 本机 | `sceneQuality`（和设备性能有关）、`voiceEnabled` 和 `ha3d.voice.pipeline`（和麦克风有关）、编辑器的 `ha3d:show-*` |
+| 本机 | `sceneQuality`（和设备性能有关）、`voiceEnabled` 和 `ha3d.voice.pipeline`（和麦克风有关）、编辑器的 `ha3d:show-*`（含 1.2.0 的属性面板展开状态 `ha3d:show-inspector`） |
 
 各键的取值：
 
@@ -70,6 +70,22 @@
 - 类别行 `.ha3d-room-summary-row`（`data-category`，顺序固定，`ha3dRoomSummaryCategories`）：`light` 灯、`switch` 开关/插座、`climate` 空调/风扇（climate 不是 off/unavailable/unknown，或 fan 为 on）、`cover` 窗帘（open/opening 或 `current_position > 0`）、`doorWindow` 门窗（device_class 是 door/window/opening/garage_door 的 binary_sensor 为 on）、`lock` 门锁（unlocked/open 算未上锁），文本「<类别> 开启数/总数 开」（门锁是「未上锁」），总数为 0 的类别不显示。
 - 最后一行 `.ha3d-room-summary-offline`「离线 N」：实体不存在或状态 `unavailable` 的个数。房间没有任何实体时只显示「暂无设备」，未连接时显示「连接后显示设备数据」。
 - 颜色：`index.css` 里 `.ha3d-room-summary*` 在玻璃、奶油、夜间各有一份，新增风格时一起补。
+
+### 编辑器属性面板收起（1.2.0）
+
+- `FloorplanEditor.js` 的属性面板状态 `js`/`We` 由 `ha3dInitialInspectorOpen` 初始化：宽 >760px 时读 localStorage 的 `ha3d:show-inspector`；没存过或宽 ≤760px 时按上游默认，宽 >960px 展开。`js` 每次变化都写入这个键，宽 ≤760px（底部抽屉）时不写。
+- 选中对象、放下家具时上游会自动展开（`We(!0)`），这个状态也会写入；选家具、设备、底图、标定工具时上游会收起面板，同样写入。存的就是当前看到的状态。
+- 收起按钮是 `.ha3d-inspector-collapse`（lucide panel-right-close，`ha3dPanelRightCloseIcon`），只在宽 ≥761px 显示，同时隐藏 761–1120px 原来的 X 按钮 `.inspector-close`。收起后显示的是上游的 `.inspector-fab`「属性」按钮。
+
+### 首页模式（1.2.0 删除底部 tab）
+
+- `HomeView.js` 的模式 `q` 固定为 `overview`，setter `de` 不再调用；tab 列表 `$n` 和 `.mijia-mode-tabs` 的 JS、CSS 都已删除。
+- `AppSelect.js` 里照明、遮阳、环境、安防的 `presentationMode` 分支，`.mijia-room-badge` 和 `.scene-mode-*` 样式还在，但已经到不了。以后要恢复模式切换，需要另外给出入口。
+
+### 奶油风格的天气预报条和语音面板（1.2.0）
+
+- 奶油风格不再覆盖 `.home-weather-forecast` 及其子元素。奶油在 `.home-workspace` 上改了 `--home-warm/cool/health`、字体和等宽数字，`index.css` 末尾的 ha3d-self 规则在预报条上恢复成玻璃的值。fixes120 和 cream 套件断言两种风格预报条的计算样式一致，再加奶油覆盖会让测试失败。
+- 语音面板 `.voice-assistant-wrap` 由 `index.js` 渲染在 `.app-shell` 下，不在 `.home-workspace` 里，所以 `.visual-style-cream .voice-*` 那组旧规则不生效。奶油风格的语音面板规则要写成 `.mode-home:has(.visual-style-cream) .voice-*`。
 ### 3D 对象命名（`ha3d-*`）
 
 新增或修改的 3D 对象都设置了 `name`（部分还有 `userData`），e2e 通过 `?ha3dDebug=1` 时暴露的 `window.__ha3dDebug.get()`（R3F 状态）按名字查找。新增对象请沿用 `ha3d-<功能>-<部件>` 的命名：
@@ -135,7 +151,7 @@ npm ci --prefix tools
 - 本地启动：`node tools/dev/start-local.mjs --project <项目.json>` 先启动 mock HA（`:18123`），再以 standalone 模式启动应用（`:18099`），数据目录默认 `/tmp/ha3d-dev`（在仓库之外）。
 - 单元测试：`npm --prefix tools run test:unit`
 - 前端模块图静态检查（esbuild，抓语法错误和不存在的导入名）：`npm --prefix tools run check:web`
-- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。套件：`smoke export models editor interaction cream environment pets perf touch fixes022 fixes023 appliances fixes025 fixes110 loadtime`（`fixes110`：1.1.0 的只绑门锁的门按门锁开合、状态未知的家电不透明、房间状态汇总；`HA3D_FIXES110_BASELINE=1` 时只记录不断言，`HA3D_FIXES110_ONLY=lock,dryer,room` 只跑其中几段）（`loadtime`：首页加载前后对比（不限速和 CDP 限速 20/10 Mbps、40 ms 两种网络，传输字节、3D 首帧、设备出现时间）和作者弹窗只有文字链接；`HA3D_LOADTIME_BASELINE=1` 时在改动前采集，写 `<证据目录>/loadtime/before.json`；之后正常运行时读 `HA3D_LOADTIME_BEFORE_JSON` 或这个 before.json 对比并断言；`HA3D_LOADTIME_RUNS` 是每种网络的冷启动次数，默认 3）（`fixes025`：0.2.5 的电视宠物大头照、入户门绑定门锁、状态未知的家电实体在设备库里可选可放；`HA3D_FIXES025_BASELINE=1` 时只记录不断言，`HA3D_FIXES025_ONLY=tv,lock,library` 只跑其中几段）（`appliances`：家电样式：两种风格下渲染、运行/停止状态不同、叠放对齐、省电限帧、编辑器模型选项）（`fixes023`：0.2.3 的麦克风语音输入（假的语音识别和麦克风，含 http 访问、没有权限时的提示）、开门颜色和关门一致、小狗停留时间，`HA3D_FIXES023_BASELINE=1` 时只记录不断言，`HA3D_FIXES023_ONLY=voice,door,dog` 只跑其中几段）（`fixes022`：0.2.2 的白色小狗、页面工具菜单拖动后仍显示、两个浏览器上下文的设置同步；`HA3D_FIXES022_BASELINE=1` 时只记录不断言）（`touch`：iPad 视口 + CDP 触摸，`HA3D_TOUCH_BASELINE=1` 时只记录不断言）（`baseline` 只在改动前采集基线时用）。`perf` 需要基线：和 `<证据目录>/baseline/…/baseline.json` 对比，证据目录里没有时必须用 `HA3D_BASELINE_JSON` 指定（「B6 首页 JS 传输字节」比较的是传输字节，基线是未压缩传输），并用 `docker image inspect` 记录 `ha3d:arm64`、`ha3d:amd64` 和上游 0.1.6 镜像的大小（docker 不可用时跳过这一项）。
+- e2e（Playwright）：`HA3D_EVIDENCE_DIR=<仓库外目录> npm --prefix tools run e2e -- <套件...>`；默认使用合成的 `tools/fixtures/demo-project.json`，用自己的项目时设置 `HA3D_PROJECT_JSON=<路径>`。套件：`smoke export models editor interaction cream environment pets perf touch fixes022 fixes023 appliances fixes025 fixes110 loadtime fixes120`（`fixes120`：1.2.0 的作者弹窗删除（文件、代码引用、首页和编辑器 2D/3D 里的元素、请求）；属性面板收起、恢复、持久化、选中设备时自动展开（1440 和 900 宽，2D 和 3D）；奶油和玻璃天气预报条计算样式一致（1440 和 390 宽，附两种风格的截图）；奶油语音面板黑字；首页没有模式 tab，设备面板和场景面板仍在；`HA3D_FIXES120_BASELINE=1` 时只记录不断言，`HA3D_FIXES120_ONLY=author,inspector,weather,voice,tabs` 只跑其中几段）（`fixes110`：1.1.0 的只绑门锁的门按门锁开合、状态未知的家电不透明、房间状态汇总；`HA3D_FIXES110_BASELINE=1` 时只记录不断言，`HA3D_FIXES110_ONLY=lock,dryer,room` 只跑其中几段）（`loadtime`：首页加载前后对比（不限速和 CDP 限速 20/10 Mbps、40 ms 两种网络，传输字节、3D 首帧、设备出现时间）和编辑器里没有作者弹窗入口、不请求头像图片；`HA3D_LOADTIME_BASELINE=1` 时在改动前采集，写 `<证据目录>/loadtime/before.json`；之后正常运行时读 `HA3D_LOADTIME_BEFORE_JSON` 或这个 before.json 对比并断言，1.1.0 改动前的基线保存在证据目录之外时用 `HA3D_LOADTIME_BEFORE_JSON` 指定；`HA3D_LOADTIME_RUNS` 是每种网络的冷启动次数，默认 3）（`fixes025`：0.2.5 的电视宠物大头照、入户门绑定门锁、状态未知的家电实体在设备库里可选可放；`HA3D_FIXES025_BASELINE=1` 时只记录不断言，`HA3D_FIXES025_ONLY=tv,lock,library` 只跑其中几段）（`appliances`：家电样式：两种风格下渲染、运行/停止状态不同、叠放对齐、省电限帧、编辑器模型选项）（`fixes023`：0.2.3 的麦克风语音输入（假的语音识别和麦克风，含 http 访问、没有权限时的提示）、开门颜色和关门一致、小狗停留时间，`HA3D_FIXES023_BASELINE=1` 时只记录不断言，`HA3D_FIXES023_ONLY=voice,door,dog` 只跑其中几段）（`fixes022`：0.2.2 的白色小狗、页面工具菜单拖动后仍显示、两个浏览器上下文的设置同步；`HA3D_FIXES022_BASELINE=1` 时只记录不断言）（`touch`：iPad 视口 + CDP 触摸，`HA3D_TOUCH_BASELINE=1` 时只记录不断言）（`baseline` 只在改动前采集基线时用）。`perf` 需要基线：和 `<证据目录>/baseline/…/baseline.json` 对比，证据目录里没有时必须用 `HA3D_BASELINE_JSON` 指定（「B6 首页 JS 传输字节」比较的是传输字节，基线是未压缩传输），并用 `docker image inspect` 记录 `ha3d:arm64`、`ha3d:amd64` 和上游 0.1.6 镜像的大小（docker 不可用时跳过这一项）。
 
 只想快速看后端是否正常：
 
