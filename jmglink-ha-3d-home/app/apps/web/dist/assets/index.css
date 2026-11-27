@@ -16075,35 +16075,7 @@ input[type="range"]::-webkit-slider-thumb {
 .home-workspace.visual-style-cream .scene-title-meta span + span:before {
   background: var(--cream-line);
 }
-.home-workspace.visual-style-cream .weather-forecast-list {
-  gap: 0.75rem;
-}
-.home-workspace.visual-style-cream .weather-forecast-item {
-  gap: 0.3rem;
-  --forecast-accent: #52665e;
-}
-.home-workspace.visual-style-cream .forecast-day {
-  color: var(--cream-copy);
-  font-size: 0.6875rem;
-  font-weight: 500;
-}
-.home-workspace.visual-style-cream .forecast-icon {
-  color: #52665e;
-  filter: none;
-}
-.home-workspace.visual-style-cream .weather-forecast-item strong {
-  color: var(--cream-ink);
-  font-size: 0.8125rem;
-  font-weight: 650;
-}
-.home-workspace.visual-style-cream .weather-forecast-item small {
-  color: var(--cream-copy);
-  font-size: 0.625rem;
-  font-weight: 500;
-}
-.home-workspace.visual-style-cream .weather-forecast-item small svg {
-  color: var(--cream-muted);
-}
+/* ha3d-self: 1.2.0 奶油风格不再覆盖天气预报条，样式照搬玻璃（见文件末尾） */
 .home-workspace.visual-style-cream
   :is(
     .home-dashboard-card,
@@ -16402,9 +16374,7 @@ input[type="range"]::-webkit-slider-thumb {
   .home-workspace.visual-style-cream .scene-title-meta {
     font-size: 0.6875rem;
   }
-  .home-workspace.visual-style-cream .weather-forecast-list {
-    gap: 0.375rem;
-  }
+  /* ha3d-self: 1.2.0 删除奶油天气预报条的间距覆盖 */
   .home-workspace.visual-style-cream .home-floor-nav {
     width: auto;
     gap: 0.25rem;
@@ -16469,12 +16439,7 @@ input[type="range"]::-webkit-slider-thumb {
     row-gap: 0.25rem;
     overflow: visible;
   }
-  .home-workspace.visual-style-cream .home-weather-forecast {
-    top: calc(var(--home-edge-y) + 5rem);
-  }
-  .home-workspace.visual-style-cream .weather-forecast-item strong {
-    font-size: 0.75rem;
-  }
+  /* ha3d-self: 1.2.0 删除奶油天气预报条的位置和字号覆盖 */
 }
 .home-workspace.visual-style-cream .home-floor-nav button.active {
   border-left-color: transparent;
@@ -16644,25 +16609,7 @@ body.ha3d-visual-cream {
   color: var(--cream-copy);
   background: var(--cream-panel);
 }
-/* ha3d-self: 0.2.1 天气预报和玻璃风格一样保持透明（去掉 0.2.0 加的奶油底）；
-   文字直接压在 3D 画面上，用一圈浅色描边光晕保证在深浅不一的墙面上都看得清 */
-.home-workspace.visual-style-cream .weather-forecast-item {
-  text-shadow:
-    0 0 1px #fffaf2,
-    0 0 2px #fffaf2,
-    0 0 3px #fffaf2,
-    0 0 5px #fffaf2,
-    0 0 8px #fffaf2cc,
-    0 0 12px #fffaf299;
-}
-.home-workspace.visual-style-cream
-  .weather-forecast-item
-  :is(.forecast-day, small) {
-  color: var(--cream-ink);
-}
-.home-workspace.visual-style-cream .forecast-icon {
-  filter: drop-shadow(0 0 0.1875rem #fffaf2) drop-shadow(0 0 0.375rem #fffaf2cc);
-}
+/* ha3d-self: 1.2.0 删除 0.2.1 奶油天气预报的浅色描边光晕和深色字，样式照搬玻璃（见文件末尾） */
 /* 实体绑定、连接与服务仍是深色面板：奶油风格下把弱化文字提亮、数量徽标改为不透明 */
 body.ha3d-visual-cream
   :is(
@@ -16704,4 +16651,21 @@ body.ha3d-visual-cream :is(.binding-room-list button em, .binding-capability-tab
   .mode-editor .inspector-title .inspector-close {
     display: none;
   }
+}
+/* ===== ha3d-self: 1.2.0 奶油风格的天气预报条照搬玻璃风格 =====
+   奶油在 .home-workspace 上改了 --home-warm/cool/health（图标强调色）、字体和等宽数字，这里恢复成玻璃的值
+   （.home-workspace 的变量、:root 的字体）；fixes120 和 cream 套件断言两种风格的计算样式一致。米色背景上白字不如深色字清楚 */
+.home-workspace.visual-style-cream .home-weather-forecast {
+  --home-warm: #ffd08a;
+  --home-cool: #83d8ff;
+  --home-health: #9cf0ca;
+  font-family:
+    Inter,
+    PingFang SC,
+    Microsoft YaHei,
+    Segoe UI,
+    ui-sans-serif,
+    system-ui,
+    sans-serif;
+  font-variant-numeric: normal;
 }

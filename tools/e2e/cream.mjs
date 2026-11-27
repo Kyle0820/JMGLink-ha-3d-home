@@ -2,6 +2,7 @@
 // 这些弹窗大多是半透明背景 + backdrop-filter，axe 判定不了（记为 incomplete），所以另外做一次像素对比度检查：
 // 取每段文字的计算颜色（乘上祖先 opacity），和截图里文字外圈 2 px 的背景中位色比较，正文 < 4.5、大字 < 3 记为不合格。
 // 奶油风格：axe 违规和像素不合格都必须为 0；玻璃风格：两项都不能比基线多。
+// 1.2.0 起奶油「天气预报」照搬玻璃样式：断言预报条的计算样式和玻璃一致（ctx.forecastComputedStyle），对比度只记录（米色背景上白字可读性变差）。
 // HA3D_CREAM_BASELINE=1 时只采集并写 <证据>/cream/baseline.json（在修改 CSS 之前运行），不做断言。
 // 弹窗（尤其玻璃风格）是半透明的，文字背后的颜色取决于下面的 3D 场景：昼夜、天气、太阳的位置、点开的灯是否亮着、
 // 设备动画、设备摆在哪里。所以采集基线和断言时都固定：页面时钟 12:00（改造前的前端、以及收到 sun.sun 之前按本机时钟切昼夜），
@@ -284,6 +285,7 @@ export default async function cream(ctx) {
             const pixel = pixelContrast(file.buffer, await collectTexts(page, selector));
             entry = { ...entry, axeViolations: axe.violations, axeIncomplete: axe.incomplete, axeNodes: axe.nodes, pixelChecked: pixel.checked, pixelFailures: pixel.failures.length, pixelDetails: pixel.failures, pixelTexts: pixel.keys };
           }
+          if (visible && name === "天气预报") entry.forecastStyle = await ctx.forecastComputedStyle(page);
         } catch (error) {
           entry.error = String(error?.message ?? error).split("\n")[0];
         }
@@ -308,6 +310,13 @@ export default async function cream(ctx) {
     if (!entry.visible) {
       // 设备面板在窄屏/无设备时不存在，其他弹窗必须能打开
       check(`奶油 ${name} 已打开`, name === "设备面板", entry.error ?? "不可见");
+      continue;
+    }
+    if (name === "天气预报") {
+      const glass = results.glass["天气预报"]?.forecastStyle;
+      const diffs = glass ? ctx.diffComputedStyle(glass, entry.forecastStyle) : null;
+      check("奶油 天气预报：计算样式与玻璃风格一致（1.2.0 照搬玻璃样式）", Boolean(glass) && diffs.length === 0, diffs ? { diffs: diffs.length, first: diffs.slice(0, 10) } : "玻璃风格没有采到预报条样式");
+      check("奶油 天气预报：对比度只记录（米色背景上白字可读性变差）", true, { axe: entry.axeViolations, pixel: `${entry.pixelFailures}/${entry.pixelChecked}`, details: entry.pixelDetails.slice(0, 6) });
       continue;
     }
     check(`奶油 ${name}：axe color-contrast 0 违规`, entry.axeViolations === 0, entry.axeNodes.slice(0, 5));
