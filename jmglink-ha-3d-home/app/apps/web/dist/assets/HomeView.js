@@ -18,8 +18,7 @@ import {
     ah as aa,
     ab as as,
     t as ce,
-    H as cs,
-    ag as ds,
+    // ha3d-self: 1.2.0 删除只给底部模式 tab 用的两个图标（H、ag）
     ac as ea,
     u as es,
     c as et,
@@ -74,16 +73,7 @@ import {
     ["path", { d: "M19 12H5", key: "x3x0zl" }],
   ],
   lt = Z("arrow-left", vs);
-const gs = [
-    ["path", { d: "M3 3h18", key: "o7r712" }],
-    ["path", { d: "M20 7H8", key: "gd2fo2" }],
-    ["path", { d: "M20 11H8", key: "1ynp89" }],
-    ["path", { d: "M10 19h10", key: "19hjk5" }],
-    ["path", { d: "M8 15h12", key: "1yqzne" }],
-    ["path", { d: "M4 3v14", key: "fggqzn" }],
-    ["circle", { cx: "4", cy: "19", r: "2", key: "p3m9r0" }],
-  ],
-  js = Z("blinds", gs);
+// ha3d-self: 1.2.0 删除只给底部模式 tab 用的 blinds 图标
 const Is = [["path", { d: "m9 18 6-6-6-6", key: "mthhwq" }]],
   Ss = Z("chevron-right", Is);
 const Ns = [
@@ -1474,13 +1464,7 @@ function Nn({
 }
 const Se = "all",
   st = "unassigned",
-  $n = [
-    { key: "overview", label: "全屋", icon: cs },
-    { key: "lighting", label: "照明", icon: ds },
-    { key: "shade", label: "遮阳", icon: js },
-    { key: "environment", label: "环境", icon: mt },
-    { key: "security", label: "安防", icon: aa },
-  ],
+  // ha3d-self: 1.2.0 删除底部模式 tab 的列表 $n
   la = "ha3d.home.sceneQuality",
   ca = "ha3d.home.sceneVisualStyle",
   da = "ha3d.home.weatherForecastVisible",
@@ -2522,7 +2506,7 @@ function ni({
       return ((n = t.floors[0]) == null ? void 0 : n.id) ?? "all";
     }),
     [ha3dClockTheme, D] = c.useState(() => Qt()), // ha3d-self: F3 最终主题 B 在下面按 sun.sun 计算
-    [q, de] = c.useState("overview"),
+    [q, de] = c.useState("overview"), // ha3d-self: 1.2.0 底部 tab 已删除，q 固定为 overview（de 不再调用；AppSelect 的照明/遮阳/环境/安防模式代码保留）
     [X, S] = c.useState(!1),
     [te, u] = c.useState(!1),
     [g, p] = c.useState(!1),
@@ -3350,28 +3334,7 @@ function ni({
                 ),
               ],
             }),
-          e.jsx("nav", {
-            className: "mijia-mode-tabs",
-            "aria-label": "场景模式",
-            children: $n.map((n) => {
-              const l = n.icon;
-              return e.jsxs(
-                "button",
-                {
-                  className: q === n.key ? "active" : "",
-                  onClick: () => {
-                    (de(n.key), n.key !== "security" && we(void 0));
-                  },
-                  "aria-pressed": q === n.key,
-                  children: [
-                    e.jsx(l, { size: 20 }),
-                    e.jsx("span", { children: n.label }),
-                  ],
-                },
-                n.key,
-              );
-            }),
-          }),
+          // ha3d-self: 1.2.0 删除底部模式 tab（全屋/照明/遮阳/环境/安防），首页固定为全屋
           Ma &&
             e.jsx(Yn, {
               cameraRoom: V,

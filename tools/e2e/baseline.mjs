@@ -292,12 +292,17 @@ export default async function baseline(ctx) {
     out.B3.push(await probe("标题", centerOf(".scene-title")));
     out.B3.push(await probe("数据卡片", centerOf(".home-dashboard-card")));
     out.B3.push(await probe("天气预报条目", centerOf(".weather-forecast-item")));
+    const hasModeTabs = (await page.locator(".mijia-mode-tabs").count()) > 0;
     for (const [tab, selector, label] of [
       ["照明", ".mijia-room-badge", "房间标签（照明）"],
       ["环境", ".mijia-room-badge", "房间标签（环境）"],
       ["环境", ".scene-device-status-chip", "设备状态标签（环境）"],
       ["安防", ".scene-device-status-chip", "设备状态标签（安防）"],
     ]) {
+      if (!hasModeTabs) {
+        out.B3.push({ label, present: false, reason: "1.2.0 起没有底部模式 tab" });
+        continue;
+      }
       await page.locator(".mijia-mode-tabs button", { hasText: tab }).first().click({ force: true, timeout: 5000 });
       await page.waitForTimeout(1500);
       out.B3.push(await probe(label, centerOf(selector)));

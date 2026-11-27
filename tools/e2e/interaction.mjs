@@ -585,16 +585,11 @@ export default async function interaction(ctx) {
     };
     await probe("3D 区域空白处", { x: 1290, y: 740 });
     await probe("标题", await centerOf(".scene-title h1"));
-    for (const [tab, selector, label] of [
-      ["照明", ".mijia-room-badge", "房间标签（照明）"],
-      ["环境", ".mijia-room-badge", "房间标签（环境）"],
-      ["安防", ".scene-device-status-chip", "设备状态标签（安防）"],
-    ]) {
-      await page.locator(".mijia-mode-tabs button", { hasText: tab }).first().click({ force: true, timeout: 5000 });
-      await page.waitForTimeout(1500);
-      await probe(label, await centerOf(selector));
-    }
-    await page.locator(".mijia-mode-tabs button", { hasText: "全屋" }).first().click({ force: true, timeout: 5000 });
+    // 1.2.0 删除了底部模式 tab（房间标签、设备状态标签只在照明/环境/安防视图出现），改测首页仍有的数据卡片和天气预报条目
+    await probe("数据卡片", await centerOf(".home-dashboard-card"));
+    await probe("天气预报条目", await centerOf(".weather-forecast-item"));
+    const modeUi = await page.evaluate(() => ({ tabs: document.querySelectorAll(".mijia-mode-tabs").length, badges: document.querySelectorAll(".mijia-room-badge").length }));
+    check("B3 首页没有底部模式 tab，也没有房间标签（1.2.0）", modeUi.tabs === 0 && modeUi.badges === 0, modeUi);
     // 同一组元素的计算样式在修复前基线（baseline.mjs 的 B3userSelect）里是 auto，桌面 Chromium 双击、三击在修复前也选不中文字，
     // 所以这条才是能区分修复前后的断言
     const userSelect = await ctx.sceneUserSelect(page);

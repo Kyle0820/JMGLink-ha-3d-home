@@ -11345,60 +11345,7 @@ input[type="range"]::-webkit-slider-thumb {
   min-height: 2.75rem;
   border-radius: 0.875rem;
 }
-.mijia-mode-tabs {
-  position: absolute;
-  left: 50%;
-  bottom: clamp(1.25rem, 3vh, 1.5625rem);
-  z-index: 8;
-  display: flex;
-  align-items: end;
-  gap: clamp(1.25rem, 4.2vw, 3rem);
-  padding: 0 clamp(1rem, 2.5vw, 1.625rem) 0.625rem;
-  transform: translate(-50%);
-}
-.mijia-mode-tabs button {
-  position: relative;
-  min-width: clamp(2.625rem, 4.8vw, 3.125rem);
-  min-height: clamp(2.75rem, 5.9vh, 3rem);
-  padding: 0;
-  display: grid;
-  justify-items: center;
-  align-content: center;
-  gap: 0.25rem;
-  border: 0;
-  color: #d5dff966;
-  background: transparent;
-  font-size: clamp(0.875rem, 1.55vw, 1rem);
-  font-weight: 760;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  transition:
-    color 0.18s ease,
-    transform 0.18s ease,
-    opacity 0.18s ease;
-}
-.mijia-mode-tabs button:hover {
-  color: #f5f8ffc7;
-}
-.mijia-mode-tabs button.active {
-  color: #fff;
-  transform: translateY(-2px);
-}
-.mijia-mode-tabs button.active:after {
-  content: "";
-  position: absolute;
-  bottom: -0.4375rem;
-  left: 50%;
-  width: 0.3125rem;
-  height: 0.3125rem;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 0 12px #ffffffa8;
-  transform: translate(-50%);
-}
-.mijia-mode-tabs svg {
-  opacity: 0.72;
-}
+/* ha3d-self: 1.2.0 删除底部模式 tab 的样式 */
 @media (orientation: landscape) and (min-width: 48rem) and (max-width: 73.75rem) {
   .mode-home .home-scene,
   .home-scene {
@@ -11418,9 +11365,6 @@ input[type="range"]::-webkit-slider-thumb {
   .ha-scene-list {
     max-height: min(18rem, calc(100dvh - 10rem));
   }
-  .mijia-mode-tabs {
-    gap: clamp(1rem, 3.6vw, 2rem);
-  }
 }
 @media (orientation: landscape) and (min-width: 48rem) and (max-width: 73.75rem) and (max-height: 45rem) {
   .mode-home .home-scene,
@@ -11431,9 +11375,6 @@ input[type="range"]::-webkit-slider-thumb {
   }
   .ha-scene-list {
     max-height: min(16rem, calc(100dvh - 9rem));
-  }
-  .mijia-mode-tabs {
-    bottom: 0.875rem;
   }
 }
 .mijia-room-badge {
@@ -12009,31 +11950,6 @@ input[type="range"]::-webkit-slider-thumb {
 .visual-style-cream .style-dock-action {
   color: #3a3026c7;
 }
-.visual-style-cream .mijia-mode-tabs {
-  padding: 0.4rem 1.25rem 0.65rem;
-  border: 1px solid rgba(77, 63, 47, 0.14);
-  border-radius: 1.25rem;
-  background: #e8decfa8;
-  box-shadow:
-    0 10px 28px #34281a1a,
-    inset 0 1px #ffffff61;
-  -webkit-backdrop-filter: blur(14px) saturate(0.9);
-  backdrop-filter: blur(14px) saturate(0.9);
-}
-.visual-style-cream .mijia-mode-tabs button {
-  color: #3f34298c;
-  text-shadow: none;
-}
-.visual-style-cream .mijia-mode-tabs button:hover {
-  color: #2d251dd6;
-}
-.visual-style-cream .mijia-mode-tabs button.active {
-  color: #2f271f;
-}
-.visual-style-cream .mijia-mode-tabs button.active:after {
-  background: #8c6534;
-  box-shadow: none;
-}
 .visual-style-cream .voice-fab {
   color: #f8f1e7;
   border-color: #ffffff47;
@@ -12172,38 +12088,9 @@ input[type="range"]::-webkit-slider-thumb {
 .corner-dock-action:focus-visible,
 .corner-dock-icon:focus-visible,
 .scene-connection:focus-visible,
-.home-floor-nav button:focus-visible,
-.mijia-mode-tabs button:focus-visible {
+.home-floor-nav button:focus-visible {
   outline: 2px solid rgba(226, 236, 255, 0.5);
   outline-offset: 3px;
-}
-.scene-mode-lighting .mijia-mode-tabs button.active {
-  color: color-mix(in srgb, var(--home-warm) 42%, #fff);
-}
-.scene-mode-shade .mijia-mode-tabs button.active {
-  color: color-mix(in srgb, var(--home-cool) 42%, #fff);
-}
-.scene-mode-environment .mijia-mode-tabs button.active {
-  color: color-mix(in srgb, var(--home-health) 36%, #fff);
-}
-.scene-mode-security .mijia-mode-tabs button.active {
-  color: color-mix(in srgb, var(--home-danger) 34%, #fff);
-}
-.scene-mode-lighting .mijia-mode-tabs button.active:after {
-  background: var(--home-warm);
-  box-shadow: 0 0 16px #ffd08ae6;
-}
-.scene-mode-shade .mijia-mode-tabs button.active:after {
-  background: var(--home-cool);
-  box-shadow: 0 0 16px #83d8ffdb;
-}
-.scene-mode-environment .mijia-mode-tabs button.active:after {
-  background: var(--home-health);
-  box-shadow: 0 0 16px #9cf0cadb;
-}
-.scene-mode-security .mijia-mode-tabs button.active:after {
-  background: var(--home-danger);
-  box-shadow: 0 0 16px #ff708adb;
 }
 @media (prefers-reduced-motion: reduce) {
   .home-workspace *,
@@ -13924,8 +13811,7 @@ input[type="range"]::-webkit-slider-thumb {
     .home-corner-dock,
     .home-insight-track,
     .voice-feed,
-    .voice-fab,
-    .mijia-mode-tabs
+    .voice-fab
   ) {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
@@ -13940,8 +13826,7 @@ input[type="range"]::-webkit-slider-thumb {
     :where(
       .scene-action,
       .corner-dock-toggle,
-      .voice-fab,
-      .mijia-mode-tabs button
+      .voice-fab
     ) {
     min-width: 44px;
     min-height: 44px;
@@ -14917,23 +14802,6 @@ input[type="range"]::-webkit-slider-thumb {
     height: 20px;
     border-radius: 9px;
     font-size: 9px;
-  }
-  .mijia-mode-tabs {
-    right: 8px;
-    bottom: 12px;
-    left: 8px;
-    justify-content: space-around;
-    gap: 0;
-    padding: 0 5px 9px;
-    transform: none;
-  }
-  .mijia-mode-tabs button {
-    min-width: 44px;
-    font-size: 13px;
-  }
-  .mijia-mode-tabs svg {
-    width: 18px;
-    height: 18px;
   }
   .mode-home .sidebar-backdrop {
     background: linear-gradient(180deg, #02050d2e, #02050d6b);
@@ -16187,25 +16055,6 @@ input[type="range"]::-webkit-slider-thumb {
   background: #f5e7cf;
   box-shadow: 0 4px 12px #3c2d191f;
 }
-.home-workspace.visual-style-cream .mijia-mode-tabs {
-  padding: 0.5rem 1rem 0.625rem;
-  gap: clamp(0.5rem, 2.8vw, 2rem);
-  background: var(--cream-panel);
-  border-color: var(--cream-line);
-  box-shadow: 0 4px 16px #3c2d191a;
-}
-.home-workspace.visual-style-cream .mijia-mode-tabs button {
-  min-width: 3.25rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--cream-muted);
-}
-.home-workspace.visual-style-cream .mijia-mode-tabs button.active {
-  color: var(--cream-accent);
-}
-.home-workspace.visual-style-cream .mijia-mode-tabs svg {
-  opacity: 1;
-}
 .home-workspace.visual-style-cream .mobile-presence-copy strong {
   font-weight: 600;
   text-shadow: none;
@@ -16382,15 +16231,6 @@ input[type="range"]::-webkit-slider-thumb {
   .home-workspace.visual-style-cream .home-floor-nav button {
     min-height: 2.25rem;
     font-size: 0.6875rem;
-  }
-  .home-workspace.visual-style-cream .mijia-mode-tabs {
-    max-width: calc(100% - 2rem);
-    gap: 0.375rem;
-    padding: 0.5rem 0.625rem 0.625rem;
-  }
-  .home-workspace.visual-style-cream .mijia-mode-tabs button {
-    min-width: 2.875rem;
-    font-size: 0.75rem;
   }
 }
 .home-workspace.visual-style-cream .scene-title-meta span {
