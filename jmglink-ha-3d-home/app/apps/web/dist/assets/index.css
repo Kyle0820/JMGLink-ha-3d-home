@@ -16689,3 +16689,19 @@ body.ha3d-visual-cream :is(.binding-room-list button em, .binding-capability-tab
 .furniture-handle-hitarea {
   stroke-width: 0;
 }
+/* ===== ha3d-self: 1.2.0 编辑器属性面板右上角收起按钮 =====
+   宽 ≥761px 显示 .ha3d-inspector-collapse，隐藏 761–1120px 原来的 X 按钮；≤760px（底部抽屉）不变 */
+.mode-editor .inspector-title .ha3d-inspector-collapse {
+  display: none;
+}
+@media (min-width: 761px) {
+  .mode-editor .inspector-title .ha3d-inspector-collapse {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+  .mode-editor .inspector-title .inspector-close {
+    display: none;
+  }
+}

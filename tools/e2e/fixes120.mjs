@@ -95,6 +95,11 @@ async function inspectorState(page, key) {
     };
   }, key);
 }
+/** 等属性面板的显隐过渡（0.22 s）结束：3D 视图下 SwiftShader 占满主线程，过渡会拖到 1 s 以上。 */
+async function settlePanel(page) {
+  await page.waitForTimeout(500);
+  await page.waitForFunction(() => (document.querySelector(".inspector-panel")?.getAnimations().length ?? 0) === 0, undefined, { timeout: 5000, polling: 100 }).catch(() => undefined);
+}
 const atCorner = (state) => Boolean(state.collapseOffset) && Math.abs(state.collapseOffset.right) <= 80 && Math.abs(state.collapseOffset.top) <= 80;
 
 // ---------- voice ----------
@@ -169,7 +174,7 @@ export default async function fixes120(ctx) {
     if (ONLY.has("inspector")) {
       const record = (out.inspector = { wide: {}, narrow: {} });
       const homePrefs = { style: "glass", quality: "smooth" };
-      const wait = () => page.waitForTimeout(500);
+      const wait = () => settlePanel(page);
       const page = await ctx.newPage({ startTime: NOON, viewport: WIDE });
       await ctx.gotoEditor(page, { view: "2d", ...homePrefs, prefs: { [INSPECTOR_KEY]: null, "ha3d.home.pet": null } });
       const initial = (record.wide.initial = await inspectorState(page, INSPECTOR_KEY));
@@ -226,11 +231,11 @@ export default async function fixes120(ctx) {
       const first = (record.narrow.initial = await inspectorState(narrow, INSPECTOR_KEY));
       check("900 宽：第一次进入时面板默认收起（宽 ≤960），「属性」按钮可见", !first.open && !first.panelVisible && first.fabVisible, first);
       await clickIf(narrow.locator(".inspector-fab"));
-      await narrow.waitForTimeout(500);
+      await settlePanel(narrow);
       const opened = (record.narrow.opened = await inspectorState(narrow, INSPECTOR_KEY));
       check("900 宽：点「属性」展开后右上角是收起图标，原来的 X 按钮不显示", opened.panelVisible && opened.collapseVisible && atCorner(opened) && !opened.closeVisible, opened);
       await clickIf(narrow.locator(".ha3d-inspector-collapse"));
-      await narrow.waitForTimeout(500);
+      await settlePanel(narrow);
       const closed = (record.narrow.collapsed = await inspectorState(narrow, INSPECTOR_KEY));
       record.narrow.collapsed.screenshot = path.basename((await ctx.shot(narrow, "inspector-900")).path);
       check("900 宽：点收起图标后面板隐藏，「属性」按钮出现", !closed.panelVisible && closed.fabVisible, closed);

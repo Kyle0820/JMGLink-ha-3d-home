@@ -227,6 +227,16 @@ import { j as t } from "./three.js"; // ha3d-self: 1.2.0 删除作者弹窗（�
   ],
   Jl = de("hand", Ql);
 // ha3d-self: 1.2.0 删除作者弹窗（顶栏按钮图标）
+// ===== ha3d-self: 1.2.0 属性面板收起按钮图标（lucide panel-right-close） =====
+const ha3dPanelRightCloseNode = [
+    [
+      "rect",
+      { width: "18", height: "18", x: "3", y: "3", rx: "2", key: "ha3d-prc-1" },
+    ],
+    ["path", { d: "M15 3v18", key: "ha3d-prc-2" }],
+    ["path", { d: "m8 9 3 3-3 3", key: "ha3d-prc-3" }],
+  ],
+  ha3dPanelRightCloseIcon = de("panel-right-close", ha3dPanelRightCloseNode);
 /**
  * @license lucide-react v1.25.0 - ISC
  *
@@ -801,6 +811,16 @@ function xr(s, a, o) {
 const Ec = new Set(["furniture", "device", "blueprint", "calibrate"]);
 function yn(s) {
   return Ec.has(s);
+}
+// ===== ha3d-self: 1.2.0 属性面板展开状态存本机 =====
+// 宽 >760px 时读 ha3d:show-inspector；没存过或宽 ≤760px（底部抽屉）时沿用上游默认：宽 >960px 展开
+const ha3dInspectorKey = "ha3d:show-inspector";
+function ha3dInitialInspectorOpen() {
+  if (typeof window > "u") return !0;
+  const stored = window.localStorage.getItem(ha3dInspectorKey);
+  if (window.innerWidth > 760 && (stored === "true" || stored === "false"))
+    return stored === "true";
+  return window.innerWidth > 960;
 }
 function _c(s, a, o, h = yn(s)) {
   return {
@@ -2744,7 +2764,7 @@ function Pd({
     [Xs, Vi] = x.useState(),
     [Bi, Ki] = x.useState(s.updatedAt),
     [Cn, bo] = x.useState(!1),
-    [js, We] = x.useState(() => typeof window > "u" || window.innerWidth > 960),
+    [js, We] = x.useState(ha3dInitialInspectorOpen), // ha3d-self: 1.2.0 恢复上次的展开/收起状态
     [ys, Ys] = x.useState(!1),
     // ha3d-self: 1.2.0 删除作者弹窗（打开状态）
     [dt, ht] = x.useState(!1),
@@ -3258,6 +3278,11 @@ function Pd({
     x.useEffect(() => {
       window.localStorage.setItem("ha3d:show-device-labels", String(Mt));
     }, [Mt]),
+    // ha3d-self: 1.2.0 属性面板展开状态存本机（包括选中对象时的自动展开）；宽 ≤760px 是底部抽屉，不写入
+    x.useEffect(() => {
+      window.innerWidth > 760 &&
+        window.localStorage.setItem(ha3dInspectorKey, String(js));
+    }, [js]),
     x.useEffect(() => {
       Je || q(rt(s));
     }, [Je, s]),
@@ -7497,6 +7522,17 @@ function Pd({
                     children: dt
                       ? t.jsx(cr, { size: 18 })
                       : t.jsx(zl, { size: 18 }),
+                  }),
+                  // ha3d-self: 1.2.0 右上角收起按钮（宽 ≥761px 显示，收起后是右上角的「属性」按钮 .inspector-fab）
+                  t.jsx("button", {
+                    type: "button",
+                    className: "panel-close ha3d-inspector-collapse",
+                    onClick: () => {
+                      (We(!1), ht(!1));
+                    },
+                    "aria-label": "收起属性面板",
+                    title: "收起属性面板",
+                    children: t.jsx(ha3dPanelRightCloseIcon, { size: 18 }),
                   }),
                   t.jsx("button", {
                     className: "panel-close inspector-close",
